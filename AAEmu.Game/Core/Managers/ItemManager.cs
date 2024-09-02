@@ -1298,27 +1298,28 @@ public class ItemManager : Singleton<ItemManager>
                 }
             }
 
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = "SELECT * FROM item_cap_scales";
-                command.Prepare();
-                using (var sqliteReader = command.ExecuteReader())
-                using (var reader = new SQLiteWrapperReader(sqliteReader))
-                {
-                    while (reader.Read())
-                    {
-                        var template = new ItemCapScale
-                        {
-                            //template.Id = reader.GetUInt32("id"); // there is no such field in the database for version 3.0.3.0
-                            SkillId = reader.GetUInt32("skill_id"),
-                            ScaleMin = reader.GetInt32("scale_min"),
-                            ScaleMax = reader.GetInt32("scale_max")
-                        };
+            // TODO there is no such table in 5070 AAFree 
+            //using (var command = connection.CreateCommand())
+            //{
+            //    command.CommandText = "SELECT * FROM item_cap_scales";
+            //    command.Prepare();
+            //    using (var sqliteReader = command.ExecuteReader())
+            //    using (var reader = new SQLiteWrapperReader(sqliteReader))
+            //    {
+            //        while (reader.Read())
+            //        {
+            //            var template = new ItemCapScale
+            //            {
+            //                //template.Id = reader.GetUInt32("id"); // there is no such field in the database for version 3.0.3.0
+            //                SkillId = reader.GetUInt32("skill_id"),
+            //                ScaleMin = reader.GetInt32("scale_min"),
+            //                ScaleMax = reader.GetInt32("scale_max")
+            //            };
 
-                        _itemCapScales.TryAdd(template.SkillId, template);
-                    }
-                }
-            }
+            //            _itemCapScales.TryAdd(template.SkillId, template);
+            //        }
+            //    }
+            //}
 
             // Load main item templates
 

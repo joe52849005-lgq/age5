@@ -336,7 +336,7 @@ public class CharacterManager : Singleton<CharacterManager>
                     {
                         var template = new ActabilityTemplate();
                         template.Id = reader.GetUInt32("id");
-                        template.IconId = reader.GetUInt32("icon_id", 0);
+                        //template.IconId = reader.GetUInt32("icon_id", 0);
                         template.Name = reader.GetString("name");
                         template.SkillPageVisible = reader.GetBoolean("skill_page_visible");
                         template.UnitAttributeId = reader.GetInt32("unit_attr_id");
