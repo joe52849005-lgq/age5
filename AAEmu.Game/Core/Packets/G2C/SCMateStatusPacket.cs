@@ -29,8 +29,6 @@ public class SCMateStatusPacket : GamePacket
         for (var i = 0; i < _skillCount; i += 3)
         {
             stream.Write(_mate.Skills[i]);     // type
-            stream.Write(_mate.Skills[i + 1]); // type
-            stream.Write(_mate.Skills[i + 2]); // type
         }
 
         stream.Write(_tagCount); // tagCount
