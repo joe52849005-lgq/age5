@@ -251,7 +251,7 @@ namespace AAEmu.Commons.Cryptography
             //var cry = mul ^ ((uint)MakeSeq(keys) + 0x75a024a4) ^ 0xc3903b6a; // 3.0.3.0 archerage.to
             //var cry = mul ^ ((uint)MakeSeq(keys) + 0x75a024c4) ^ 0x2d3c9291; // 3.0.4.2 AAClassic
             //var cry = mul ^ ((uint)MakeSeq(keys) + 0x75a02403) ^ 0x47a3afc6; // 5.0.7.0 AAFree - работает, но плохо
-            var cry = mul ^ ((uint)MakeSeq(keys) + 0x75a02477) ^ 0x45a3af75; // 5.0.7.0 AAFree - работает, довольно хорошо
+            var cry = mul ^ ((uint)MakeSeq(keys) + 0x75a02480) ^ 0x60a3af0b; // 5.0.7.0 AAFree - работает, довольно хорошо
             
             var seq = keys.CSOffsetSequence;
             var offset = 4;
