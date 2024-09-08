@@ -23,8 +23,8 @@ public class GameNetwork : Singleton<GameNetwork>
 
         // World
         RegisterPacket(CSOffsets.X2EnterWorldPacket, 1, typeof(X2EnterWorldPacket)); // level = 1
-                                                                                     // double _01_&_05_
-                                                                                     // пакет для дешифрации
+        // double _01_&_05_
+        // пакет для дешифрации
         RegisterPacket(CSOffsets.CSAesXorKeyPacket, 1, typeof(CSAesXorKeyPacket));         // level = 1
         RegisterPacket(CSOffsets.CSAesXorKey_05_Packet, 5, typeof(CSAesXorKey_05_Packet)); // level = 5
                                                                                            //

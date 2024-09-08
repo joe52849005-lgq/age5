@@ -28,6 +28,7 @@ public class GameProtocolHandler : BaseProtocolHandler
         _packets.TryAdd(4, new ConcurrentDictionary<uint, Type>()); // deflate
         _packets.TryAdd(5, new ConcurrentDictionary<uint, Type>()); // encrypt
         _packets.TryAdd(6, new ConcurrentDictionary<uint, Type>()); // encrypt
+        EncryptionManager.needNewkey = false;
     }
 
     public override void OnConnect(ISession session)
@@ -214,5 +215,9 @@ public class GameProtocolHandler : BaseProtocolHandler
         for (var i = stream.Pos; i < stream.Count; i++)
             dump.AppendFormat("{0:x2} ", stream.Buffer[i]);
         Logger.Error("Unknown packet 0x{0:x2}({3}) from {1}:\n{2}", type, connection.Ip, dump, level);
+        if (type > 0x3ff)
+        {
+            EncryptionManager.needNewkey = true;
+        }
     }
 }

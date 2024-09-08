@@ -24,7 +24,7 @@ public class SummonMate : Item
         if (stream.LeftBytes < DetailBytesLength)
             return;
         DetailMateExp = stream.ReadInt32(); // exp
-        _ = stream.ReadByte();
+        _ = stream.ReadByte();            // unk = 0
         DetailLevel = stream.ReadByte(); // level
         _ = stream.ReadBytes(14); // unknown
     }

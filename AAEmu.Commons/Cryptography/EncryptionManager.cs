@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-
+using AAEmu.Commons.IO;
 using AAEmu.Commons.Network;
 using AAEmu.Commons.Utils;
 
@@ -21,6 +21,10 @@ namespace AAEmu.Commons.Cryptography
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private static readonly int DwKeySize = 1024;
         private Dictionary<ulong, ConnectionKeychain> ConnectionKeys { get; set; } //Dictionary of valid keys bound to account Id and connection Id
+        public static bool needNewkey;
+        private static string XorKeyValueFilePath;
+        private static Random rnd = new();
+
 
         public void Load()
         {
@@ -74,6 +78,28 @@ namespace AAEmu.Commons.Cryptography
             keys.AesKey = keys.RsaKeyPair.Decrypt(aesKeyEncrypted, false);
             keys.RecievedKeys = true;
             Logger.Warn("AES: {0} XOR: {1}", Helpers.ByteArrayToString(keys.AesKey), keys.XorKey);
+
+            // для автоматического подбора констант
+            var worldPath = Path.Combine(FileManager.AppPath, "Configurations");
+            XorKeyValueFilePath = Path.Combine(worldPath, "xorKeyValue.txt");
+            using var reader = new StreamReader(XorKeyValueFilePath);
+            while (!reader.EndOfStream)
+            {
+                var xorKeyValueLine1 = reader.ReadLine();
+                var xorKeyValue1 = reader.ReadLine();
+                if (xorKeyValueLine1 == "XorKeyConstant1:")
+                {
+                    // сохраняем пакеты в список пакетов
+                    keys.XorKeyConstant1 = Convert.ToUInt32(xorKeyValue1, 16);
+                }
+                var xorKeyValueLine2 = reader.ReadLine();
+                var xorKeyValue2 = reader.ReadLine();
+                if (xorKeyValueLine2 == "XorKeyConstant2:")
+                {
+                    // сохраняем пакеты в список пакетов
+                    keys.XorKeyConstant2 = Convert.ToUInt32(xorKeyValue2, 16);
+                }
+            }
         }
 
         public byte GetSCMessageCount(uint connectionId, ulong accountId)
@@ -225,6 +251,29 @@ namespace AAEmu.Commons.Cryptography
 
         public static byte[] DecodeXor(byte[] bodyPacket, uint xorKey, ConnectionKeychain keys)
         {
+            // подбираем константы шифрации
+            if (needNewkey)
+            {
+                needNewkey = false;
+                // нужно сразу начинать тонкий подбор
+                var tuneL = (byte)rnd.Next(0x01, 0xFF);
+                var tuneR = (byte)rnd.Next(0x01, 0xFF);
+                // Исходное uint число с заполнителями NN
+                if (keys.XorKeyConstant2 == 0)
+                {
+                    keys.XorKeyConstant2 = 0x00a3af00;
+                }
+                var result = keys.XorKeyConstant2 & 0x00FFFF00;
+                result |= (uint)tuneL << 24; // Вставляем tuneL в старший байт
+                result |= tuneR;      // Вставляем tuneR в младший байт
+                keys.XorKeyConstant2 = result; // Заменяем байты на указанные значения
+                using var writer = new StreamWriter(XorKeyValueFilePath, false);
+                writer.WriteLine("XorKeyConstant1:");
+                writer.WriteLine(keys.XorKeyConstant1.ToString("X8"));
+                writer.WriteLine("XorKeyConstant2:");
+                writer.WriteLine(keys.XorKeyConstant2.ToString("X8"));
+            }
+
             //          +-Hash начало блока для DecodeXOR, где второе число, в данном случае F(16 байт)-реальная длина данных в пакете, к примеру A(10 байт)-реальная длина данных в пакете
             //          |  +-начало блока для DecodeAES
             //          V  V
@@ -251,7 +300,7 @@ namespace AAEmu.Commons.Cryptography
             //var cry = mul ^ ((uint)MakeSeq(keys) + 0x75a024a4) ^ 0xc3903b6a; // 3.0.3.0 archerage.to
             //var cry = mul ^ ((uint)MakeSeq(keys) + 0x75a024c4) ^ 0x2d3c9291; // 3.0.4.2 AAClassic
             //var cry = mul ^ ((uint)MakeSeq(keys) + 0x75a02403) ^ 0x47a3afc6; // 5.0.7.0 AAFree - работает, но плохо
-            var cry = mul ^ ((uint)MakeSeq(keys) + 0x75a02480) ^ 0x60a3af0b; // 5.0.7.0 AAFree - работает, довольно хорошо
+            var cry = mul ^ ((uint)MakeSeq(keys) + keys.XorKeyConstant1) ^ keys.XorKeyConstant2; // 5.0.7.0 AAFree - работает, довольно хорошо
             
             var seq = keys.CSOffsetSequence;
             var offset = 4;
