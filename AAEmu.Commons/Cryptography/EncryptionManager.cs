@@ -259,6 +259,10 @@ namespace AAEmu.Commons.Cryptography
                 var tuneL = (byte)rnd.Next(0x01, 0xFF);
                 var tuneR = (byte)rnd.Next(0x01, 0xFF);
                 // Исходное uint число с заполнителями NN
+                if (keys.XorKeyConstant1 == 0)
+                {
+                    keys.XorKeyConstant1 = 0x75A02480;
+                }
                 if (keys.XorKeyConstant2 == 0)
                 {
                     keys.XorKeyConstant2 = 0x00a3af00;
