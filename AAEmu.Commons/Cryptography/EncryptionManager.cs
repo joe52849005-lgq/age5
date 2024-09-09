@@ -21,7 +21,8 @@ namespace AAEmu.Commons.Cryptography
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private static readonly int DwKeySize = 1024;
         private Dictionary<ulong, ConnectionKeychain> ConnectionKeys { get; set; } //Dictionary of valid keys bound to account Id and connection Id
-        public static bool needNewkey;
+        public static bool needNewkey2;
+        public static bool needNewkey1;
         private static string XorKeyValueFilePath;
         private static Random rnd = new();
 
@@ -251,26 +252,42 @@ namespace AAEmu.Commons.Cryptography
 
         public static byte[] DecodeXor(byte[] bodyPacket, uint xorKey, ConnectionKeychain keys)
         {
+            var dirty = false;
             // подбираем константы шифрации
-            if (needNewkey)
+            if (keys.XorKeyConstant1 == 0 || keys.XorKeyConstant1 > 0x75A024FF)
             {
-                needNewkey = false;
+                keys.XorKeyConstant1 = 0x75A02400;
+                dirty = true;
+                needNewkey1 = true;
+            }
+            if (keys.XorKeyConstant2 == 0)
+            {
+                keys.XorKeyConstant2 = 0x00a3af00;
+                dirty = true;
+                needNewkey2 = true;
+            }
+            if (needNewkey1)
+            {
+                needNewkey1 = false;
+
+                keys.XorKeyConstant1++;
+                dirty = true;
+            }
+            if (needNewkey2)
+            {
+                needNewkey2 = false;
                 // нужно сразу начинать тонкий подбор
                 var tuneL = (byte)rnd.Next(0x01, 0xFF);
                 var tuneR = (byte)rnd.Next(0x01, 0xFF);
                 // Исходное uint число с заполнителями NN
-                if (keys.XorKeyConstant1 == 0)
-                {
-                    keys.XorKeyConstant1 = 0x75A02480;
-                }
-                if (keys.XorKeyConstant2 == 0)
-                {
-                    keys.XorKeyConstant2 = 0x00a3af00;
-                }
                 var result = keys.XorKeyConstant2 & 0x00FFFF00;
                 result |= (uint)tuneL << 24; // Вставляем tuneL в старший байт
                 result |= tuneR;      // Вставляем tuneR в младший байт
                 keys.XorKeyConstant2 = result; // Заменяем байты на указанные значения
+                dirty = true;
+            }
+            if (dirty)
+            {
                 using var writer = new StreamWriter(XorKeyValueFilePath, false);
                 writer.WriteLine("XorKeyConstant1:");
                 writer.WriteLine(keys.XorKeyConstant1.ToString("X8"));
