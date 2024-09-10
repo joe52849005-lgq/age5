@@ -120,5 +120,6 @@ public enum ItemTaskType : byte
     ItemTaskThistimeUnpack = 114,
     BuyPremiumService = 115,
     BuyAaPoint = 116,
+    PayChargeMoney = 133,
     Unk136 = 136
 }

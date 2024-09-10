@@ -260,8 +260,8 @@ public class Buffs : IBuffs
             switch (buff.Template.Kind)
             {
                 case BuffKind.Good:
-                    //if (buff.Passive && !includeAllPassives)
-                    //    continue;
+                    if (buff.Passive && !includeAllPassives)
+                        continue;
                     goodBuffs.Add(buff);
                     break;
                 case BuffKind.Bad:

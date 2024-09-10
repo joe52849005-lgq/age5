@@ -256,7 +256,7 @@
         public const ushort CSChangeHouseNamePacket = 0xfff;
         public const ushort CSChangeHousePermissionPacket = 0x08A;
         public const ushort CSRequestHouseTaxPacket = 0x177;
-        public const ushort CSPerpayHouseTaxPacket = 0x17C;
+        public const ushort CSPrepayHouseTaxPacket = 0x17C;
         public const ushort CSAllowRecoverPacket = 0x097;
         public const ushort CSSellHouseCancelPacket = 0x0A7;
         public const ushort CSDecorateHousePacket = 0x1D0;
