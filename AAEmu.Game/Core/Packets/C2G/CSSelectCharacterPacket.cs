@@ -102,7 +102,7 @@ public class CSSelectCharacterPacket : GamePacket
 
             foreach (var house in houses)
             {
-                Connection.SendPacket(new SCMyHousePacket(house));
+                Connection.SendPacket(new SCHouseStatePacket(house));
             }
 
             foreach (var conflict in ZoneManager.Instance.GetConflicts())

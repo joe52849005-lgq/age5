@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+
 using AAEmu.Commons.IO;
 using AAEmu.Commons.Network;
 using AAEmu.Commons.Utils;
@@ -252,6 +253,11 @@ namespace AAEmu.Commons.Cryptography
 
         public static byte[] DecodeXor(byte[] bodyPacket, uint xorKey, ConnectionKeychain keys)
         {
+            /*
+             * логика подбора такая:
+             * сначала подбираем первую константу для имеющейся второй
+             * если первая 0xFF, то меняем вторую на новую и начинаем подбор первой константы с 0x00
+             */
             var dirty = false;
             // подбираем константы шифрации
             if (keys.XorKeyConstant1 == 0 || keys.XorKeyConstant1 > 0x75A024FF)
@@ -266,17 +272,23 @@ namespace AAEmu.Commons.Cryptography
                 dirty = true;
                 needNewkey2 = true;
             }
+
             if (needNewkey1)
             {
                 needNewkey1 = false;
-
+                // заменим первую константу
                 keys.XorKeyConstant1++;
+                if (keys.XorKeyConstant1 > 0x75A024FF)
+                {
+                    keys.XorKeyConstant1 = 0x75A02400;
+                    needNewkey2 = true;
+                }
                 dirty = true;
             }
             if (needNewkey2)
             {
                 needNewkey2 = false;
-                // нужно сразу начинать тонкий подбор
+                // заменим вторую константу
                 var tuneL = (byte)rnd.Next(0x01, 0xFF);
                 var tuneR = (byte)rnd.Next(0x01, 0xFF);
                 // Исходное uint число с заполнителями NN
@@ -322,7 +334,7 @@ namespace AAEmu.Commons.Cryptography
             //var cry = mul ^ ((uint)MakeSeq(keys) + 0x75a024c4) ^ 0x2d3c9291; // 3.0.4.2 AAClassic
             //var cry = mul ^ ((uint)MakeSeq(keys) + 0x75a02403) ^ 0x47a3afc6; // 5.0.7.0 AAFree - работает, но плохо
             var cry = mul ^ ((uint)MakeSeq(keys) + keys.XorKeyConstant1) ^ keys.XorKeyConstant2; // 5.0.7.0 AAFree - работает, довольно хорошо
-            
+
             var seq = keys.CSOffsetSequence;
             var offset = 4;
             if (seq != 0)

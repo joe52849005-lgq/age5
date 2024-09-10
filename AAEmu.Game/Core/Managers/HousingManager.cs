@@ -673,7 +673,7 @@ public class HousingManager : Singleton<HousingManager>
         house.ProtectionEndDate = DateTime.UtcNow.AddDays(TaxPaysForDays);
         _houses.Add(house.Id, house);
         _housesTl.Add(house.TlId, house);
-        connection.ActiveChar.SendPacket(new SCMyHousePacket(house));
+        connection.ActiveChar.SendPacket(new SCHouseStatePacket(house));
         house.Spawn();
         UpdateTaxInfo(house);
         ResidentManager.Instance.AddResidenMemberInfo(connection.ActiveChar);
@@ -1547,7 +1547,7 @@ public class HousingManager : Singleton<HousingManager>
 
         SetForSaleMarkers(house, false);
 
-        character.SendPacket(new SCMyHousePacket(house));
+        character.SendPacket(new SCHouseStatePacket(house));
         var oldOwner = WorldManager.Instance.GetCharacterById(previousOwner);
         if ((oldOwner != null) && (oldOwner.IsOnline))
             oldOwner.SendPacket(new SCHouseRemovedPacket(house.TlId));

@@ -865,6 +865,6 @@
         public const ushort SCHousingRecoverTogglePacket = 0xFFF;
         public const ushort SCMailFailedPacket = 0xFFF;
         public const ushort SCItemUccDataChangedPacket = 0xFFF;
-        public const ushort SCMyHousePacket = 0xFFF;
+        public const ushort SCMyHousePacket = 0x161;
     }
 }
