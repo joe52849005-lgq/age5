@@ -10,7 +10,7 @@ namespace AAEmu.Game.Core.Managers;
 
 public class ManaRegenManager : Singleton<ManaRegenManager>
 {
-    private int UpdateDelay { get; set; } = 1000; // Интервал тика баффа в миллисекундах
+    private int UpdateDelay { get; set; } = 200; // Интервал тика баффа в миллисекундах
     private static object Lock { get; } = new();
     private Dictionary<uint, ManaRegenTemplate> Registrations { get; set; }
 

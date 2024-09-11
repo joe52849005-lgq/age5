@@ -28,7 +28,8 @@ public class ManaRegenTemplate
     private double CalculateManaCostPerTick()
     {
         // Формула для расчета потребления маны за тик
-        var manaPerTick = TickLevelManaCost * Level;
+        //var manaPerTick = TickLevelManaCost * Level;
+        var manaPerTick = 3.33 * Level + 11.67;
         return manaPerTick;
     }
 
@@ -43,29 +44,22 @@ public class ManaRegenTemplate
     // Метод для применения баффа с учетом потребления маны
     public bool ApplyBuff(Character character)
     {
-        //var manaPerTick = CalculateManaCostPerTick();
-        var manaPerSecond = CalculateManaCostPerSecond();
+        var manaPerTick = CalculateManaCostPerTick();
+        //var manaPerSecond = CalculateManaCostPerSecond();
 
+        // Проверка, может баффа уже нет
         if (!character.Buffs.CheckBuff((uint)BuffConstants.Dash))
             return false;
         // Проверка на достаточность маны
-        if (character.Mp >= manaPerSecond)
+        if (character.Mp >= manaPerTick)
         {
             // Уменьшение маны за тик
-            character.ReduceCurrentMp(null, (int)manaPerSecond);
-
-            //// Если реализовано точное значение маны, используем его
-            //if (PreciseMana > 0)
-            //{
-            //    character.Mp = (int)Math.Round(character.Mp, PreciseMana);
-            //}
+            character.ReduceCurrentMp(null, (int)manaPerTick);
             return true;
         }
-        else
-        {
-            // Если маны недостаточно, бафф не применяется
-            Logger.Debug("Not enough mana to apply the buff.");
-            return false;
-        }
+
+        // Если маны недостаточно, бафф не применяется
+        //Logger.Debug("Not enough mana to apply the buff.");
+        return false;
     }
 }
