@@ -47,7 +47,7 @@ public class Inventory
         {
             var st = (SlotType)stv;
 
-            if (st == SlotType.EquipmentMate || st == SlotType.EquipmentSlave)
+            if (st == SlotType.PetRideEquipment || st == SlotType.SlaveEquipment)
                 continue;
 
             // Take Equipment Container from Parent Unit's Equipment
@@ -71,7 +71,7 @@ public class Inventory
                     Equipment = newContainer;
                     break;
                 */
-                case SlotType.Inventory:
+                case SlotType.Bag:
                     newContainer.ContainerSize = Owner.NumInventorySlots;
                     Bag = newContainer;
                     break;
@@ -79,10 +79,10 @@ public class Inventory
                     newContainer.ContainerSize = Owner.NumBankSlots;
                     Warehouse = newContainer;
                     break;
-                case SlotType.Mail:
+                case SlotType.Seized:
                     MailAttachments = newContainer;
                     break;
-                case SlotType.System:
+                case SlotType.Money:
                     SystemContainer = newContainer;
                     break;
             }
@@ -112,7 +112,7 @@ public class Inventory
         // Place loaded items list in correct containers
         foreach (var item in playeritems)
         {
-            if (item.SlotType != SlotType.None && _itemContainers.TryGetValue(item.SlotType, out var container))
+            if (item.SlotType != SlotType.Invalid && _itemContainers.TryGetValue(item.SlotType, out var container))
             {
                 if (!container.AddOrMoveExistingItem(ItemTaskType.Invalid, item, item.Slot))
                 {
@@ -138,7 +138,7 @@ public class Inventory
     public void Send()
     {
         Owner.SendPacket(new SCCharacterInvenInitPacket(Owner.NumInventorySlots, (uint)Owner.NumBankSlots));
-        SendFragmentedInventory(SlotType.Inventory, Owner.NumInventorySlots, Bag.GetSlottedItemsList().ToArray());
+        SendFragmentedInventory(SlotType.Bag, Owner.NumInventorySlots, Bag.GetSlottedItemsList().ToArray());
         SendFragmentedInventory(SlotType.Bank, (byte)Owner.NumBankSlots, Warehouse.GetSlottedItemsList().ToArray());
         SetInitialItemExpirationTimers(Owner.Equipment.Items.ToArray());
     }
@@ -160,7 +160,7 @@ public class Inventory
         if ((containersToCheck != null) && (containersToCheck.Length > 0))
             containerList = containersToCheck;
         else
-            containerList = new SlotType[3] { SlotType.Inventory, SlotType.Equipment, SlotType.Bank };
+            containerList = new SlotType[3] { SlotType.Bag, SlotType.Equipment, SlotType.Bank };
         var res = 0;
         foreach (var cli in containerList)
         {
@@ -237,7 +237,7 @@ public class Inventory
         unitsOfItemFound = 0;
         if (inContainerTypes == null || inContainerTypes.Length <= 0)
         {
-            inContainerTypes = new SlotType[3] { SlotType.Inventory, SlotType.Equipment, SlotType.Bank };
+            inContainerTypes = new SlotType[3] { SlotType.Bag, SlotType.Equipment, SlotType.Bank };
         }
         foreach (var ct in inContainerTypes)
         {
@@ -343,7 +343,7 @@ public class Inventory
         }
 
         // Are we equipping it into an empty mount gear slot?
-        if (fromItemId == 0 && fromType == SlotType.EquipmentMate && toType != SlotType.EquipmentMate && itemInTargetSlot != null)
+        if (fromItemId == 0 && fromType == SlotType.PetRideEquipment && toType != SlotType.PetRideEquipment && itemInTargetSlot != null)
         {
             action = SwapAction.doEquipInEmptySlot;
             // In case of MateEquipment the source container is always sent as the pet's container,
@@ -690,7 +690,7 @@ public class Inventory
         if (Bag.FreeSlotCount <= 0)
             return false;
 
-        if (!SplitOrMoveItem(taskType, backpack.Id, backpack.SlotType, (byte)backpack.Slot, 0, SlotType.Inventory, (byte)Bag.GetUnusedSlot(-1)))
+        if (!SplitOrMoveItem(taskType, backpack.Id, backpack.SlotType, (byte)backpack.Slot, 0, SlotType.Bag, (byte)Bag.GetUnusedSlot(-1)))
             return false;
 
         if (glidersOnly)
@@ -745,7 +745,7 @@ public class Inventory
     {
         foreach (var c in _itemContainers)
         {
-            if (c.Key == SlotType.Equipment || c.Key == SlotType.Inventory || c.Key == SlotType.Bank)
+            if (c.Key == SlotType.Equipment || c.Key == SlotType.Bag || c.Key == SlotType.Bank)
             {
                 foreach (var i in c.Value.Items)
                 {
@@ -778,22 +778,22 @@ public class Inventory
         Item item = null;
         switch (type)
         {
-            case SlotType.None:
+            case SlotType.Invalid:
                 // TODO ...
                 break;
             case SlotType.Equipment:
                 item = Equipment.GetItemBySlot(slot);
                 break;
-            case SlotType.Inventory:
+            case SlotType.Bag:
                 item = Bag.GetItemBySlot(slot);
                 break;
             case SlotType.Bank:
                 item = Warehouse.GetItemBySlot(slot);
                 break;
-            case SlotType.Trade:
+            case SlotType.Coffer:
                 // TODO ...
                 break;
-            case SlotType.Mail:
+            case SlotType.Seized:
                 // TODO ...
                 break;
         }
@@ -865,7 +865,7 @@ public class Inventory
             return;
         }
 
-        if (expand.ItemId != 0 && expand.ItemCount != 0 && !CheckItems(SlotType.Inventory, expand.ItemId, expand.ItemCount))
+        if (expand.ItemId != 0 && expand.ItemCount != 0 && !CheckItems(SlotType.Bag, expand.ItemId, expand.ItemCount))
         {
             Logger.Warn("Item or Count not found.");
             return;
@@ -896,7 +896,7 @@ public class Inventory
 
         Owner.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.DepositMoney, tasks, new List<ulong>()));
         Owner.SendPacket(new SCInvenExpandedPacket(
-                isBank ? SlotType.Bank : SlotType.Inventory,
+                isBank ? SlotType.Bank : SlotType.Bag,
                 isBank ? (byte)Owner.NumBankSlots : Owner.NumInventorySlots));
     }
 
@@ -951,12 +951,12 @@ public class Inventory
         ItemContainer sourceContainer = null;
         ItemContainer targetContainer = null;
 
-        if (fromSlotType == SlotType.Trade)
+        if (fromSlotType == SlotType.Coffer)
             sourceContainer = relatedCoffer;
         else if (_itemContainers.TryGetValue(fromSlotType, out var sC))
             sourceContainer = sC;
 
-        if (toSlotType == SlotType.Trade)
+        if (toSlotType == SlotType.Coffer)
             targetContainer = relatedCoffer;
         else if (_itemContainers.TryGetValue(toSlotType, out var tC))
             targetContainer = tC;
@@ -980,12 +980,12 @@ public class Inventory
         ItemContainer sourceContainer = null;
         ItemContainer targetContainer = null;
 
-        if (fromSlotType == SlotType.Trade)
+        if (fromSlotType == SlotType.Coffer)
             sourceContainer = relatedCoffer;
         else if (_itemContainers.TryGetValue(fromSlotType, out var sC))
             sourceContainer = sC;
 
-        if (toSlotType == SlotType.Trade)
+        if (toSlotType == SlotType.Coffer)
             targetContainer = relatedCoffer;
         else if (_itemContainers.TryGetValue(toSlotType, out var tC))
             targetContainer = tC;

@@ -12,6 +12,7 @@ public class ItemAddNew : ItemTask
         _type = ItemAction.ChangeOwner; // 15
     }
 
+
     public override PacketStream Write(PacketStream stream)
     {
         base.Write(stream);

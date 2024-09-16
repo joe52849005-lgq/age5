@@ -401,7 +401,7 @@ public partial class Quest : PacketMarshaler
         {
             var copper = (int)Math.Round(QuestRewardCoinsPool * QuestRewardRatio);
             if (copper > 0)
-                Owner.ChangeMoney(SlotType.None, SlotType.Inventory, copper);
+                Owner.ChangeMoney(SlotType.Invalid, SlotType.Bag, copper);
             QuestRewardCoinsPool = 0;
         }
 

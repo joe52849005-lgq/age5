@@ -902,7 +902,7 @@ public class CharacterManager : Singleton<CharacterManager>
     {
         // TODO: Add support for future X-day Salon Certificate items
 
-        if (character.Inventory.GetItemsCount(SlotType.Inventory, Item.SalonCertificate) <= 0)
+        if (character.Inventory.GetItemsCount(SlotType.Bag, Item.SalonCertificate) <= 0)
             return;
 
         var oldHair = character.Equipment.GetItemBySlot((byte)EquipmentItemSlot.Hair);

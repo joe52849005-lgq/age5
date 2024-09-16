@@ -212,7 +212,7 @@ internal class MailController : BaseController
 
                 var newItem = ItemManager.Instance.Create(itemTemplate.Id, attachmentItem.Count, (byte)itemGrade);
                 newItem.OwnerId = character.Id;
-                newItem.SlotType = SlotType.Mail;
+                newItem.SlotType = SlotType.Seized;
                 mail.Body.Attachments.Add(newItem);
             }
 

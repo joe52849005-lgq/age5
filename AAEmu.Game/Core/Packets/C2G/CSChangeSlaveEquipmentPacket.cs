@@ -88,7 +88,7 @@ namespace AAEmu.Game.Core.Packets.C2G
                     // character.SendMessage($"SCMateEquipmentChanged - {(isEquip ? playerItem : mateItem)} -> {(isEquip ? mateItem : playerItem)}, MateTl: {mateTl} => Success {res}");
                     if (!res)
                     {
-                        character.SendPacket(new SCMateEquipmentChangedPacket(
+                        character.SendPacket(new SCSlaveEquipmentChangedPacket(
                             isEquip ? playerItem : slaveItem,
                             isEquip ? slaveItem : playerItem,
                             slaveTl,

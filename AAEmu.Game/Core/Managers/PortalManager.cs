@@ -340,8 +340,8 @@ public class PortalManager : Singleton<PortalManager>
 
     public static bool CheckItemAndRemove(Character owner, uint itemId, int amount)
     {
-        if (!owner.Inventory.CheckItems(SlotType.Inventory, itemId, amount)) return false;
-        owner.Inventory.Bag.ConsumeItem(ItemTaskType.Teleport, itemId, amount, null);
+        if (!owner.Inventory.CheckItems(SlotType.Bag, itemId, amount)) return false;
+        owner.Inventory.Bag.ConsumeItem(ItemTaskType.RecoverDoodadItem, itemId, amount, null);
         return true;
         /*
         var items = owner.Inventory.RemoveItem(itemId, amount);

@@ -35,7 +35,7 @@ public class ItemRemove : ItemTask
         _templateId = itemTemplateId;
         _removeReservationTime = DateTime.MinValue;
         _itemCount = 1;
-
+        _tLogt = SetTlogT(_type, slotType, _itemCount < 0); // установим tLogt по значению ItemAction
     }
 
     public override PacketStream Write(PacketStream stream)

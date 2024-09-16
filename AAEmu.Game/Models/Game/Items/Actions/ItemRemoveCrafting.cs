@@ -10,6 +10,7 @@ public class ItemRemoveCrafting : ItemTask
     {
         _id = id;
         _type = ItemAction.RemoveCrafting; // 12
+        _tLogt = SetTlogT(_type, SlotType.Bag); // установим tLogt по значению ItemAction
     }
 
     public override PacketStream Write(PacketStream stream)

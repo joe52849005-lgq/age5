@@ -1047,7 +1047,7 @@ public class Skill
                 }
                 else
                 {
-                    var inventory = player.Inventory.CheckItems(SlotType.Inventory, lastAppliedEffect.ConsumeItemId,
+                    var inventory = player.Inventory.CheckItems(SlotType.Bag, lastAppliedEffect.ConsumeItemId,
                         lastAppliedEffect.ConsumeItemCount);
                     var equipment = player.Inventory.CheckItems(SlotType.Equipment, lastAppliedEffect.ConsumeItemId,
                         lastAppliedEffect.ConsumeItemCount);

@@ -82,6 +82,11 @@ namespace AAEmu.Commons.Cryptography
             Logger.Warn("AES: {0} XOR: {1}", Helpers.ByteArrayToString(keys.AesKey), keys.XorKey);
 
             // для автоматического подбора констант
+            LoadXorKeyConstant(keys);
+        }
+
+        private static void LoadXorKeyConstant(ConnectionKeychain keys)
+        {
             var worldPath = Path.Combine(FileManager.AppPath, "Configurations");
             XorKeyValueFilePath = Path.Combine(worldPath, "xorKeyValue.txt");
             using var reader = new StreamReader(XorKeyValueFilePath);
@@ -260,17 +265,19 @@ namespace AAEmu.Commons.Cryptography
              */
             var dirty = false;
             // подбираем константы шифрации
-            if (keys.XorKeyConstant1 == 0 || keys.XorKeyConstant1 > 0x75A024FF)
+            if (keys.XorKeyConstant1 > 0x75A024FF)
             {
                 keys.XorKeyConstant1 = 0x75A02400;
                 dirty = true;
                 needNewkey1 = true;
             }
-            if (keys.XorKeyConstant2 == 0)
+            if (keys.XorKeyConstant1 == 0 || keys.XorKeyConstant2 == 0)
             {
-                keys.XorKeyConstant2 = 0x00a3af00;
-                dirty = true;
-                needNewkey2 = true;
+                LoadXorKeyConstant(keys);
+
+                //keys.XorKeyConstant2 = 0x00a3af00;
+                //dirty = true;
+                //needNewkey2 = true;
             }
 
             if (needNewkey1)

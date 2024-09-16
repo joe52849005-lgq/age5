@@ -379,8 +379,8 @@ public class MailManager : Singleton<MailManager>
         {
             // use Tax Certificates as payment
             // TODO: grab these values from DB somewhere ?
-            var userTaxCount = character.Inventory.GetItemsCount(SlotType.Inventory, Item.TaxCertificate);
-            var userBoundTaxCount = character.Inventory.GetItemsCount(SlotType.Inventory, Item.BoundTaxCertificate);
+            var userTaxCount = character.Inventory.GetItemsCount(SlotType.Bag, Item.TaxCertificate);
+            var userBoundTaxCount = character.Inventory.GetItemsCount(SlotType.Bag, Item.BoundTaxCertificate);
             var totatUserTaxCount = userTaxCount + userBoundTaxCount;
             var consumedCerts = (int)Math.Ceiling(mail.Body.BillingAmount / 10000f);
 
@@ -428,7 +428,7 @@ public class MailManager : Singleton<MailManager>
             }
             else
             {
-                character.SubtractMoney(SlotType.Inventory, mail.Body.BillingAmount);
+                character.SubtractMoney(SlotType.Bag, mail.Body.BillingAmount);
             }
         }
 

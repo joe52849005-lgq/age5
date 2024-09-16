@@ -41,7 +41,7 @@ public class CSSellItemsPacket : GamePacket
             Item item = null;
             if (slotType == SlotType.Equipment)
                 item = Connection.ActiveChar.Inventory.Equipment.GetItemBySlot(slot);
-            else if (slotType == SlotType.Inventory)
+            else if (slotType == SlotType.Bag)
                 item = Connection.ActiveChar.Inventory.Bag.GetItemBySlot(slot);
             //else if (slotType == SlotType.Bank)
             //    item = Connection.ActiveChar.Inventory.Bank[slot];
@@ -64,7 +64,7 @@ public class CSSellItemsPacket : GamePacket
                      item.Count;
         }
 
-        Connection.ActiveChar.ChangeMoney(SlotType.Inventory, money);
+        Connection.ActiveChar.ChangeMoney(SlotType.Bag, money);
         /*
         Connection.ActiveChar.Money += money;
         tasks.Add(new MoneyChange(money));

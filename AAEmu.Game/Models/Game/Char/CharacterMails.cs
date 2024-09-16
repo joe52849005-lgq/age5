@@ -123,7 +123,7 @@ public class CharacterMails
         {
             Self.SendPacket(new SCMailSentPacket(mail.Header, itemSlots.ToArray(), UnreadMailCount));
             // Take the fee
-            Self.SubtractMoney(SlotType.Inventory, mailFee + money0);
+            Self.SubtractMoney(SlotType.Bag, mailFee + money0);
             return MailResult.Success;
         }
         else
@@ -152,7 +152,7 @@ public class CharacterMails
             }
             if (thisMail.Body.CopperCoins > 0 && takeMoney)
             {
-                Self.ChangeMoney(SlotType.Inventory, thisMail.Body.CopperCoins);
+                Self.ChangeMoney(SlotType.Bag, thisMail.Body.CopperCoins);
                 thisMail.Body.CopperCoins = 0;
                 thisMail.Header.Attachments -= 1;
                 tookMoney = true;
@@ -298,7 +298,7 @@ public class CharacterMails
             for (var i = 0; i < MailBody.MaxMailAttachments; i++)
             {
                 var item = ItemManager.Instance.GetItemByItemId(thisMail.Body.Attachments[i].Id);
-                if (item.SlotType == SlotType.None)
+                if (item.SlotType == SlotType.Invalid)
                 {
                     itemSlots.Add(((byte)0, (byte)0));
                 }

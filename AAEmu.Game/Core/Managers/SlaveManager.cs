@@ -743,7 +743,7 @@ public class SlaveManager : Singleton<SlaveManager>
         // TODO: Load Gear
         if (owner != null)
         {
-            summonedSlave.Equipment = ItemManager.Instance.GetItemContainerForCharacter(owner.Id, SlotType.EquipmentSlave, summonedSlave, summonedSlave.Id);
+            summonedSlave.Equipment = ItemManager.Instance.GetItemContainerForCharacter(owner.Id, SlotType.SlaveEquipment, summonedSlave, summonedSlave.Id);
         }
 
         // Equip it's default items
@@ -755,7 +755,7 @@ public class SlaveManager : Singleton<SlaveManager>
             foreach (var initialItem in itemPack)
             {
                 var newItem = ItemManager.Instance.Create(initialItem.ItemId, 1, 0);
-                newItem.SlotType = SlotType.EquipmentSlave;
+                newItem.SlotType = SlotType.SlaveEquipment;
                 newItem.Slot = initialItem.EquipSlotId;
                 newItem.ItemFlags = ItemFlag.SoulBound; // связанный
                 newItem.ChargeUseSkillTime = DateTime.UtcNow;

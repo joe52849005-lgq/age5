@@ -42,7 +42,7 @@ public class AuctionManager : Singleton<AuctionManager>
         if (auctionFee > MaxListingFee)
             auctionFee = MaxListingFee;
 
-        if (!player.ChangeMoney(SlotType.Inventory, -(int)auctionFee))
+        if (!player.ChangeMoney(SlotType.Bag, -(int)auctionFee))
         {
             player.SendErrorMessage(ErrorMessageType.CanNotPutupMoney);
             return;
@@ -161,7 +161,7 @@ public class AuctionManager : Singleton<AuctionManager>
                     newMail.Send();
                 }
 
-                player.SubtractMoney(SlotType.Inventory, auctionItem.DirectMoney);
+                player.SubtractMoney(SlotType.Bag, auctionItem.DirectMoney);
                 RemoveAuctionItemSold(auctionItem, player.Name, auctionItem.DirectMoney);
             }
 
@@ -187,7 +187,7 @@ public class AuctionManager : Singleton<AuctionManager>
                 auctionItem.BidWorldId = (byte)player.Transform.WorldId;
                 auctionItem.BidMoney = bidAmount;
 
-                player.SubtractMoney(SlotType.Inventory, bidAmount);
+                player.SubtractMoney(SlotType.Bag, bidAmount);
                 player.SendPacket(new SCAuctionBidPacket(auctionItem));
                 auctionItem.IsDirty = true;
             }

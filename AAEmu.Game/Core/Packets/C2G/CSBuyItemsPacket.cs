@@ -138,7 +138,7 @@ public class CSBuyItemsPacket : GamePacket
             Connection.ActiveChar.ChangeGamePoints(GamePointKind.Vocation, -vocationBadges);
 
         if (money > 0)
-            Connection.ActiveChar.ChangeMoney(SlotType.Inventory, -money);
+            Connection.ActiveChar.ChangeMoney(SlotType.Bag, -money);
 
         Connection.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.StoreBuy, tasks, new List<ulong>()));
     }

@@ -10,6 +10,7 @@ public class ItemBuyback : ItemTask
     {
         _type = ItemAction.Take; // 6
         _item = item;
+        _tLogt = SetTlogT(_type, SlotType.Bag); // установим tLogt по значению ItemAction
     }
 
     public override PacketStream Write(PacketStream stream)
