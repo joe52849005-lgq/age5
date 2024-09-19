@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.Id;
 using AAEmu.Game.Core.Packets.G2C;
+using AAEmu.Game.Models.Game.Units;
 
 using MySql.Data.MySqlClient;
 
@@ -99,6 +101,69 @@ public class CharacterPortals
         };
         PrivatePortals.Add(newPortal.Id, newPortal);
         Owner.SendPacket(new SCCharacterPortalsPacket(new[] { newPortal }));
+    }
+
+    public void AddOrUpdatePrivatePortal(float x, float y, float z, float zRot, uint zoneId, string name)
+    {
+        // Проверка на null
+        if (Owner == null)
+        {
+            throw new InvalidOperationException("Owner cannot be null.");
+        }
+
+        // Проверка на пустоту имени
+        if (string.IsNullOrEmpty(name))
+        {
+            throw new ArgumentException("Portal name cannot be null or empty.", nameof(name));
+        }
+
+        // Поиск существующего портала с такими же координатами и zoneId
+        var tolerance = 0.0001;
+        var existingPortal = PrivatePortals.Values.FirstOrDefault(p => 
+            Math.Abs(p.X - x) < tolerance && 
+            Math.Abs(p.Y - y) < tolerance && 
+            Math.Abs(p.Z - z) < tolerance && 
+            p.ZoneId.Equals(zoneId));
+
+        if (existingPortal != null)
+        {
+            //RemoveFromBookPortal(existingPortal, true);
+
+            // Обновление имени существующего портала
+            existingPortal.Name = name;
+            existingPortal.ZRot = zRot; // Обновление ZRot, если это необходимо
+            // Добавление портала в список
+            //PrivatePortals.Add(existingPortal.Id, existingPortal);
+
+            // Отправка пакета владельцу с обновленным порталом
+            //Owner.SendPacket(new SCCharacterPortalsPacket([existingPortal]));
+            Send();
+        }
+        else
+        {
+            // Получение нового уникального Id
+            var newId = PrivateBookIdManager.Instance.GetNextId();
+
+            // Создание нового портала
+            var newPortal = new Portal
+            {
+                Id = newId,
+                Name = name,
+                X = x,
+                Y = y,
+                Z = z,
+                ZoneId = zoneId,
+                ZRot = zRot,
+                Owner = Owner.Id
+            };
+
+            // Добавление портала в список
+            PrivatePortals.Add(newPortal.Id, newPortal);
+
+            // Отправка пакета владельцу с новым порталом
+            //Owner.SendPacket(new SCCharacterPortalsPacket([newPortal]));
+            Send();
+        }
     }
 
     public void SendIndunZone()

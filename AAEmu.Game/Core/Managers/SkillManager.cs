@@ -313,7 +313,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
         _effects.Add("SkillController", new Dictionary<uint, EffectTemplate>()); // missing from the effect table
         _effects.Add("SpawnFishEffect", new Dictionary<uint, EffectTemplate>()); // missing from the effect table
         _effects.Add("ResetAoeDiminishingEffect", new Dictionary<uint, EffectTemplate>()); // missing from the effect table
-        _effects.Add("MoveToLocationEffects", new Dictionary<uint, EffectTemplate>()); // missing from the effect table
+        _effects.Add("MoveToLocationEffect", new Dictionary<uint, EffectTemplate>()); // missing from the effect table
 
         _buffs = new Dictionary<uint, BuffTemplate>();
         // TODO 
@@ -1368,10 +1368,10 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                 {
                     while (reader.Read())
                     {
-                        var template = new MoveToLocationEffects();
+                        var template = new MoveToLocationEffect();
                         template.Id = reader.GetUInt32("id");
                         template.OwnHouseOnly = reader.GetBoolean("own_house_only", true);
-                        _effects["MoveToLocationEffects"].Add(template.Id, template);
+                        _effects["MoveToLocationEffect"].Add(template.Id, template);
                     }
                 }
             }

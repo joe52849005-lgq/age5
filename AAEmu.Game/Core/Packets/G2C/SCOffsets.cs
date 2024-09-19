@@ -612,7 +612,7 @@
         public const ushort SCCurServerTimePacket = 0x03C;
         public const ushort SCUiTextsKeyPacket = 0x1C6;
         public const ushort off_39E9C878 = 0x1D1;
-        public const ushort off_39E9C888 = 0x114;
+        public const ushort SCDailyCountPacket = 0x114; // off_39E9C888
         public const ushort off_39E9C898 = 0x264;
         public const ushort SCPremiumBonusListPacket = 0x2DF;
         public const ushort SCRevenueSanctionMsgPacket = 0x070;

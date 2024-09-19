@@ -1219,8 +1219,8 @@ public class Skill
 
                 // Doesn't matter, but by Template
                 foreach (var (templateId, amount) in consumedItemTemplates)
-                    player.Inventory.ConsumeItem(null, ItemTaskType.SkillEffectConsumption, templateId,
-                        amount, null);
+                    player.Inventory.ConsumeItem(null, ItemTaskType.SkillEffectGainItem, templateId, amount, null);
+                    //player.Inventory.ConsumeItem(null, ItemTaskType.SkillEffectConsumption, templateId, amount, null);
             }
         }
     }

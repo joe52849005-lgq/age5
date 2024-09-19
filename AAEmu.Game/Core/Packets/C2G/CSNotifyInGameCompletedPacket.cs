@@ -20,6 +20,7 @@ public class CSNotifyInGameCompletedPacket : GamePacket
         Connection.SendPacket(new SCSpawnedMonitorNpcsPacket());
 
         Connection.SendPacket(new SCChatMessagePacket(ChatType.System, AppConfiguration.Instance.World.MOTD)); // "Welcome to AAEmu!"
+        Connection.SendPacket(new SCDelayedTaskOnInGameNotifyPacket());
 
         WorldManager.Instance.OnPlayerJoin(Connection.ActiveChar);
         Logger.Info("NotifyInGameCompleted SubZoneId {0}", Connection.ActiveChar.SubZoneId);

@@ -12,6 +12,7 @@ using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Network.Connections;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models;
+using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Attendance;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Char.Templates;
@@ -583,6 +584,18 @@ public class CharacterManager : Singleton<CharacterManager>
         character.Portals = new CharacterPortals(character);
         character.Friends = new CharacterFriends(character);
         character.Attendances = new CharacterAttendances(character);
+
+        // TODO добавить инициализацию ScheduleItem предметов для Divine Clock
+        var si = new ScheduleItem
+        {
+            ScheduleItemId = 9000006,
+            Gave = 0,
+            Cumulated = 0,
+            Updated = DateTime.UtcNow
+        };
+        character.ScheduleItems.Add(si);
+        // Update Account Divine Clock time
+        AccountManager.Instance.UpdateDivineClock(character.AccountId, si.ScheduleItemId, si.Cumulated, si.Gave);
 
         character.Hp = character.MaxHp;
         character.Mp = character.MaxMp;

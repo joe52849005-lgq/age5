@@ -236,6 +236,7 @@ public partial class Character : Unit, ICharacter
         }
     }
     public FishSchool FishSchool { get; set; }
+    public List<ScheduleItem> ScheduleItems { get; set; }
 
     #region Attributes
 
@@ -1206,11 +1207,12 @@ public partial class Character : Unit, ICharacter
         _hostilePlayers = new ConcurrentDictionary<uint, DateTime>();
         Breath = LungCapacity;
         ModelParams = modelParams;
-        Subscribers = new List<IDisposable>();
+        Subscribers = [];
         ChargeLock = new object();
         FishSchool = new FishSchool(this);
         //Events.OnDisconnect += OnDisconnect;
         //Events.OnCombatStarted += OnEnterCombat;
+        ScheduleItems = [];
     }
 
     public void SetHostileActivity(Character attacker)

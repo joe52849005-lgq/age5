@@ -9,7 +9,7 @@ using AAEmu.Game.Models.Game.Skills.Templates;
 using AAEmu.Game.Models.Game.Teleport;
 using AAEmu.Game.Models.Game.Units;
 
-public class MoveToLocationEffects : EffectTemplate
+public class MoveToLocationEffect : EffectTemplate
 {
     public bool OwnHouseOnly { get; set; }
 
@@ -19,7 +19,7 @@ public class MoveToLocationEffects : EffectTemplate
         CastAction castObj, EffectSource source, SkillObject skillObject, DateTime time,
         CompressedGamePackets packetBuilder = null)
     {
-        Logger.Debug("MoveToLocationEffects");
+        Logger.Debug("MoveToLocationEffect");
         if (caster is Character character /*&& skillObject is SkillObjectUnk2 so*/)
         {
             var xyz = character.Transform.World.Position;

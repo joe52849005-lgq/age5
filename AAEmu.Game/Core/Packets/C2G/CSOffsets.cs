@@ -116,7 +116,7 @@
         public const ushort CSIdleStatusPacket = 0x1A9;
         public const ushort CSChangeClientNpcTargetPacket = 0x10D;
         public const ushort CSCompletedCinemaPacket = 0x0E6;
-        public const ushort off_39E97AFC = 0x122;
+        public const ushort CSCheckDemoModePacket = 0x122; // off_39E97AFC
         public const ushort CSDemoCharResetPacket = 0x174;
         public const ushort CSConsoleCmdUsedPacket = 0x07A;
         public const ushort CSEditorGameModePacket = 0x0E5;
@@ -164,7 +164,7 @@
         public const ushort CSEnprotectStubCallResponsePacket = 0x0B4;
         public const ushort CSRepresentCharacterPacket = 0x187;
         public const ushort off_39E9A31C = 0x087;
-        public const ushort CSCheckDemoModePacket = 0x114;
+        //public const ushort CSCheckDemoModePacket = 0x114;
         public const ushort CSCreateCharacterPacket = 0x0F2;
         public const ushort CSEditCharacterPacket = 0x064;
         public const ushort CSBroadcastVisualOption_0_Packet = 0x126; //0x126;

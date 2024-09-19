@@ -27,7 +27,8 @@ public class SavePortal : SpecialEffectAction
 
             if (skillObject is SkillObjectUnk2 so)
             {
-                character.Portals.AddPrivatePortal(character.Transform.World.Position.X, character.Transform.World.Position.Y, character.Transform.World.Position.Z, character.Transform.World.Rotation.Z, character.Transform.ZoneId, so.Name);
+                //character.Portals.AddPrivatePortal(character.Transform.World.Position.X, character.Transform.World.Position.Y, character.Transform.World.Position.Z, character.Transform.World.Rotation.Z, character.Transform.ZoneId, so.Name);
+                character.Portals.AddOrUpdatePrivatePortal(character.Transform.World.Position.X, character.Transform.World.Position.Y, character.Transform.World.Position.Z, character.Transform.World.Rotation.Z, character.Transform.ZoneId, so.Name);
             }
         }
     }
