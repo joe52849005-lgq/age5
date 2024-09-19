@@ -43,8 +43,6 @@ CREATE TABLE `accounts`  (
   `last_labor_tick` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_credits_tick` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_loyalty_tick` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `divine_clock_time` int UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Time that has been passed already',
-  `divine_clock_taken` int UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Number of clicks taken today',
   PRIMARY KEY (`account_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = 'Account specific values not related to login' ROW_FORMAT = Dynamic;
 
@@ -733,3 +731,16 @@ CREATE TABLE `uccs`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = 'User Created Content (crests)' ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ----------------------------
+-- Table structure for divine_clock
+-- ----------------------------
+DROP TABLE IF EXISTS `divine_clock`;
+CREATE TABLE `divine_clock`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `account_id` bigint UNSIGNED NOT NULL,
+  `schedule_item_id` INT UNSIGNED NOT NULL COMMENT 'This field corresponds to the id field in the schedule_items table',
+  `gave` tinyint NOT NULL DEFAULT 0 COMMENT 'Number of clicks taken today',
+  `cumulated` int UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Time that has been passed already',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci;
