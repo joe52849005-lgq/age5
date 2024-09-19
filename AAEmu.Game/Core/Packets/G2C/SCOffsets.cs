@@ -729,7 +729,7 @@
         public const ushort off_39E9EBC0 = 0x2DB;
         public const ushort off_39E9EBE8 = 0x2F0;
         public const ushort off_39E9EC1C = 0x2BD;
-        public const ushort SCPortalSavedPacket = 0x066;
+        public const ushort SCPortalInfoSavedPacket = 0x066; // SCPortalSavedPacket
         public const ushort SCOtherTradeItemPutupPacket = 0x225;
         public const ushort SCOtherTradeitemTookdownPacket = 0x217;
         public const ushort SCLoadInstancePacket = 0x0E5;
@@ -858,7 +858,6 @@
         public const ushort SCAuctionSearchedPacket = 0xFFF;
         public const ushort SCDominionDataPacket = 0xFFF;
         public const ushort SCNationalMonumentChangedPacket = 0xFFF;
-        public const ushort SCPortalInfoSavedPacket = 0xFFF;
         public const ushort SCSkillUpgradedPacket = 0xFFF;
         public const ushort SCTrialCancledPacket = 0xFFF;
         public const ushort SCAuctionCanceledPacket = 0xFFF;

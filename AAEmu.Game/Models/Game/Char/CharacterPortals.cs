@@ -136,8 +136,8 @@ public class CharacterPortals
             //PrivatePortals.Add(existingPortal.Id, existingPortal);
 
             // Отправка пакета владельцу с обновленным порталом
-            //Owner.SendPacket(new SCCharacterPortalsPacket([existingPortal]));
-            Send();
+            Owner.SendPacket(new SCPortalInfoSavedPacket(existingPortal));
+            //Send();
         }
         else
         {
@@ -161,8 +161,8 @@ public class CharacterPortals
             PrivatePortals.Add(newPortal.Id, newPortal);
 
             // Отправка пакета владельцу с новым порталом
-            //Owner.SendPacket(new SCCharacterPortalsPacket([newPortal]));
-            Send();
+            Owner.SendPacket(new SCPortalInfoSavedPacket(newPortal));
+            //Send();
         }
     }
 
