@@ -37,6 +37,13 @@ public class AccountManager : Singleton<AccountManager>
         _accounts.TryAdd(connection.AccountId, connection);
         var lastLogin = UpdateLoginTime(connection.AccountId, DateTime.UtcNow);
         var accountDetails = GetAccountDetails(connection.AccountId);
+
+        var lsi = GetDivineClock(connection.AccountId);
+        if (lsi?.Count == 0)
+        {
+            TimedRewardsManager.Instance.DoDailyAccountDivineClockLogin(connection.AccountId);
+        }
+
         if (lastLogin < DateTime.UtcNow.Date)
         {
             // Logged in for a new day
@@ -585,4 +592,35 @@ public class AccountManager : Singleton<AccountManager>
         return scheduleItems;
     }
 
+    public bool DeleteDivineClockEntries(ulong accountId)
+    {
+        object accLock;
+        lock (_locks)
+        {
+            if (!_locks.TryGetValue(accountId, out accLock))
+            {
+                accLock = new object();
+                _locks.Add(accountId, accLock);
+            }
+        }
+        lock (accLock)
+        {
+            try
+            {
+                using var connection = MySQL.CreateConnection();
+                using var command = connection.CreateCommand();
+                command.CommandText = "DELETE FROM divine_clock WHERE account_id = @account_id";
+                command.Parameters.AddWithValue("@account_id", accountId);
+                command.Prepare();
+
+                int rowsAffected = command.ExecuteNonQuery();
+                return rowsAffected > 0; // Возвращаем true, если были удалены записи
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"{e.Message}\n{e.StackTrace}");
+                return false; // Возвращаем false в случае ошибки
+            }
+        }
+    }
 }

@@ -545,4 +545,57 @@ public class GameScheduleManager : Singleton<GameScheduleManager>
 
         return cronExpression;
     }
+
+    public List<uint> GetMatchingPeriods2()
+    {
+        var matchingPeriods = new List<uint>();
+        var now = DateTime.Now;
+
+        foreach (var period in _scheduleItems.Values)
+        {
+            var startDate = new DateTime((int)period.StYear, (int)period.StMonth, (int)period.StDay, (int)period.StHour, (int)period.StMin, 0);
+            var endDate = new DateTime((int)period.EdYear, (int)period.EdMonth, (int)period.EdDay, (int)period.EdHour, (int)period.EdMin, 59);
+
+            if (now >= startDate && now <= endDate)
+            {
+                matchingPeriods.Add(period.Id);
+            }
+        }
+
+        return matchingPeriods;
+    }
+
+    public List<uint> GetMatchingPeriods()
+    {
+        var matchingPeriods = new List<uint>();
+        var now = DateTime.UtcNow;
+
+        foreach (var period in _scheduleItems.Values)
+        {
+            var startDate = new DateTime(
+                period.StYear == 0 ? now.Year : (int)period.StYear,
+                period.StMonth == 0 ? now.Month : (int)period.StMonth,
+                period.StDay == 0 ? now.Day : (int)period.StDay,
+                (int)period.StHour,
+                (int)period.StMin,
+                0
+            );
+
+            var endDate = new DateTime(
+                period.EdYear == 0 ? now.Year : (int)period.EdYear,
+                period.EdMonth == 0 ? now.Month : (int)period.EdMonth,
+                period.EdDay == 0 ? now.Day : (int)period.EdDay,
+                (int)period.EdHour,
+                (int)period.EdMin,
+                59
+            );
+
+            if (now >= startDate && now <= endDate && period.ActiveTake)
+            {
+                matchingPeriods.Add(period.Id);
+            }
+        }
+
+        return matchingPeriods;
+    }
 }
