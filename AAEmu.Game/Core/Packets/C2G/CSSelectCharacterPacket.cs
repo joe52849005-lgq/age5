@@ -134,7 +134,7 @@ public class CSSelectCharacterPacket : GamePacket
             var scheduleItems = AccountManager.Instance.GetDivineClock(character.AccountId);
             if (scheduleItems is not null)
             {
-                character.ScheduleItems.AddRange(scheduleItems); // updated
+                character.ScheduleItems = scheduleItems; // updated
             }
         }
         else

@@ -20,6 +20,9 @@ public class CSTakeScheduleItemPacket : GamePacket
         #region ReceivedGift
 
         var character = Connection.ActiveChar;
+        // immediately change the icon
+        character.SendPacket(new SCScheduleItemSentPacket(itemTemplateId, false));
+        
         foreach (var item in character.ScheduleItems)
         {
             if (item.ScheduleItemId != itemTemplateId) { continue; }
@@ -29,7 +32,6 @@ public class CSTakeScheduleItemPacket : GamePacket
             var itemCount = scheduleItem.ItemCount;
             var giveMax = scheduleItem.GiveMax;
 
-            character.SendPacket(new SCScheduleItemSentPacket(templateId, false));
             item.Cumulated = 0;
             item.Gave++;
 
@@ -45,9 +47,6 @@ public class CSTakeScheduleItemPacket : GamePacket
 
             // Update Account Divine Clock time
             AccountManager.Instance.UpdateDivineClock(character.AccountId, item.ScheduleItemId, item.Cumulated, item.Gave);
-            
-            // immediately change the icon
-            character.SendPacket(new SCScheduleItemUpdatePacket(character.ScheduleItems));
         }
 
         #endregion

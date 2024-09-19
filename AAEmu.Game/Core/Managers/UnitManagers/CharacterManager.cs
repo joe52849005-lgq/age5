@@ -586,16 +586,24 @@ public class CharacterManager : Singleton<CharacterManager>
         character.Attendances = new CharacterAttendances(character);
 
         // TODO добавить инициализацию ScheduleItem предметов для Divine Clock
-        var si = new ScheduleItem
+        var lsi = AccountManager.Instance.GetDivineClock(character.AccountId);
+        if (lsi.Count == 0)
         {
-            ScheduleItemId = 9000006,
-            Gave = 0,
-            Cumulated = 0,
-            Updated = DateTime.UtcNow
-        };
-        character.ScheduleItems.Add(si);
-        // Update Account Divine Clock time
-        AccountManager.Instance.UpdateDivineClock(character.AccountId, si.ScheduleItemId, si.Cumulated, si.Gave);
+            var si = new ScheduleItem
+            {
+                ScheduleItemId = 9000006,
+                Gave = 0,
+                Cumulated = 0,
+                Updated = DateTime.UtcNow
+            };
+            character.ScheduleItems.Add(si);
+            // Update Account Divine Clock time
+            AccountManager.Instance.UpdateDivineClock(character.AccountId, si.ScheduleItemId, si.Cumulated, si.Gave);
+        }
+        else
+        {
+            character.ScheduleItems = lsi;
+        }
 
         character.Hp = character.MaxHp;
         character.Mp = character.MaxMp;

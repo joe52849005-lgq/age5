@@ -7,7 +7,6 @@ using AAEmu.Game.Core.Network.Connections;
 using AAEmu.Game.Core.Network.Game;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game.Char;
-using AAEmu.Game.Models.Game.Items.Actions;
 using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Observers;
 
@@ -51,9 +50,8 @@ public class CSBroadcastVisualOption_0_Packet : GamePacket
         Connection.ActiveChar.Buffs.AddBuff((uint)SkillConstants.Patron, Connection.ActiveChar);
         Connection.ActiveChar.Buffs.AddBuff((uint)SkillConstants.AuctionLicense, Connection.ActiveChar);
 
-
-        Connection.ActiveChar.BroadcastPacket(new SCReputationChangedPacket(DateTime.UtcNow, false), true);
-        Connection.ActiveChar.BroadcastPacket(new SCItemTaskSuccessPacket(ItemTaskType.MateRevive, [], []), true);
+        //Connection.ActiveChar.BroadcastPacket(new SCReputationChangedPacket(DateTime.UtcNow, false), true);
+        //Connection.ActiveChar.BroadcastPacket(new SCItemTaskSuccessPacket(ItemTaskType.MateRevive, [], []), true);
 
         Connection.ActiveChar.BroadcastPacket(new SCUnitVisualOptionsPacket(Connection.ActiveChar.ObjId, Connection.ActiveChar.VisualOptions), true);
 

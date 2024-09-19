@@ -28,7 +28,7 @@ public class CSNotifyInGamePacket : GamePacket
 
         ResidentManager.Instance.UpdateAtLogin(Connection.ActiveChar);
 
-        Connection.SendPacket(new SCScheduledEventStartedPacket());
+        //Connection.SendPacket(new SCScheduledEventStartedPacket());
 
         // Joining channel 1 (shout) will automatically also join /lfg and /trade for that zone on the client-side
         // Back in 1.x /trade was zone base, not faction based
