@@ -128,7 +128,7 @@
         public const ushort SCUnitNameChangedPacket = 0x04A;
         public const ushort SCUnitDeathPacket = 0x2C9;
         public const ushort SCUnitTeleportPacket = 0x25A;
-        public const ushort SCUnitBlinkPacket = 0x0C5;
+        public const ushort SCUnitBlinkPacket = 0x0C5; // SCBlinkUnitPacket
         public const ushort SCUnitAttachedPacket = 0x10C;
         public const ushort SCUnitDetachedPacket = 0x06D;
         public const ushort SCUnitInvisiblePacket = 0x049;
@@ -846,7 +846,6 @@
         public const ushort SCLoginCharInfoHousePacket = 0xFFF;
         public const ushort SCTeamMemberRoleChangedPacket = 0xFFF;
         public const ushort SCUnitPvPPointsChangedPacket = 0xFFF;
-        public const ushort SCBlinkUnitPacket = 0xFFF;
         public const ushort SCChangeJuryOKCountPacket = 0xFFF;
         public const ushort SCCharBriefPacket = 0xFFF;
         public const ushort SCCvFCombatRelationshipPacket = 0xFFF;
