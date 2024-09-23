@@ -103,6 +103,18 @@ public class CharacterPortals
         Owner.SendPacket(new SCCharacterPortalsPacket(new[] { newPortal }));
     }
 
+    public bool ChangePrivatePortalName(uint id, string name)
+    {
+        if (PrivatePortals.TryGetValue((uint)id, out var privatePortal))
+        {
+            privatePortal.Name = name;
+            Owner.SendPacket(new SCPortalInfoSavedPacket(privatePortal));
+            return true;
+        }
+
+        return false;
+    }
+
     public void AddOrUpdatePrivatePortal(float x, float y, float z, float zRot, uint zoneId, string name)
     {
         // Проверка на null
