@@ -397,9 +397,15 @@ public class SlaveManager : Singleton<SlaveManager>
         // Check if the target spot is already taken
         var slave = GetSlaveByObjId(objId);
 
-        //var slave = GetActiveSlaveByObjId(objId);
         if (slave == null || slave.AttachedCharacters.ContainsKey(attachPoint))
             return;
+
+        // Check if the vehicle has the MasterOwnership buff and if the character is not the owner, block the attachment.
+        if (attachPoint == AttachPointKind.Driver && slave.Buffs.CheckBuff((uint)BuffConstants.MasterOwnership) && slave.Summoner.ObjId != character.ObjId)
+        {
+            character.SendErrorMessage(ErrorMessageType.SlaveAlreadyHasMaster); // 仅阻止驾驶座附加
+            return;
+        }
 
         character.BroadcastPacket(new SCUnitAttachedPacket(character.ObjId, attachPoint, bondKind, objId), true);
         character.AttachedPoint = attachPoint;
