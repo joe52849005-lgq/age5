@@ -803,7 +803,7 @@ public class Slave : Unit
         item.RepairStartTime = DateTime.MinValue;
         item.SummonLocation = Vector3.Zero;
         item.IsDirty = true;
-        Summoner.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.MateDeath, new ItemUpdate(item), new List<ulong>()));
+        Summoner.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.SlaveDeath, new ItemUpdate(item), new List<ulong>()));
     }
 
     /// <summary>

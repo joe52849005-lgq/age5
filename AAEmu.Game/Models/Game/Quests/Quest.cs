@@ -91,6 +91,7 @@ public partial class Quest : PacketMarshaler
     /// </summary>
     private int LeftTime => Time > DateTime.UtcNow ? (int)(Time - DateTime.UtcNow).TotalMilliseconds : -1;
     private int SupplyItem { get; set; }
+    public bool IsCheckSet { get; set; }
 
     /// <summary>
     /// DoodadId used in the Quest Packet
@@ -543,7 +544,7 @@ public partial class Quest : PacketMarshaler
         // TODO do-while, count 5
         stream.WritePiscW(MaxObjectiveCount, Objectives.Select(intValue => (long)intValue).ToArray());
 
-        stream.Write(true);          // isCheckSet
+        stream.Write(IsCheckSet);     // isCheckSet
         stream.WriteBc((uint)ObjId);  // ObjId
         stream.Write(0u);             // type(id)
         stream.WriteBc((uint)ObjId);  // ObjId

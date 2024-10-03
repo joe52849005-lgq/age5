@@ -7,6 +7,7 @@ using AAEmu.Game.Core.Network.Connections;
 using AAEmu.Game.Core.Network.Game;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game.Char;
+using AAEmu.Game.Models.Game.Items.Actions;
 using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Observers;
 
@@ -26,15 +27,6 @@ public class CSBroadcastVisualOption_0_Packet : GamePacket
         Connection.ActiveChar.VisualOptions = new CharacterVisualOptions();
         Connection.ActiveChar.VisualOptions.Read(stream);
 
-        Connection.SendPacket(new SCUnitStatePacket(Connection.ActiveChar));
-
-        Connection.ActiveChar.PushSubscriber(TimeManager.Instance.Subscribe(Connection, new TimeOfDayObserver(Connection.ActiveChar)));
-
-        Connection.SendPacket(new SCCooldownsPacket(Connection.ActiveChar));
-        Connection.SendPacket(new SCListSkillActiveTypsPacket([]));
-        Connection.SendPacket(new SCDetailedTimeOfDayPacket(12f));
-        Connection.SendPacket(new SCActionSlotsPacket(Connection.ActiveChar.Slots));
-
         Connection.ActiveChar.Buffs.AddBuff((uint)BuffConstants.LoggedOn, Connection.ActiveChar);
         var template = CharacterManager.Instance.GetTemplate(character.Race, character.Gender);
         foreach (var buff in template.Buffs)
@@ -46,12 +38,21 @@ public class CSBroadcastVisualOption_0_Packet : GamePacket
         character.Breath = character.LungCapacity;
         // TODO: Fix the patron and auction house license buff issue
         Connection.ActiveChar.Buffs.AddBuff((uint)SkillConstants.PatronStatus, Connection.ActiveChar);
-        Connection.ActiveChar.Buffs.AddBuff((uint)SkillConstants.PatronPlus, Connection.ActiveChar);
-        Connection.ActiveChar.Buffs.AddBuff((uint)SkillConstants.Patron, Connection.ActiveChar);
-        Connection.ActiveChar.Buffs.AddBuff((uint)SkillConstants.AuctionLicense, Connection.ActiveChar);
+        //Connection.ActiveChar.Buffs.AddBuff((uint)SkillConstants.PatronPlus, Connection.ActiveChar);
+        //Connection.ActiveChar.Buffs.AddBuff((uint)SkillConstants.Patron, Connection.ActiveChar);
+        //Connection.ActiveChar.Buffs.AddBuff((uint)SkillConstants.AuctionLicense, Connection.ActiveChar);
 
-        //Connection.ActiveChar.BroadcastPacket(new SCReputationChangedPacket(DateTime.UtcNow, false), true);
-        //Connection.ActiveChar.BroadcastPacket(new SCItemTaskSuccessPacket(ItemTaskType.MateRevive, [], []), true);
+        Connection.SendPacket(new SCUnitStatePacket(Connection.ActiveChar));
+
+        Connection.ActiveChar.PushSubscriber(TimeManager.Instance.Subscribe(Connection, new TimeOfDayObserver(Connection.ActiveChar)));
+
+        Connection.SendPacket(new SCCooldownsPacket(Connection.ActiveChar));
+        Connection.SendPacket(new SCListSkillActiveTypsPacket([]));
+        Connection.SendPacket(new SCDetailedTimeOfDayPacket(12f));
+        Connection.SendPacket(new SCActionSlotsPacket(Connection.ActiveChar.Slots));
+
+        Connection.ActiveChar.BroadcastPacket(new SCReputationChangedPacket(DateTime.UtcNow, false), true);
+        //Connection.ActiveChar.BroadcastPacket(new SCItemTaskSuccessPacket(ItemTaskType.ItemTaskRemoveHeroReward, [], []), true);
 
         Connection.ActiveChar.BroadcastPacket(new SCUnitVisualOptionsPacket(Connection.ActiveChar.ObjId, Connection.ActiveChar.VisualOptions), true);
 

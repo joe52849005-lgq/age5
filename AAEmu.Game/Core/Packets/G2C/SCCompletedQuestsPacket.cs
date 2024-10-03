@@ -25,7 +25,7 @@ public class SCCompletedQuestsPacket : GamePacket
         stream.Write(_quests.Length);
         foreach (var quest in _quests)
         {
-            if (quest.Body.Length != 8)
+            if (quest.Body.Length != 64) // 64 / 8 = 8 байт
             {
                 throw new InvalidOperationException("Quest body must be exactly 8 bytes.");
             }

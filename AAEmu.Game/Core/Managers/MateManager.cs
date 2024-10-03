@@ -17,6 +17,8 @@ using AAEmu.Game.Models.Game.Skills.Buffs;
 using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Utils.DB;
 
+using Discord;
+
 using NLog;
 
 namespace AAEmu.Game.Core.Managers;
@@ -419,6 +421,10 @@ public class MateManager : Singleton<MateManager>
 
         ObjectIdManager.Instance.ReleaseId(mateInfo.ObjId);
         TlIdManager.Instance.ReleaseId(mateInfo.TlId);
+
+        var item = owner.Inventory.GetItemById(mateInfo.ItemId);
+        if (item is not null)
+            owner.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.MateDeath, [new ItemUpdate(item)], []));
 
         Logger.Debug($"Mount removed: OwnerObjId={owner.ObjId}, tlId={mateInfo.TlId}, mateObjId={mateInfo.ObjId}");
     }

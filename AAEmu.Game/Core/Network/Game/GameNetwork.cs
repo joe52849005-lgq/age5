@@ -254,6 +254,7 @@ public class GameNetwork : Singleton<GameNetwork>
         RegisterPacket(CSOffsets.CSBindSlavePacket, 5, typeof(CSBindSlavePacket));
         RegisterPacket(CSOffsets.CSDiscardSlavePacket, 5, typeof(CSDiscardSlavePacket));
         RegisterPacket(CSOffsets.CSBoardingTransferPacket, 5, typeof(CSBoardingTransferPacket));
+        RegisterPacket(CSOffsets.CSRemoveAllFieldSlavesPacket, 5, typeof(CSRemoveAllFieldSlavesPacket));
         RegisterPacket(CSOffsets.CSTurretStatePacket, 5, typeof(CSTurretStatePacket));
         RegisterPacket(CSOffsets.CSCreateSkillControllerPacket, 5, typeof(CSCreateSkillControllerPacket));
         RegisterPacket(CSOffsets.CSJoinTrialAudiencePacket, 5, typeof(CSJoinTrialAudiencePacket));

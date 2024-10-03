@@ -531,6 +531,14 @@ public class Skill
             case SkillTargetType.CursorPos:
                 break;
             case SkillTargetType.Parent:
+                if (targetCaster.Type is SkillCastTargetType.Unit or SkillCastTargetType.Doodad)
+                {
+                    target = targetCaster.ObjId > 0 ? WorldManager.Instance.GetBaseUnit(targetCaster.ObjId) : caster;
+                    if (target != null)
+                    {
+                        targetCaster.ObjId = target.ObjId;
+                    }
+                }
                 break;
             case SkillTargetType.ChildSlave:
                 break;
@@ -541,6 +549,14 @@ public class Skill
             case SkillTargetType.PetOwner:
                 break;
             case SkillTargetType.IgnoreProtected:
+                if (targetCaster.Type is SkillCastTargetType.Unit or SkillCastTargetType.Doodad)
+                {
+                    target = targetCaster.ObjId > 0 ? WorldManager.Instance.GetBaseUnit(targetCaster.ObjId) : caster;
+                    if (target != null)
+                    {
+                        targetCaster.ObjId = target.ObjId;
+                    }
+                }
                 break;
             default:
                 throw new NotSupportedException($"SkillTargetType not supported {Template.TargetType}");
