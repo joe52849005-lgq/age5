@@ -33,14 +33,14 @@ public enum ItemTaskType : byte
     MateCreate,                     // mate-create
     CraftActSaved,                  // craft-act-saved
     CraftPaySaved,                  // craft-pay-saved
-    CraftPickupProduct,             // craft-pickup-product
+    CraftPickupProduct = 27,             // craft-pickup-product
     CraftCancel,                    // craft-cancel
     MakeCraftOrderSheet,            // make-craft-order-sheet
     RestoreCraftOrderSsheet,        // restore-craft-order-sheet
     PostCcraftOrder,                // post-craft-order
-    HouseCreation,                  // 303-house-creation
+    HouseCreation = 32,                  // 303-house-creation
     HouseDeposit,                   // house-deposit
-    HouseBuilding,                  // house-building
+    HouseBuilding = 34,                  // house-building
     PickupBloodstain,               // pickup-bloodstain
     AutoLootDoodadItem,             // 316-autoloot-doodad-item
     QuestStart = 37,                // 401-quest-start
@@ -53,17 +53,17 @@ public enum ItemTaskType : byte
     SkillEffectGainItemWithPos,     // skill-effect-gain-item-with-pos
     SkillEffectSiegeTicket,         // skill-effect-siege-ticket
     SkillEffectExpToItem,           // skill-effect-exp-to-item
-    Auction,                        // auction
-    Mail,                           // mail
+    Auction = 48,                        // auction
+    Mail = 49,                           // mail
     Trade,                          // trade
     EnchantMagical,                 // enchant-magical
     EnchantPhysical,                // enchant-physical
     GetCoinByItem,                  // get-coin-by-item
     GetItemByCoin,                  // get-item-from-doodad
-    StoreSell = 54,                 // 315-store-sell
-    StoreBuy = 55,                  // 313-314-store-buy
+    StoreSell = 55,                 // 315-store-sell
+    StoreBuy = 56,                  // 313-314-store-buy
     TodReward,                      // tod-reward
-    CreateOriginUcc = 57,           // create-origin-ucc
+    CreateOriginUcc,           // create-origin-ucc
     MakeUccDdye,                    // make-ucc-dye
     // GainItemWithUcc = 56
     ImprintUcc = 60,                // imprint-ucc
@@ -135,7 +135,7 @@ public enum ItemTaskType : byte
     ItemTaskThistimeUnpack,         // item-task-thistime-unpack
     BuyPremiumService,              // buy-premium-service-ingameshop
     BuyAaPoint,                     // buy-aa-point-ingameshop
-    TakeScheduleItem = 144,         // take-schedule-item
+    TakeScheduleItem,         // take-schedule-item
     ScaleCap,                       // scale-cap
     HousePayTax,                    // house-pay-tax
     BuyItemIngameshop,              // buy-item-ingameshop

@@ -134,10 +134,21 @@ public class MateManager : Singleton<MateManager>
     public Mate RenameMount(GameConnection connection, uint tlId, string newName)
     {
         var (owner, mateInfo) = GetMateInfoByTlId(connection, tlId);
-        if (string.IsNullOrWhiteSpace(newName) || newName.Length == 0 || !_nameRegex.IsMatch(newName)) return null;
-        if (mateInfo?.TlId != tlId) return null;
+        if (string.IsNullOrWhiteSpace(newName) || newName.Length == 0 || !_nameRegex.IsMatch(newName))
+        {
+            Logger.Warn($"{owner.Name} The pet's name must not be the same as the character's name!");
+            return null;
+        }
+
+        if (mateInfo?.TlId != tlId)
+        {
+            Logger.Warn($"{owner.Name} no pet active!");
+            return null;
+        }
+
         mateInfo.Name = newName.NormalizeName();
         owner.BroadcastPacket(new SCUnitNameChangedPacket(mateInfo.ObjId, newName), true);
+
         return mateInfo;
     }
 

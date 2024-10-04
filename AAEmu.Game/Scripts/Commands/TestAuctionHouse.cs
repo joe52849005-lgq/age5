@@ -48,7 +48,7 @@ internal class TestAuctionHouse : ICommand
                 CreationTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow.AddSeconds(172800),
                 LifespanMins = 0,
-                Type1 = 0,
+                MadeUnitId = 0,
                 WorldId = 0,
                 UnpackDateTime = DateTime.UtcNow,
                 UnsecureDateTime = DateTime.UtcNow,

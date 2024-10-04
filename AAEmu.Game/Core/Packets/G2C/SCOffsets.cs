@@ -653,7 +653,7 @@
         public const ushort SCResetHeirSkillPacket = 0x0FB;
         public const ushort off_39E9CAF8 = 0x2F5;
         public const ushort off_39E9CB08 = 0x0EE;
-        public const ushort off_39E9CB18 = 0x0E8;
+        public const ushort SCSearchListPacket = 0x0E8; // off_39E9CB18
         public const ushort off_39E9CB28 = 0x0A6;
         public const ushort off_39E9CB38 = 0x2D7;
         public const ushort off_39E9CB48 = 0x2FD;
@@ -775,9 +775,9 @@
         public const ushort SCLootingBagPacket = 0x0F1;
         public const ushort SCGotMailPacket = 0x2D0;
         public const ushort SCChargeMoneyPaidPacket = 0x0B5;
-        public const ushort off_39EA2A8C = 0x1B3;
-        public const ushort off_39EA2A9C = 0x1AE;
-        public const ushort off_39EA2AAC = 0x03D;
+        public const ushort SCAuctionSearchedPacket = 0x1B3; // off_39EA2A8C
+        public const ushort SCAuction_Packet_0x1AE = 0x1AE; // off_39EA2A9C
+        public const ushort SCAuctionMessagePacket = 0x03D; // off_39EA2AAC
         public const ushort SCGimmickMovementPacket = 0x11D;
         public const ushort SCQuestContextStartedPacket = 0x091;
         public const ushort SCQuestContextUpdatedPacket = 0x0D5;
@@ -798,7 +798,7 @@
         public const ushort SCItemTaskSuccessPacket = 0x16B;
         public const ushort SCUnitBountyMoneyPacket = 0x20C;
         public const ushort SCFvFCombatRelationshipPacket = 0x30F;
-        public const ushort SCHouseStatePacket = 0x161;
+        public const ushort SCHouseStatePacket = 0x161; // SCMyHousePacket
         public const ushort off_39EA2DEC = 0x1B8;
         public const ushort SCSetBountyPermittedPacket = 0x2AC;
         public const ushort SCSetBountyDonePacket = 0x0E0;
@@ -821,8 +821,8 @@
         // нет таких
         public const ushort SCKnockBackUnitPacket = 0xFFF;
         public const ushort SCMineAmountPacket = 0xFFF;
-        public const ushort SCOnOffSnowPacket = 0xFFF;
-        public const ushort SCAiAggroPacket = 0xFFF;
+        //public const ushort SCOnOffSnowPacket = 0xFFF;
+        //public const ushort SCAiAggroPacket = 0xFFF;
         //public const ushort SCICSGoodListPacket = 0xFFF; // SCICSGoodsListPacket
         public const ushort SCTrialAudienceJoinedPacket = 0xFFF;
         public const ushort SCItemSocketingLunastoneResultPacket = 0xFFF;
@@ -852,9 +852,9 @@
         public const ushort SCRefreshInCharacterListPacket = 0x1DB; // то же самое, что SCRaceCongestionPacket
         public const ushort SCTutorialSavedPacket = 0xFFF;
         public const ushort SCSystemFactionListPacket = 0xFFF;
-        public const ushort SCSearchListPacket = 0xFFF;
+        //public const ushort SCSearchListPacket = 0xFFF;
         public const ushort SCOtherTradeItemTookdownPacket = 0xFFF;
-        public const ushort SCAuctionSearchedPacket = 0xFFF;
+        //public const ushort SCAuctionSearchedPacket = 0xFFF;
         public const ushort SCDominionDataPacket = 0xFFF;
         public const ushort SCNationalMonumentChangedPacket = 0xFFF;
         public const ushort SCSkillUpgradedPacket = 0xFFF;
@@ -863,6 +863,6 @@
         public const ushort SCHousingRecoverTogglePacket = 0xFFF;
         public const ushort SCMailFailedPacket = 0xFFF;
         public const ushort SCItemUccDataChangedPacket = 0xFFF;
-        public const ushort SCMyHousePacket = 0x161;
+        public const ushort SCMyHousePacket = 0x161; // SCHouseStatePacket
     }
 }

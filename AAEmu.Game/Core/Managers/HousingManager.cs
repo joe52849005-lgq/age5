@@ -711,7 +711,7 @@ public class HousingManager : Singleton<HousingManager>
         if (house.OwnerId != connection.ActiveChar.Id)
             return;
 
-        house.Name = string.Concat(name.Substring(0, 1).ToUpper(), name.AsSpan(1));
+        house.Name = name.NormalizeName();
         house.IsDirty = true; // Manually set the IsDirty on House level
         connection.SendPacket(new SCUnitNameChangedPacket(house.ObjId, house.Name));
     }

@@ -390,20 +390,24 @@ public class AuctionManager : Singleton<AuctionManager>
             CreationTime = DateTime.UtcNow,
             EndTime = DateTime.UtcNow.AddHours(timeLeft),
             LifespanMins = 0,
-            Type1 = 0,
+            MadeUnitId = 0,
             WorldId = 0,
             UnpackDateTime = DateTime.UtcNow,
             UnsecureDateTime = DateTime.UtcNow,
+            ChargeUseSkillTime = DateTime.UtcNow, // added in 5+
             WorldId2 = 0,
             ClientId = player.Id,
             ClientName = player.Name,
             StartMoney = startPrice,
             DirectMoney = buyoutPrice,
+            ChargePercent = 100, // added in 5+
             BidWorldId = 0,
             BidderId = 0,
             BidderName = "",
             BidMoney = 0,
             Extra = 0,
+            MinStack = 1, // added in 5+
+            MaxStack = 100, // added in 5+
             IsDirty = true
         };
         return newAuctionItem;
@@ -417,17 +421,17 @@ public class AuctionManager : Singleton<AuctionManager>
         {
             using (var command = connection.CreateCommand())
             {
-                command.CommandText = $"SELECT * FROM auction_house";
+                command.CommandText = "SELECT * FROM auction_house";
                 command.Prepare();
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
                         var auctionItem = new AuctionItem();
-                        auctionItem.Id = reader.GetUInt32("id");
+                        auctionItem.Id = reader.GetUInt64("id");
                         auctionItem.Duration = reader.GetByte("duration"); //0 is 6 hours, 1 is 12 hours, 2 is 24 hours, 3 is 48 hours
                         auctionItem.ItemId = reader.GetUInt32("item_id");
-                        auctionItem.ObjectId = reader.GetUInt32("object_id");
+                        auctionItem.Id = reader.GetUInt32("object_id");
                         auctionItem.Grade = reader.GetByte("grade");
                         auctionItem.Flags = (ItemFlag)reader.GetByte("flags");
                         auctionItem.StackSize = reader.GetUInt32("stack_size");
@@ -435,20 +439,30 @@ public class AuctionManager : Singleton<AuctionManager>
                         auctionItem.CreationTime = reader.GetDateTime("creation_time");
                         auctionItem.EndTime = reader.GetDateTime("end_time");
                         auctionItem.LifespanMins = reader.GetUInt32("lifespan_mins");
-                        auctionItem.Type1 = reader.GetUInt32("type_1");
+                        auctionItem.MadeUnitId = reader.GetUInt32("made_unit_id");
                         auctionItem.WorldId = reader.GetByte("world_id");
                         auctionItem.UnsecureDateTime = reader.GetDateTime("unsecure_date_time");
                         auctionItem.UnpackDateTime = reader.GetDateTime("unpack_date_time");
+
+                        auctionItem.ChargeUseSkillTime = reader.GetDateTime("charge_use_skill_time"); // added in 5+
+
                         auctionItem.WorldId2 = reader.GetByte("world_id_2");
                         auctionItem.ClientId = reader.GetUInt32("client_id");
                         auctionItem.ClientName = reader.GetString("client_name");
                         auctionItem.StartMoney = reader.GetInt32("start_money");
                         auctionItem.DirectMoney = reader.GetInt32("direct_money");
+
+                        auctionItem.ChargePercent = reader.GetInt32("charge_percent"); // added in 5+
+
                         auctionItem.BidWorldId = reader.GetByte("bid_world_id");
                         auctionItem.BidderId = reader.GetUInt32("bidder_id");
                         auctionItem.BidderName = reader.GetString("bidder_name");
                         auctionItem.BidMoney = reader.GetInt32("bid_money");
                         auctionItem.Extra = reader.GetUInt32("extra");
+
+                        auctionItem.MinStack = reader.GetUInt32("min_stack"); // added in 5+
+                        auctionItem.MaxStack = reader.GetUInt32("max_stack"); // added in 5+
+
                         AddAuctionItem(auctionItem);
                     }
                 }
@@ -488,14 +502,14 @@ public class AuctionManager : Singleton<AuctionManager>
                 command.Transaction = transaction;
                 command.CommandText = "REPLACE INTO auction_house(" +
                     "`id`, `duration`, `item_id`, `object_id`, `grade`, `flags`, `stack_size`, `detail_type`," +
-                    " `creation_time`,`end_time`, `lifespan_mins`, `type_1`, `world_id`, `unsecure_date_time`, `unpack_date_time`," +
-                    " `world_id_2`, `client_id`, `client_name`, `start_money`, `direct_money`, `bid_world_id`," +
-                    " `bidder_id`, `bidder_name`, `bid_money`, `extra`" +
+                    " `creation_time`,`end_time`, `lifespan_mins`, `made_unit_id`, `world_id`, `unsecure_date_time`, `unpack_date_time`, `charge_use_skill_time`," +
+                    " `world_id_2`, `client_id`, `client_name`, `start_money`, `direct_money`, `charge_percent`, `bid_world_id`," +
+                    " `bidder_id`, `bidder_name`, `bid_money`, `extra`, `min_stack`, `max_stack`" +
                     ") VALUES (" +
                     "@id, @duration, @item_id, @object_id, @grade, @flags, @stack_size, @detail_type," +
-                    " @creation_time, @end_time, @lifespan_mins, @type_1, @world_id, @unsecure_date_time, @unpack_date_time," +
-                    " @world_id_2, @client_id, @client_name, @start_money, @direct_money, @bid_world_id," +
-                    " @bidder_id, @bidder_name, @bid_money, @extra)";
+                    " @creation_time, @end_time, @lifespan_mins, @made_unit_id, @world_id, @unsecure_date_time, @unpack_date_time, @charge_use_skill_time," +
+                    " @world_id_2, @client_id, @client_name, @start_money, @direct_money, @charge_percent, @bid_world_id," +
+                    " @bidder_id, @bidder_name, @bid_money, @extra, @min_stack, @max_stack)";
                 command.Parameters.AddWithValue("@id", mtbs.Id);
                 command.Parameters.AddWithValue("@duration", mtbs.Duration);
                 command.Parameters.AddWithValue("@item_id", mtbs.ItemId);
@@ -504,24 +518,29 @@ public class AuctionManager : Singleton<AuctionManager>
                 command.Parameters.AddWithValue("@flags", mtbs.Flags);
                 command.Parameters.AddWithValue("@stack_size", mtbs.StackSize);
                 command.Parameters.AddWithValue("@detail_type", mtbs.DetailType);
+                //command.Parameters.AddWithValue("@details", details.GetBytes());
                 command.Parameters.AddWithValue("@creation_time", mtbs.CreationTime);
                 command.Parameters.AddWithValue("@end_time", mtbs.EndTime);
                 command.Parameters.AddWithValue("@lifespan_mins", mtbs.LifespanMins);
-                command.Parameters.AddWithValue("@type_1", mtbs.Type1);
+                command.Parameters.AddWithValue("@made_unit_id", mtbs.MadeUnitId);
                 command.Parameters.AddWithValue("@world_id", mtbs.WorldId);
                 command.Parameters.AddWithValue("@unsecure_date_time", mtbs.UnsecureDateTime);
                 command.Parameters.AddWithValue("@unpack_date_time", mtbs.UnpackDateTime);
+                command.Parameters.AddWithValue("@charge_use_skill_time", mtbs.ChargeUseSkillTime); // added in 5+
                 command.Parameters.AddWithValue("@world_id_2", mtbs.WorldId2);
                 command.Parameters.AddWithValue("@client_id", mtbs.ClientId);
                 command.Parameters.AddWithValue("@client_name", mtbs.ClientName);
                 command.Parameters.AddWithValue("@start_money", mtbs.StartMoney);
                 command.Parameters.AddWithValue("@direct_money", mtbs.DirectMoney);
                 command.Parameters.AddWithValue("@time_left", mtbs.TimeLeft);
+                command.Parameters.AddWithValue("@charge_percent", mtbs.ChargePercent); // added in 5+
                 command.Parameters.AddWithValue("@bid_world_id", mtbs.BidWorldId);
                 command.Parameters.AddWithValue("@bidder_id", mtbs.BidderId);
                 command.Parameters.AddWithValue("@bidder_name", mtbs.BidderName);
                 command.Parameters.AddWithValue("@bid_money", mtbs.BidMoney);
                 command.Parameters.AddWithValue("@extra", mtbs.Extra);
+                command.Parameters.AddWithValue("@min_stack", mtbs.MinStack); // added in 5+
+                command.Parameters.AddWithValue("@max_stack", mtbs.MaxStack); // added in 5+
 
                 command.Prepare();
                 command.ExecuteNonQuery();

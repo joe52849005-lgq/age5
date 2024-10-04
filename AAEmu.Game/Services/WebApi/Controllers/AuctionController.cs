@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using AAEmu.Game.Core.Managers;
-using AAEmu.Game.Models.Game.Auction;
-using NetCoreServer;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using NLog;
 using System.Web;
+
+using AAEmu.Game.Core.Managers;
+using AAEmu.Game.Models.Game.Auction;
+
+using NetCoreServer;
+
+using NLog;
 
 namespace AAEmu.Game.Services.WebApi.Controllers
 {
@@ -59,20 +60,24 @@ namespace AAEmu.Game.Services.WebApi.Controllers
                     CreationTime = DateTime.UtcNow,
                     EndTime = DateTime.UtcNow.AddSeconds(duration),
                     LifespanMins = 0,
-                    Type1 = 0,
+                    MadeUnitId = 0,
                     WorldId = 0,
                     UnpackDateTime = DateTime.UtcNow,
                     UnsecureDateTime = DateTime.UtcNow,
+                    ChargeUseSkillTime = DateTime.UtcNow, // ChargeUseSkillTime added 5+
                     WorldId2 = 0,
                     ClientId = clientId,
                     ClientName = clientName,
                     StartMoney = 0,
                     DirectMoney = price,
+                    ChargePercent = 100, // added in 5+
                     BidWorldId = 0,
                     BidderId = 0,
                     BidderName = "",
                     BidMoney = 0,
                     Extra = 0,
+                    MinStack = 0, // added in 5+
+                    MaxStack = 0, // added in 5+
                     IsDirty = true
                 };
 
@@ -119,32 +124,32 @@ namespace AAEmu.Game.Services.WebApi.Controllers
                 // Apply filters
                 if (queryParams["itemId"] != null)
                 {
-                    uint itemId = uint.Parse(queryParams["itemId"]);
+                    var itemId = uint.Parse(queryParams["itemId"]);
                     query = query.Where(item => item.ItemId == itemId);
                 }
                 if (queryParams["clientName"] != null)
                 {
-                    string clientName = queryParams["clientName"];
+                    var clientName = queryParams["clientName"];
                     query = query.Where(item => item.ClientName.Equals(clientName, StringComparison.OrdinalIgnoreCase));
                 }
                 if (queryParams["stackSize"] != null)
                 {
-                    uint stackSize = uint.Parse(queryParams["stackSize"]);
+                    var stackSize = uint.Parse(queryParams["stackSize"]);
                     query = query.Where(item => item.StackSize == stackSize);
                 }
                 if (queryParams["directMoney"] != null)
                 {
-                    int directMoney = int.Parse(queryParams["directMoney"]);
+                    var directMoney = int.Parse(queryParams["directMoney"]);
                     query = query.Where(item => item.DirectMoney == directMoney);
                 }
                 if (queryParams["bidMoney"] != null)
                 {
-                    int bidMoney = int.Parse(queryParams["bidMoney"]);
+                    var bidMoney = int.Parse(queryParams["bidMoney"]);
                     query = query.Where(item => item.BidMoney == bidMoney);
                 }
                 if (queryParams["bidderName"] != null)
                 {
-                    string bidderName = queryParams["bidderName"];
+                    var bidderName = queryParams["bidderName"];
                     query = query.Where(item => item.BidderName.Equals(bidderName, StringComparison.OrdinalIgnoreCase));
                 }
 

@@ -350,14 +350,15 @@ public class GameNetwork : Singleton<GameNetwork>
         //RegisterPacket(CSOffsets.CSRefreshBotCheckInfoPacket, 5, typeof(CSRefreshBotCheckInfoPacket));
         //RegisterPacket(CSOffsets.CSAnswerBotCheckPacket, 5, typeof(CSAnswerBotCheckPacket));
         RegisterPacket(CSOffsets.CSChangeSlaveNamePacket, 5, typeof(CSChangeSlaveNamePacket));
+        RegisterPacket(CSOffsets.CSSearchListPacket, 5, typeof(CSSearchListPacket));
         RegisterPacket(CSOffsets.CSUseTeleportPacket, 5, typeof(CSUseTeleportPacket));
         RegisterPacket(CSOffsets.CSAuctionPostPacket, 5, typeof(CSAuctionPostPacket));
         RegisterPacket(CSOffsets.CSAuctionSearchPacket, 5, typeof(CSAuctionSearchPacket));
         RegisterPacket(CSOffsets.CSAuctionMyBidListPacket, 5, typeof(CSAuctionMyBidListPacket));
         RegisterPacket(CSOffsets.CSAuctionLowestPricePacket, 5, typeof(CSAuctionLowestPricePacket));
-        //RegisterPacket(CSOffsets.CSAuctionSearchSoldRecordPacket, 5, typeof(CSAuctionSearchSoldRecordPacket));
-        //RegisterPacket(CSOffsets.CSAuctionCancelPacket, 5, typeof(CSAuctionCancelPacket));
-        //RegisterPacket(CSOffsets.CSAuctionBidPacket, 5, typeof(CSAuctionBidPacket));
+        RegisterPacket(CSOffsets.CSAuctionSearchSoldRecordPacket, 5, typeof(CSAuctionSearchSoldRecordPacket));
+        RegisterPacket(CSOffsets.CSAuctionCancelPacket, 5, typeof(CSAuctionCancelPacket));
+        RegisterPacket(CSOffsets.CSAuctionBidPacket, 5, typeof(CSAuctionBidPacket));
         RegisterPacket(CSOffsets.CSExecuteCraftPacket, 5, typeof(CSExecuteCraftPacket));
         RegisterPacket(CSOffsets.CSSetLpManageCharacterPacket, 5, typeof(CSSetLpManageCharacterPacket));
         RegisterPacket(CSOffsets.CSSetCraftingPayPacket, 5, typeof(CSSetCraftingPayPacket));

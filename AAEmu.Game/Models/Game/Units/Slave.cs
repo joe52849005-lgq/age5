@@ -65,7 +65,7 @@ public class Slave : Unit
     public List<uint> Tags { get; set; }
     public List<uint> Charges { get; set; }
     public bool IsLoadedPlayerSlave { get; set; }
-
+    
     public Slave()
     {
         AttachedDoodads = new List<Doodad>();

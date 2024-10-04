@@ -25,7 +25,7 @@ public class SCAuctionPostedPacket : GamePacket
         stream.Write(item.DetailType);
         stream.Write(DateTime.UtcNow);
         stream.Write(item.LifespanMins);
-        stream.Write(item.Type1);
+        stream.Write(item.MadeUnitId);
         stream.Write(item.WorldId);
         stream.Write(DateTime.UtcNow);
         stream.Write(DateTime.UtcNow);
