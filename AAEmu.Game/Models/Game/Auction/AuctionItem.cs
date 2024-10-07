@@ -30,7 +30,7 @@ public class AuctionItem
     public int DirectMoney { get; set; }
     public ulong TimeLeft
     {
-        get { return (ulong)EndTime.Subtract(DateTime.UtcNow).TotalSeconds; }
+        get => (ulong)EndTime.Subtract(DateTime.UtcNow).TotalSeconds;
         set => throw new NotImplementedException();
     } //seconds
     public byte BidWorldId { get; set; }
@@ -61,6 +61,7 @@ public class AuctionItem
         UnsecureDateTime = stream.ReadDateTime();
         UnpackDateTime = stream.ReadDateTime();
         ChargeUseSkillTime = stream.ReadDateTime(); // added in 5+
+
         WorldId2 = stream.ReadByte();
         ClientId = stream.ReadUInt32();
         ClientName = stream.ReadString();

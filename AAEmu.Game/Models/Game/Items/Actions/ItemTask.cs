@@ -18,46 +18,46 @@ public abstract class ItemTask : PacketMarshaler
 
     public ItemTaskLogType SetTlogT(ItemAction itemTask, SlotType slotType, bool added = true)
     {
-        var tmp = ItemTaskLogType.UpdateOnly;
+        var tlogT = ItemTaskLogType.UpdateOnly;
         switch (itemTask)
         {
             case ItemAction.Invalid: // 0
                 break;
             case ItemAction.ChangeMoneyAmount: // 1
-                tmp = ItemTaskLogType.UpdateOnly;
+                tlogT = ItemTaskLogType.UpdateOnly;
                 break;
             case ItemAction.ChangeBankMoneyAmount: // 2
-                tmp = ItemTaskLogType.UpdateOnly;
+                tlogT = ItemTaskLogType.UpdateOnly;
                 break;
             case ItemAction.ChangeGamePoint: // 3
-                tmp = ItemTaskLogType.UpdateOnly;
+                tlogT = ItemTaskLogType.UpdateOnly;
                 break;
             case ItemAction.AddStack when added == true: // 4
-                tmp = ItemTaskLogType.MoveItem; // если добавили
+                tlogT = ItemTaskLogType.MoveItem; // если добавили
                 break;
             case ItemAction.AddStack when added == false: // 4
-                tmp = ItemTaskLogType.RemoveItem; // если убавили
+                tlogT = ItemTaskLogType.RemoveItem; // если убавили
                 break;
             case ItemAction.Create: // 5
-                tmp = ItemTaskLogType.GainItem;
+                tlogT = ItemTaskLogType.GainItem;
                 break;
             case ItemAction.Take: // 6
-                tmp = ItemTaskLogType.MoveItem;
+                tlogT = ItemTaskLogType.MoveItem;
                 break;
             case ItemAction.Remove when slotType == SlotType.Bag: // 7
-                tmp = ItemTaskLogType.RemoveItem;
+                tlogT = ItemTaskLogType.RemoveItem;
                 break;
             case ItemAction.Remove when slotType == SlotType.Equipment: // 7
-                tmp = ItemTaskLogType.Place;
+                tlogT = ItemTaskLogType.Place;
                 break;
             case ItemAction.SwapSlot when slotType == SlotType.Bank: // 8
-                tmp = ItemTaskLogType.MoveItem;
+                tlogT = ItemTaskLogType.MoveItem;
                 break;
             case ItemAction.SwapSlot when slotType == SlotType.Bag: // 8
-                tmp = ItemTaskLogType.SwapItem;
+                tlogT = ItemTaskLogType.SwapItem;
                 break;
             case ItemAction.UpdateDetail: // 9
-                tmp = ItemTaskLogType.UpdateOnly;
+                tlogT = ItemTaskLogType.UpdateOnly;
                 break;
             case ItemAction.SetFlagsBits: // 10
                 break;
@@ -83,6 +83,6 @@ public abstract class ItemTask : PacketMarshaler
                 throw new ArgumentOutOfRangeException(nameof(itemTask), itemTask, null);
         }
 
-        return tmp;
+        return tlogT;
     }
 }

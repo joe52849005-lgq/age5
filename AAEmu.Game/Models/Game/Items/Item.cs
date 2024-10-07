@@ -117,14 +117,14 @@ public class Item : PacketMarshaler, IComparable<Item>
     // Helper
     public ItemContainer _holdingContainer { get; set; }
 
-    public static uint Coins { get; } = 500;
-    public static uint TaxCertificate { get; } = 31891;
-    public static uint BoundTaxCertificate { get; } = 31892;
-    public static uint AppraisalCertificate { get; } = 28085;
-    public static uint CrestStamp { get; } = 17662;
-    public static uint CrestInk { get; } = 17663;
-    public static uint SheetMusic { get; } = 28051;
-    public static uint SalonCertificate { get; } = 30811;
+    public static uint Coins => 500;
+    public static uint TaxCertificate => 31891;
+    public static uint BoundTaxCertificate => 31892;
+    public static uint AppraisalCertificate => 28085;
+    public static uint CrestStamp => 17662;
+    public static uint CrestInk => 17663;
+    public static uint SheetMusic => 28051;
+    public static uint SalonCertificate => 30811;
 
     /// <summary>
     /// Sort will use itemSlot numbers

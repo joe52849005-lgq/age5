@@ -42,6 +42,7 @@ public class ItemTemplate
     public int LivingPointPrice { get; set; }
     public byte CharGender { get; set; }
     public uint SpecialtyZoneId { get; set; }
+    public AuctionSettings AuctionSettings { get; set; }
 
     // Helpers
     public string searchString { get; set; }

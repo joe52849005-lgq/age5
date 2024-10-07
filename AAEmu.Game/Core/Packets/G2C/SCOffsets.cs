@@ -720,8 +720,8 @@
         public const ushort SCMailBodyPacket = 0x08A;
         public const ushort SCMateEquipmentChangedPacket = 0x1EC;
         public const ushort SCSoldItemListPacket = 0x19C;
-        public const ushort SCAuctionLowestPricePacket = 0x2BE; // off_39E9EA7C
-        public const ushort SCAuctionPostedPacket = 0x222; // off_39E9EA98
+        public const ushort SCAuctionPostedPacket = 0x2BE; // off_39E9EA7C
+        public const ushort SCAuctionCanceledPacket = 0x222; // off_39E9EA98
         public const ushort SCPlotEventPacket = 0x231;
         public const ushort SCActabilityPacket = 0x2B9;
         public const ushort SCGimmicksCreatedPacket = 0x2B3;
@@ -776,7 +776,7 @@
         public const ushort SCGotMailPacket = 0x2D0;
         public const ushort SCChargeMoneyPaidPacket = 0x0B5;
         public const ushort SCAuctionSearchedPacket = 0x1B3; // off_39EA2A8C
-        public const ushort SCAuction_Packet_0x1AE = 0x1AE; // off_39EA2A9C
+        public const ushort SCAuctionLowestPricePacket = 0x1AE; // off_39EA2A9C
         public const ushort SCAuctionMessagePacket = 0x03D; // off_39EA2AAC
         public const ushort SCGimmickMovementPacket = 0x11D;
         public const ushort SCQuestContextStartedPacket = 0x091;
@@ -859,7 +859,7 @@
         public const ushort SCNationalMonumentChangedPacket = 0xFFF;
         public const ushort SCSkillUpgradedPacket = 0xFFF;
         public const ushort SCTrialCancledPacket = 0xFFF;
-        public const ushort SCAuctionCanceledPacket = 0xFFF;
+        //public const ushort SCAuctionCanceledPacket = 0xFFF;
         public const ushort SCHousingRecoverTogglePacket = 0xFFF;
         public const ushort SCMailFailedPacket = 0xFFF;
         public const ushort SCItemUccDataChangedPacket = 0xFFF;

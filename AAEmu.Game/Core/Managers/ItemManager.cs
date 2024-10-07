@@ -10,7 +10,7 @@ using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Network.Game;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.GameData;
-using AAEmu.Game.Models.Game.Auction.Templates;
+using AAEmu.Game.Models.Game.Auction;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Formulas;
 using AAEmu.Game.Models.Game.Items;
@@ -474,13 +474,13 @@ public class ItemManager : Singleton<ItemManager>
         return res;
     }
 
-    public List<ItemTemplate> GetItemTemplatesForAuctionSearch(AuctionSearchTemplate searchTemplate)
+    public List<ItemTemplate> GetItemTemplatesForAuctionSearch(AuctionSearch searchTemplate)
     {
         var templateList = new List<ItemTemplate>();
         var itemIds = new List<uint>();
 
-        if (searchTemplate.ItemName != "")
-            itemIds = GetItemIdsBySearchName(searchTemplate.ItemName);
+        if (searchTemplate.Keyword != "")
+            itemIds = GetItemIdsBySearchName(searchTemplate.Keyword);
 
         if (itemIds.Count > 0)
         {
@@ -1225,6 +1225,14 @@ public class ItemManager : Singleton<ItemManager>
                         template.LivingPointPrice = reader.GetInt32("living_point_price");
                         template.CharGender = reader.GetByte("char_gender_id");
 
+                        template.AuctionSettings = new AuctionSettings(
+                            template.AuctionCategoryA,
+                            template.AuctionCategoryB,
+                            template.AuctionCategoryC,
+                            reader.GetUInt32("auction_charge"),
+                            reader.GetBoolean("auction_charge_default")
+                        );
+
                         _templates.TryAdd(template.Id, template);
                     }
                 }
@@ -1846,7 +1854,7 @@ public class ItemManager : Singleton<ItemManager>
         return (updateCount, deleteCount, containerUpdateCount);
     }
 
-    private SlotType GetContainerSlotTypeByContainerId(ulong dbId)
+    public SlotType GetContainerSlotTypeByContainerId(ulong dbId)
     {
         _allPersistentContainers.TryGetValue(dbId, out var container);
 
