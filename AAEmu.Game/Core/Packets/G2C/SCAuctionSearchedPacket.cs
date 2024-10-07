@@ -10,20 +10,13 @@ namespace AAEmu.Game.Core.Packets.G2C;
 public class SCAuctionSearchedPacket : GamePacket
 {
     private List<AuctionItem> _auctionItems;
-    private uint _page;
-    private uint _count;
+    private int _page;
+    private int _count;
     private readonly List<AuctionLot> _lots;
     private readonly short _errorMsg;
     private readonly DateTime _serverTime;
 
-    public SCAuctionSearchedPacket(List<AuctionItem> auctionItems, uint page) : base(SCOffsets.SCAuctionSearchedPacket, 5)
-    {
-        _auctionItems = auctionItems;
-        _count = (uint)_auctionItems.Count;
-        _page = page;
-    }
-
-    public SCAuctionSearchedPacket(uint page, uint count, List<AuctionLot> lots, short errorMsg, DateTime serverTime) :
+    public SCAuctionSearchedPacket(int page, int count, List<AuctionLot> lots, short errorMsg, DateTime serverTime) :
         base(SCOffsets.SCAuctionSearchedPacket, 5)
     {
         _page = page;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using AAEmu.Commons.Cryptography;
 using AAEmu.Commons.Network;
 using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers;
@@ -121,6 +121,7 @@ public class Inventory
                     Logger.Error("LoadInventory found unused item type for item, Id {0} ({1}) at {2}:{3} for {4}",
                         item.Id, item.TemplateId, item.SlotType, item.Slot,
                         Owner?.Name ?? "Id:" + item.OwnerId);
+                    EncryptionManager.needNewkey1 = true;
                 }
             }
             else
@@ -283,6 +284,7 @@ public class Inventory
         if (fromItem == null && fromItemId != 0)
         {
             Logger.Error($"SplitOrMoveItem - ItemId {fromItemId} no longer exists, possibly a phantom item.");
+            EncryptionManager.needNewkey1 = true;
             return false;
         }
 
@@ -290,6 +292,7 @@ public class Inventory
         if (toItem == null && toItemId != 0)
         {
             Logger.Error($"SplitOrMoveItem - ItemId {toItemId} no longer exists, possibly a phantom item.");
+            EncryptionManager.needNewkey1 = true;
             return false;
         }
 
@@ -309,6 +312,7 @@ public class Inventory
         if (fromItem == null && fromItemId != 0)
         {
             Logger.Error($"SplitOrMoveItem - ItemId {fromItemId} no longer exists, possibly a phantom item.");
+            EncryptionManager.needNewkey1 = true;
             return false;
         }
 
@@ -328,11 +332,13 @@ public class Inventory
         if (targetContainer is not null && !targetContainer.CanAccept(fromItem, toSlot))
         {
             Logger.Error($"SplitOrMoveItem - fromItemId {fromItemId} is not welcome in this container {targetContainer.ContainerType} ({targetContainer.ContainerId}).");
+            EncryptionManager.needNewkey1 = true;
             return false;
         }
         if (sourceContainer is not null && !sourceContainer.CanAccept(itemInTargetSlot, fromSlot))
         {
             Logger.Error($"SplitOrMoveItem - toItemId {toItemId} is not welcome in this container {sourceContainer.ContainerType} ({sourceContainer.ContainerId}).");
+            EncryptionManager.needNewkey1 = true;
             return false;
         }
 
@@ -356,6 +362,7 @@ public class Inventory
         if (action != SwapAction.doEquipInEmptySlot && fromItem == null)
         {
             Logger.Error("SplitOrMoveItem didn't provide a source itemId");
+            EncryptionManager.needNewkey1 = true;
             return false;
         }
 
@@ -363,6 +370,7 @@ public class Inventory
         if (action != SwapAction.doEquipInEmptySlot && sourceContainer?.ContainerType != fromType)
         {
             Logger.Error("SplitOrMoveItem Source Item Container did not match what the client asked");
+            EncryptionManager.needNewkey1 = true;
             return false;
         }
 
@@ -370,6 +378,7 @@ public class Inventory
         if (action != SwapAction.doEquipInEmptySlot && fromItem?.Slot != fromSlot)
         {
             Logger.Error("SplitOrMoveItem Source Item slot did not match what the client asked");
+            EncryptionManager.needNewkey1 = true;
             return false;
         }
 
@@ -377,6 +386,7 @@ public class Inventory
         if (action != SwapAction.doEquipInEmptySlot && count > fromItem?.Count)
         {
             Logger.Error("SplitOrMoveItem Source Item has less item count than is requested to be moved");
+            EncryptionManager.needNewkey1 = true;
             return false;
         }
 
@@ -387,6 +397,7 @@ public class Inventory
             if (itemInTargetSlot.SlotType != toType)
             {
                 Logger.Error("SplitOrMoveItem Target Item Type does not match");
+                EncryptionManager.needNewkey1 = true;
                 return false;
             }
 
@@ -394,6 +405,7 @@ public class Inventory
             if (itemInTargetSlot.Slot != toSlot)
             {
                 Logger.Error("SplitOrMoveItem Target Item Slot does not match");
+                EncryptionManager.needNewkey1 = true;
                 return false;
             }
 
@@ -401,6 +413,7 @@ public class Inventory
             if (action != SwapAction.doEquipInEmptySlot && itemInTargetSlot.TemplateId == fromItem?.TemplateId && itemInTargetSlot.Count + count > fromItem.Template.MaxCount && fromItem.Template.MaxCount > 1)
             {
                 Logger.Error("SplitOrMoveItem Target Item stack does not have enough room to take source");
+                EncryptionManager.needNewkey1 = true;
                 return false;
             }
         }
@@ -619,6 +632,7 @@ public class Inventory
                 // Should be impossible to get here
                 Owner.SendMessage("|cFFFF0000SplitOrMoveItem swap action not implemented " + action + "|r");
                 Logger.Error("SplitOrMoveItem swap action not implemented " + action);
+                EncryptionManager.needNewkey1 = true;
                 break;
         }
 
@@ -966,6 +980,7 @@ public class Inventory
         if (sourceContainer == null || targetContainer == null)
         {
             Logger.Error("SwapCofferItems, not all of the targetted containers exist");
+            EncryptionManager.needNewkey1 = true;
             return false;
         }
 
@@ -995,6 +1010,7 @@ public class Inventory
         if (sourceContainer == null || targetContainer == null)
         {
             Logger.Error("SwapCofferItems, not all of the targetted containers exist");
+            EncryptionManager.needNewkey1 = true;
             return false;
         }
 

@@ -823,8 +823,15 @@ public class AuctionManager : Singleton<AuctionManager>
                 continue;
             searchedArticles.Add(lot);
         }
-        searchedArticles = SortArticles(searchedArticles, search.SortKind, search.SortOrder);
-        player.SendPacket(new SCAuctionSearchedPacket(1, Convert.ToUInt32(searchedArticles.Count), searchedArticles, 0, DateTime.UtcNow));
+
+        if (searchedArticles.Count == 0)
+        {
+            player.SendPacket(new SCAuctionSearchedPacket(0, 0, [], (short)ErrorMessageType.NoErrorMessage, DateTime.UtcNow));
+            return;
+        }
+        var articles = SortArticles(searchedArticles, search.SortKind, search.SortOrder).ToArray();
+        var dividedLists = Helpers.SplitArray(articles, 9); // Разделяем массив на массивы по 9 значений
+        player.SendPacket(new SCAuctionSearchedPacket(search.Page, dividedLists[search.Page].Length, dividedLists[search.Page].ToList(), (short)ErrorMessageType.NoErrorMessage, DateTime.UtcNow));
     }
 
     public void PostLotOnAuction(Character player, uint npcId, uint npcId2, ulong itemId, int startPrice, int buyoutPrice, AuctionDuration duration, int minStack, int maxStack)

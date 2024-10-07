@@ -123,6 +123,7 @@ public class GameProtocolHandler : BaseProtocolHandler
                     stream.Rollback();
                     connection.LastPacket = stream;
                     stream = null;
+                    EncryptionManager.needNewkey1 = true;
                     continue;
                 }
                 var packetLen = len + stream.Pos;
