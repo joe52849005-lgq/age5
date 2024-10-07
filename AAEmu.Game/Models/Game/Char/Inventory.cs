@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using AAEmu.Commons.Network;
+using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.UnitManagers;
 using AAEmu.Game.Core.Packets.G2C;
@@ -550,6 +551,7 @@ public class Inventory
                 var ni = ItemManager.Instance.Create(fromItem.TemplateId, count, fromItem.Grade, true);
                 ni.SlotType = toType;
                 ni.Slot = toSlot;
+                ni.OwnerId = targetContainer?.OwnerId ?? 0;
                 ni._holdingContainer = targetContainer;
                 targetContainer.Items.Add(ni);
                 itemTasks.Add(new ItemAdd(ni));
@@ -828,17 +830,17 @@ public class Inventory
 
     private void SendFragmentedInventory(SlotType slotType, byte numItems, Item[] bag)
     {
-        var tempItem = new Item[50];
-
         if (numItems % 50 != 0)
             Logger.Warn($"SendFragmentedInventory: Inventory Size not a multiple of 50 ({numItems})");
         if (bag.Length != numItems)
             Logger.Warn($"SendFragmentedInventory: Inventory Size Mismatch; expected {numItems} got {bag.Length}");
 
-        for (byte chunk = 0; chunk < numItems / 50; chunk++)
+        byte numChunks = 0;
+        var dividedArrays = Helpers.SplitArray(bag, 50); // Разделяем массив на массивы по 50 значений
+        foreach (var item in dividedArrays)
         {
-            Array.Copy(bag, chunk * 50, tempItem, 0, 50);
-            Owner.SendPacket(new SCCharacterInvenContentsPacket(slotType, 1, chunk, tempItem));
+            var idx = numChunks++ * 5;
+            Owner.SendPacket(new SCCharacterInvenContentsPacket(slotType, 5, (byte)idx, item));
         }
 
         SetInitialItemExpirationTimers(bag);

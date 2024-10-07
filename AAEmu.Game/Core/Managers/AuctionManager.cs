@@ -853,7 +853,7 @@ public class AuctionManager : Singleton<AuctionManager>
             return;
         }
 
-        CheapestAuctionLot(player, item.TemplateId, item.Grade);
+        //CheapestAuctionLot(player, item.TemplateId, item.Grade);
 
         player.Inventory.Bag.RemoveItem(ItemTaskType.Auction, item, true);
         AuctionLots.Add(lot);

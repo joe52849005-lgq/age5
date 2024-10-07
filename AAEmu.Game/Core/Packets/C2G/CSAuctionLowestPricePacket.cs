@@ -20,7 +20,6 @@ public class CSAuctionLowestPricePacket : GamePacket
 
         Logger.Warn($"AuctionLowestPrice, auctioneerId: {auctioneerId}, auctioneerId2: {auctioneerId2}, TemplateId: {itemTemplateId}, Grade: {itemGrade}");
 
-        var DirectMoney = 0;
-        var cheapestItem = AuctionManager.Instance.GetCheapestAuctionLot(itemTemplateId);
+        AuctionManager.Instance.CheapestAuctionLot(Connection.ActiveChar, itemTemplateId, itemGrade);
     }
 }
