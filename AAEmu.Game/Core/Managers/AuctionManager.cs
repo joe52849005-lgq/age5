@@ -22,7 +22,7 @@ public class AuctionManager : Singleton<AuctionManager>
 
     //public Dictionary<ulong, AuctionLot> AuctionLots;
     public List<AuctionLot> AuctionLots;
-    public List<AuctionBid> AuctionBids;
+    //public List<AuctionBid> AuctionBids;
     public List<AuctionSold> AuctionSolds;
 
     public List<long> _deletedAuctionItemIds;
@@ -34,7 +34,7 @@ public class AuctionManager : Singleton<AuctionManager>
         if (AuctionLots.Contains(itemToRemove))
         {
             var itemTemplate = ItemManager.Instance.GetItemTemplateFromItemId(itemToRemove.Item.TemplateId);
-            var newItem = ItemManager.Instance.Create(itemTemplate.Id, (int)itemToRemove.Item.Count, itemToRemove.Item.Grade);
+            var newItem = ItemManager.Instance.Create(itemTemplate.Id, itemToRemove.Item.Count, itemToRemove.Item.Grade);
             var itemList = new Item[10].ToList();
             itemList[0] = newItem;
 
@@ -62,6 +62,43 @@ public class AuctionManager : Singleton<AuctionManager>
         }
     }
 
+    private void BuyPartOfTheAuctionLot(AuctionLot auctionLot, string buyer, int soldAmount, int count)
+    {
+        //if (AuctionLots.Contains(auctionLot))
+        {
+            // TODO позже мы будем так делить на стопки
+            //player.Inventory.SplitOrMoveItem(ItemTaskType.Split, auctionLot.Item.Id, SlotType.Bag, 0, 0, 0, 0, bid.StackSize);
+            // может надо клонировать?
+            //var newItem = Helpers.Clone(auctionLot.Item);
+            //newItem.Item.Count = count;
+            var itemTemplate = ItemManager.Instance.GetItemTemplateFromItemId(auctionLot.Item.TemplateId);
+            //var newItem = ItemManager.Instance.Create(itemTemplate.Id, auctionLot.Item.Count, auctionLot.Item.Grade);
+            var newItem = ItemManager.Instance.Create(itemTemplate.Id, count, auctionLot.Item.Grade);
+
+            var moneyAfterFee = soldAmount * .9;
+
+            // TODO: Read this from saved data
+            var recalculatedFee = auctionLot.DirectMoney * .01 * ((int)auctionLot.Duration - 8 + 1);
+            if (recalculatedFee > MaxListingFee) recalculatedFee = MaxListingFee;
+
+            if (auctionLot.ClientName != "")
+            {
+                // Хозяину отсылаем часть денег за покупку
+                var sellMail = new MailForAuction(newItem, auctionLot.ClientId, soldAmount, (int)recalculatedFee);
+                sellMail.FinalizeForSaleSeller((int)moneyAfterFee, (int)(soldAmount - moneyAfterFee));
+                sellMail.Send();
+            }
+
+            // Покупателю отсылаем купленный лот
+            var buyMail = new MailForAuction(newItem, auctionLot.ClientId, soldAmount, (int)recalculatedFee);
+            var buyerId = NameManager.Instance.GetCharacterId(buyer);
+            buyMail.FinalizeForSaleBuyer(buyerId);
+            buyMail.Send();
+
+            //RemoveAuctionLot(auctionLot);
+        }
+    }
+
     private void RemoveAuctionLotFail(AuctionLot itemToRemove)
     {
         if (!AuctionLots.Contains(itemToRemove))
@@ -75,7 +112,7 @@ public class AuctionManager : Singleton<AuctionManager>
 
         // Item did not sell by end of the timer. 
         var itemTemplate = ItemManager.Instance.GetItemTemplateFromItemId(itemToRemove.Item.TemplateId);
-        var newItem = ItemManager.Instance.Create(itemTemplate.Id, (int)itemToRemove.Item.Count, itemToRemove.Item.Grade);
+        var newItem = ItemManager.Instance.Create(itemTemplate.Id, itemToRemove.Item.Count, itemToRemove.Item.Grade);
         var itemList = new Item[10].ToList();
         itemList[0] = newItem;
 
@@ -101,7 +138,7 @@ public class AuctionManager : Singleton<AuctionManager>
 
         var moneyToSubtract = auctionItem.DirectMoney * .1f;
         var itemList = new Item[10].ToList();
-        var newItem = ItemManager.Instance.Create(auctionItem.Item.TemplateId, (int)auctionItem.Item.Count, auctionItem.Item.Grade);
+        var newItem = ItemManager.Instance.Create(auctionItem.Item.TemplateId, auctionItem.Item.Count, auctionItem.Item.Grade);
         itemList[0] = newItem;
 
         // TODO: Read this from saved data
@@ -140,9 +177,27 @@ public class AuctionManager : Singleton<AuctionManager>
             // TODO сравним, что прислал клиент и что есть на сервере
             // auctionItem == lot ?
 
-            if (bid.Money >= auctionLot.DirectMoney && auctionLot.DirectMoney != 0) // Buy now
+            if (bid.StackSize != 0 && bid.StackSize >= auctionLot.MinStack && bid.StackSize <= auctionLot.MaxStack && auctionLot.BidderId == 0) // Buy part of the lot
             {
-                if (auctionLot.BidderId != 0) // send mail to person who bid if item was bought at full price. 
+                BuyPartOfTheAuctionLot(auctionLot, player.Name, bid.Money, bid.StackSize);
+
+                // Set info to new bidders info
+                auctionLot.Item.Count -= bid.StackSize;
+
+                bid.BidderName = player.Name;
+                bid.BidderId = player.Id;
+                bid.WorldId = (byte)player.Transform.WorldId;
+
+                player.SubtractMoney(SlotType.Bag, bid.Money);
+                player.SendPacket(new SCAuctionBidPacket(bid, false, auctionLot.Item.TemplateId));
+                auctionLot.IsDirty = true;
+
+                // Обновление данных в списке AuctionLots
+                UpdateAuctionLotInList(auctionLot);
+            }
+            else if (bid.Money >= auctionLot.DirectMoney && auctionLot.DirectMoney != 0) // Buy now
+            {
+                if (auctionLot.BidderId != 0) // send mail to person who bid if item was bought at full price.
                 {
                     var newMail = new MailForAuction(auctionLot.Item.TemplateId, auctionLot.ClientId, auctionLot.DirectMoney, 0);
                     newMail.FinalizeForBidFail(auctionLot.BidderId, auctionLot.BidMoney);
@@ -154,7 +209,7 @@ public class AuctionManager : Singleton<AuctionManager>
             }
             else if (bid.Money > auctionLot.BidMoney) // Bid
             {
-                if (auctionLot.BidderName != "" && auctionLot.BidderId != 0) // Send mail to old bidder. 
+                if (auctionLot.BidderName != "" && auctionLot.BidderId != 0) // Send mail to old bidder.
                 {
                     var moneyArray = new int[3];
                     moneyArray[0] = auctionLot.BidMoney;
@@ -197,22 +252,26 @@ public class AuctionManager : Singleton<AuctionManager>
             return;
         }
 
-        // Поиск лота в списке по идентификатору
-        var existingLot = AuctionLots.FirstOrDefault(lot => lot.Id == auctionLot.Id);
+        lock (AuctionLots)
+        {
+            // Поиск лота в списке по идентификатору
+            var existingLot = AuctionLots.FirstOrDefault(lot => lot.Id == auctionLot.Id);
 
-        if (existingLot != null)
-        {
-            // Обновление данных лота
-            existingLot.BidderName = auctionLot.BidderName;
-            existingLot.BidderId = auctionLot.BidderId;
-            existingLot.BidWorldId = auctionLot.BidWorldId;
-            existingLot.BidMoney = auctionLot.BidMoney;
-            existingLot.IsDirty = auctionLot.IsDirty;
-        }
-        else
-        {
-            // Логирование или обработка ошибки, если лот не найден
-            Logger.Warn($"AuctionLot with ID {auctionLot.Id} not found in the list.");
+            if (existingLot != null)
+            {
+                // Обновление данных лота
+                existingLot.BidderName = auctionLot.BidderName;
+                existingLot.BidderId = auctionLot.BidderId;
+                existingLot.BidWorldId = auctionLot.BidWorldId;
+                existingLot.BidMoney = auctionLot.BidMoney;
+                existingLot.Item.Count = auctionLot.Item.Count;
+                existingLot.IsDirty = auctionLot.IsDirty;
+            }
+            else
+            {
+                // Логирование или обработка ошибки, если лот не найден
+                Logger.Warn($"AuctionLot with ID {auctionLot.Id} not found in the list.");
+            }
         }
     }
 
@@ -233,26 +292,30 @@ public class AuctionManager : Singleton<AuctionManager>
 
     public List<AuctionSold> GetSoldAuctionLots(uint templateId, byte itemGrade)
     {
-        var idx = 0;
-        if (AuctionSolds?.Count > 0)
+        lock (AuctionLots)
         {
-            var temp = AuctionSolds.OrderByDescending(x => x.Id).ToList();
-            var auctionSold = temp.First();
-            idx = auctionSold.Id;
+            var idx = 0;
+            if (AuctionSolds?.Count > 0)
+            {
+                var temp = AuctionSolds.OrderByDescending(x => x.Id).ToList();
+                var auctionSold = temp.First();
+                idx = auctionSold.Id;
 
+            }
+
+            var tempList = AuctionSolds.Where(lot => lot.ItemId == templateId).ToList();
+
+            if (tempList.Count <= 0)
+            {
+                AuctionSolds = GenerateRandomAuctionSolds(templateId, itemGrade, ref idx);
+
+                return AuctionSolds;
+            }
+
+            tempList = tempList.OrderBy(x => x.Day).ToList();
+
+            return tempList;
         }
-        var tempList = AuctionSolds.Where(lot => lot.ItemId == templateId).ToList();
-
-        if (tempList.Count <= 0)
-        {
-            AuctionSolds = GenerateRandomAuctionSolds(templateId, itemGrade, ref idx);
-
-            return AuctionSolds;
-        }
-
-        tempList = tempList.OrderBy(x => x.Day).ToList();
-
-        return tempList;
     }
 
     private static List<AuctionSold> GenerateRandomAuctionSolds(uint templateId, byte itemGrade, ref int idx)
@@ -335,11 +398,11 @@ public class AuctionManager : Singleton<AuctionManager>
 
     public void RemoveAuctionLot(AuctionLot itemToRemove)
     {
-        if (itemToRemove.ClientName == "") // Testing feature. Relists an item if the server listed it. 
-        {
-            itemToRemove.EndTime = DateTime.UtcNow.AddHours(48);
-            return;
-        }
+        //if (itemToRemove.ClientName == "") // Testing feature. Relists an item if the server listed it. 
+        //{
+        //    itemToRemove.EndTime = DateTime.UtcNow.AddHours(48);
+        //    return;
+        //}
         lock (AuctionLots)
         {
             lock (_deletedAuctionItemIds)
@@ -384,19 +447,19 @@ public class AuctionManager : Singleton<AuctionManager>
         switch (duration)
         {
             case AuctionDuration.AuctionDuration6Hours:
-                timeLeft = 6; //6 hours
+                timeLeft = 6; // 6 hours
                 break;
             case AuctionDuration.AuctionDuration12Hours:
-                timeLeft = 12; //12 hours
+                timeLeft = 12; // 12 hours
                 break;
             case AuctionDuration.AuctionDuration24Hours:
-                timeLeft = 24; //24 hours
+                timeLeft = 24; // 24 hours
                 break;
             case AuctionDuration.AuctionDuration48Hours:
-                timeLeft = 48; //48 hours
+                timeLeft = 48; // 48 hours
                 break;
             default:
-                timeLeft = 6; //default to 6 hours
+                timeLeft = 6; // default to 6 hours
                 break;
         }
 
@@ -406,7 +469,8 @@ public class AuctionManager : Singleton<AuctionManager>
 
         newAuctionLot.Item = itemToList;
 
-        newAuctionLot.EndTime = DateTime.UtcNow.AddHours(timeLeft);
+        //newAuctionLot.EndTime = DateTime.UtcNow.AddHours(timeLeft);
+        newAuctionLot.EndTime = DateTime.UtcNow.AddMinutes(timeLeft); // TODO после проверки удалить
 
         newAuctionLot.WorldId = 1;
         newAuctionLot.ClientId = player.Id;
@@ -430,7 +494,7 @@ public class AuctionManager : Singleton<AuctionManager>
     public void Load()
     {
         AuctionLots = new List<AuctionLot>();
-        AuctionBids = new List<AuctionBid>();
+        //AuctionBids = new List<AuctionBid>();
         AuctionSolds = new List<AuctionSold>();
 
         //_auctionItems = new List<AuctionItem>();
