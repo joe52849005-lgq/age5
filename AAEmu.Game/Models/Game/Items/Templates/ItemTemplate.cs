@@ -46,4 +46,9 @@ public class ItemTemplate
 
     // Helpers
     public string searchString { get; set; }
+
+    public ItemTemplate()
+    {
+        AuctionSettings = new AuctionSettings(0, 0, 0, 0, true); // Инициализация AuctionSettings
+    }
 }

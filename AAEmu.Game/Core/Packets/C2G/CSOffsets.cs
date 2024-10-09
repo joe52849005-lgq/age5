@@ -164,7 +164,7 @@
         public const ushort CSEnprotectStubCallResponsePacket = 0x0B4;
         public const ushort CSRepresentCharacterPacket = 0x187;
         public const ushort off_39E9A31C = 0x087;
-        //public const ushort CSCheckDemoModePacket = 0x114;
+        public const ushort CSStoppedCinemaPacket = 0x114; // off_39E9A32C
         public const ushort CSCreateCharacterPacket = 0x0F2;
         public const ushort CSEditCharacterPacket = 0x064;
         public const ushort CSBroadcastVisualOption_0_Packet = 0x126; //0x126;

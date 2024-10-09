@@ -56,11 +56,10 @@ public class AuctionSearch : PacketMarshaler
         stream.Write(WorldId);
         stream.Write(MinItemLevel);
         stream.Write(MaxItemLevel);
-        stream.Write(0); // moneyAmount
-        stream.Write(0); // moneyAmount
+        stream.Write(MinMoneyAmount); // moneyAmount
+        stream.Write(MaxMoneyAmount); // moneyAmount
         stream.Write((byte)SortKind);
         stream.Write((byte)SortOrder);
         return stream;
     }
-
 }

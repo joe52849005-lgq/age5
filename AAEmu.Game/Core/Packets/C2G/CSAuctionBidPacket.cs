@@ -24,6 +24,6 @@ public class CSAuctionBidPacket : GamePacket
 
         Logger.Warn($"AuctionBid, auctioneerId: {auctioneerId}, auctioneerId2: {auctioneerId2}, BidderName: {bid.BidderName}, LotId: {display.Lot.Id}:{bid.LotId}, Money: {bid.Money}");
 
-        AuctionManager.Instance.BidOnAuctionItem(Connection.ActiveChar, display.Lot.Id, bid.Money);
+        AuctionManager.Instance.BidOnAuctionLot(Connection.ActiveChar, auctioneerId, auctioneerId2, display.Lot, bid);
     }
 }

@@ -503,7 +503,7 @@
         public const ushort SCICSGoodDetailPacket = 0x209;
         public const ushort SCICSCheckTimePacket = 0x0DA;
         public const ushort SCICSBuyResultPacket = 0x165;
-        public const ushort SCICSSyncGoodPacket = 0x064;
+        public const ushort SCICSSyncGoodsPacket = 0x064;
         public const ushort SCICSCashPointPacket = 0x262;
         public const ushort SCBountyListPacket = 0x0B6;
         public const ushort SCInviteCanceledPacket = 0x00E;

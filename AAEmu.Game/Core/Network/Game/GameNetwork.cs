@@ -154,7 +154,8 @@ public class GameNetwork : Singleton<GameNetwork>
         RegisterPacket(CSOffsets.CSSecurityReportPacket, 5, typeof(CSSecurityReportPacket));
         RegisterPacket(CSOffsets.CSEnprotectStubCallResponsePacket, 5, typeof(CSEnprotectStubCallResponsePacket));
         RegisterPacket(CSOffsets.CSRepresentCharacterPacket, 5, typeof(CSRepresentCharacterPacket));
-        //RegisterPacket(CSOffsets.CSPacketUnknown0x0aaPacket, 5, typeof(CSPacketUnknown0x0aaPacket));
+        //RegisterPacket(CSOffsets.off_39E9A31C, 5, typeof(off_39E9A31C));
+        RegisterPacket(CSOffsets.CSStoppedCinemaPacket, 5, typeof(CSStoppedCinemaPacket));
         RegisterPacket(CSOffsets.CSCreateCharacterPacket, 5, typeof(CSCreateCharacterPacket));
         RegisterPacket(CSOffsets.CSEditCharacterPacket, 5, typeof(CSEditCharacterPacket));
         RegisterPacket(CSOffsets.CSBroadcastVisualOption_0_Packet, 5, typeof(CSBroadcastVisualOption_0_Packet));

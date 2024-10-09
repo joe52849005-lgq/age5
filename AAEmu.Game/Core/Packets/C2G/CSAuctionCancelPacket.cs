@@ -22,6 +22,6 @@ public class CSAuctionCancelPacket : GamePacket
 
         Logger.Warn($"AuctionCancel, auctioneerId: {auctioneerId}, auctioneerId2: {auctioneerId2}, ClientName: {lot.ClientName}, LotId: {lot.Id}");
 
-        AuctionManager.Instance.CancelAuctionItem(Connection.ActiveChar, lot.Id);
+        AuctionManager.Instance.CancelAuctionLot(Connection.ActiveChar, lot.Id);
     }
 }

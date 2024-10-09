@@ -6,15 +6,10 @@ namespace AAEmu.Game.Core.Packets.G2C;
 
 public class SCAuctionBidPacket : GamePacket
 {
-    private readonly AuctionItem _auctionItem;
     private readonly AuctionBid _bid;
     private readonly bool _isBuyout;
     private readonly uint _itemId;
 
-    public SCAuctionBidPacket(AuctionItem auctionItem) : base(SCOffsets.SCAuctionBidPacket, 5)
-    {
-        _auctionItem = auctionItem;
-    }
     public SCAuctionBidPacket(AuctionBid bid, bool isBuyout, uint itemId) : base(SCOffsets.SCAuctionBidPacket, 5)
     {
         _bid = bid;

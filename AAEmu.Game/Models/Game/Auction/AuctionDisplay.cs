@@ -6,6 +6,11 @@ public class AuctionDisplay : PacketMarshaler
 {
     public AuctionLot Lot { get; set; }
 
+    public AuctionDisplay()
+    {
+        Lot = new AuctionLot(); // Инициализация Lot
+    }
+
     public override void Read(PacketStream stream)
     {
         Lot.Read(stream);
