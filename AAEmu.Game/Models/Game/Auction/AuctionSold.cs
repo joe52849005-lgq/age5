@@ -248,4 +248,38 @@ public class AuctionSold : PacketMarshaler
 
         return null;
     }
+
+    /*
+       public static void Main()
+       {
+           List<int> previousWeekData = new List<int> { 5, 7, 9, 11, 13, 15, 17 };
+           List<int> currentWeekData = new List<int> { 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36 };
+
+           List<int> combinedData = new List<int>(previousWeekData);
+           combinedData.AddRange(currentWeekData);
+
+           List<double> sevenDayAverages = CalculateSevenDayAverages(combinedData);
+
+           for (int i = 0; i < sevenDayAverages.Count; i++)
+           {
+               Console.WriteLine($"Day {i + 1}: {sevenDayAverages[i]:F2}");
+           }
+       }     
+    */
+    public static List<double> CalculateSevenDayAverages(List<int> data)
+    {
+        var averages = new List<double>();
+
+        for (var i = 6; i < data.Count; i++)
+        {
+            double sum = 0;
+            for (var j = i - 6; j <= i; j++)
+            {
+                sum += data[j];
+            }
+            averages.Add(sum / 7);
+        }
+
+        return averages;
+    }
 }
