@@ -41,6 +41,7 @@ public class MailForAuction : BaseMail
         Header.SenderId = 0;
         Header.SenderName = AuctionName; // Name changes depending on type of mail
 
+        Body.SendDate = DateTime.UtcNow;
         Body.RecvDate = DateTime.UtcNow; // These mails should always be instant
     }
 
@@ -67,6 +68,7 @@ public class MailForAuction : BaseMail
         Header.SenderId = 0;
         Header.SenderName = AuctionName; // Name changes depending on type of mail
 
+        Body.SendDate = DateTime.UtcNow;
         Body.RecvDate = DateTime.UtcNow; // These mails should always be instant
     }
 

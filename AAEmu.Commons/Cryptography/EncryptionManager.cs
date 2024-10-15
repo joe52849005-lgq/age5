@@ -265,11 +265,11 @@ namespace AAEmu.Commons.Cryptography
              */
             var dirty = false;
             // подбираем константы шифрации
-            if (keys.XorKeyConstant1 > 0x75A024FF)
+            if (keys.XorKeyConstant1 > 0x75A02480)
             {
-                keys.XorKeyConstant1 = 0x75A02400;
+                keys.XorKeyConstant1 = 0x75A02450;
                 dirty = true;
-                needNewkey1 = true;
+                needNewkey2 = true;
             }
             if (keys.XorKeyConstant1 == 0 || keys.XorKeyConstant2 == 0)
             {
@@ -285,9 +285,9 @@ namespace AAEmu.Commons.Cryptography
                 needNewkey1 = false;
                 // заменим первую константу
                 keys.XorKeyConstant1++;
-                if (keys.XorKeyConstant1 > 0x75A024FF)
+                if (keys.XorKeyConstant1 > 0x75A02480)
                 {
-                    keys.XorKeyConstant1 = 0x75A02400;
+                    keys.XorKeyConstant1 = 0x75A02450;
                     needNewkey2 = true;
                 }
                 dirty = true;

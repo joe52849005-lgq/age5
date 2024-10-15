@@ -257,7 +257,7 @@
         public const ushort SCDoodadOriginatorPacket = 0x034;
         public const ushort SCDoodadInteractionCallbackPacket = 0x1B1;
         public const ushort off_39E9B1EC = 0x1A1;
-        public const ushort SCMailFailPacket = 0x0DD;
+        public const ushort SCMailFailedPacket = 0x0DD;
         public const ushort SCCountUnreadMailPacket = 0x125;
         public const ushort SCMailSentPacket = 0x20D;
         public const ushort SCMailListPacket = 0x282;
@@ -861,7 +861,7 @@
         public const ushort SCTrialCancledPacket = 0xFFF;
         //public const ushort SCAuctionCanceledPacket = 0xFFF;
         public const ushort SCHousingRecoverTogglePacket = 0xFFF;
-        public const ushort SCMailFailedPacket = 0xFFF;
+        //public const ushort SCMailFailedPacket = 0xFFF;
         public const ushort SCItemUccDataChangedPacket = 0xFFF;
         public const ushort SCMyHousePacket = 0x161; // SCHouseStatePacket
     }
