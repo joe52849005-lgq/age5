@@ -88,7 +88,7 @@ public class MailPlayerToPlayer : BaseMail
             {
                 _sender.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Mail, new List<ItemTask>() { new ItemRemove(tempItem) }, new List<ulong>()));
                 // Technically not needed, I just want to sync it up
-                tempItem.SlotType = SlotType.Seized;
+                tempItem.SlotType = SlotType.MailAttachment;
                 tempItem.Slot = i;
                 // tempItem.OwnerId = mailTemplate.Header.ReceiverId;
             }

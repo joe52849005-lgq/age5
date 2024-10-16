@@ -607,13 +607,13 @@ public class Skill
     {
         if (caster is not Unit unit) { return; }
 
-        var delay = 300;
-        // Will delay for 300 Milliseconds to eliminate the hanging of the skill
-        if (!caster.CheckInterval(delay))
-        {
-            //Logger.Trace($"Skill: CooldownTime [{delay}]!");
-            return;
-        }
+        //var delay = 300;
+        //// Will delay for 300 Milliseconds to eliminate the hanging of the skill
+        //if (!caster.CheckInterval(delay))
+        //{
+        //    //Logger.Trace($"Skill: CooldownTime [{delay}]!");
+        //    return;
+        //}
 
         if (!_bypassGcd)
         {

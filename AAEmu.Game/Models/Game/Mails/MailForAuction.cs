@@ -94,7 +94,7 @@ public class MailForAuction : BaseMail
 
         Body.Text = string.Format("body('{0}', {1}, {2})", _itemName, _item.Count, _itemBuyoutPrice);
         _item.OwnerId = _buyerId;
-        _item.SlotType = SlotType.Seized;
+        _item.SlotType = SlotType.MailAttachment;
         Body.Attachments.Add(_item);
 
         return true;
@@ -150,7 +150,7 @@ public class MailForAuction : BaseMail
 
         Body.Text = string.Format("body('{0}', {1})", _itemName, _item.Count);
         _item.OwnerId = _sellerId;
-        _item.SlotType = SlotType.Seized;
+        _item.SlotType = SlotType.MailAttachment;
         Body.Attachments.Add(_item);
 
         return true;
@@ -177,7 +177,7 @@ public class MailForAuction : BaseMail
 
         Body.Text = string.Format("body('{0}', {1})", _itemName, _item.Count);
         _item.OwnerId = _sellerId;
-        _item.SlotType = SlotType.Seized;
+        _item.SlotType = SlotType.MailAttachment;
         Body.Attachments.Add(_item);
 
         return true;

@@ -2219,7 +2219,7 @@ public partial class Character : Unit, ICharacter
     {
         var template = CharacterManager.Instance.GetTemplate(Race, Gender);
         ModelId = template.ModelId;
-        BuyBackItems = new ItemContainer(Id, SlotType.Invalid, false, this);
+        BuyBackItems = new ItemContainer(Id, SlotType.StoreGood, false, this);
         Slots = new ActionSlot[MaxActionSlots];
         for (var i = 0; i < Slots.Length; i++)
             Slots[i] = new ActionSlot();

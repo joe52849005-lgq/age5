@@ -105,10 +105,12 @@ public class ItemContainer
         SlotType.Bag => true,
         SlotType.Bank => true,
         SlotType.Coffer => true,
-        SlotType.Seized => false,
+        SlotType.MailAttachment => false,
         SlotType.Money => false,
         SlotType.PetRideEquipment => false,
         SlotType.SlaveEquipment => false,
+        SlotType.StoreGood => false,
+        SlotType.Auction => false,
         _ => throw new ArgumentOutOfRangeException()
     };
 
@@ -380,7 +382,6 @@ public class ItemContainer
             item.Slot = newSlot;
             item._holdingContainer = this;
             item.OwnerId = OwnerId;
-            sourceContainer = item._holdingContainer;
 
             Items.Insert(0, item); // insert at front for easy buyback handling
 
@@ -404,7 +405,7 @@ public class ItemContainer
         {
             sourceContainer.Items.Remove(item);
             sourceContainer.UpdateFreeSlotCount();
-            if (sourceContainer.ContainerType != SlotType.Seized)
+            if (sourceContainer.ContainerType != SlotType.MailAttachment)
             {
                 sourceItemTasks.Add(new ItemRemoveSlot(item.Id, sourceSlotType, sourceSlot));
             }
@@ -428,20 +429,20 @@ public class ItemContainer
 
         // Moved to the end of the method so that the item is already in the inventory
         // Only trigger when moving between containers with different owners except for this being move to Mail container
-        //if ((sourceContainer != this) && (item.OwnerId != OwnerId) && (this.ContainerType != SlotType.Mail))
-        if (sourceContainer != this && ContainerType != SlotType.Seized)
+        //if ((sourceContainer != this) && (item.OwnerId != OwnerId) && (this.ContainerType != SlotType.MailAttachment))
+        if (sourceContainer != this && ContainerType != SlotType.MailAttachment)
         {
             Owner?.Inventory.OnAcquiredItem(item, item.Count);
         }
         else
         // Got attachment from Mail
-        if (item.SlotType == SlotType.Seized && ContainerType != SlotType.Seized)
+        if (item.SlotType == SlotType.MailAttachment && ContainerType != SlotType.MailAttachment)
         {
             Owner?.Inventory.OnAcquiredItem(item, item.Count);
         }
         else
         // Adding mail attachment
-        if (item.SlotType != SlotType.Seized && ContainerType == SlotType.Seized)
+        if (item.SlotType != SlotType.MailAttachment && ContainerType == SlotType.MailAttachment)
         {
             Owner?.Inventory.OnConsumedItem(item, item.Count);
         }
@@ -656,7 +657,7 @@ public class ItemContainer
         var itemTasks = new List<ItemTask>();
 
         // Never update in mail containers
-        if (ContainerType != SlotType.Seized)
+        if (ContainerType != SlotType.MailAttachment)
         {
             foreach (var i in currentItems)
             {
@@ -831,6 +832,7 @@ public class ItemContainer
 
         return foundItems.Count > 0;
     }
+
     public bool GetAllItemsByTemplate(uint templateId, out List<Item> foundItems, out int unitsOfItemFound)
     {
         foundItems = new List<Item>();
@@ -915,8 +917,7 @@ public class ItemContainer
     /// <param name="createWithNewId"></param>
     /// <param name="parentUnit">Actual unit that will hold this container</param>
     /// <returns></returns>
-    public static ItemContainer CreateByTypeName(string containerTypeName, uint ownerId, SlotType slotType,
-        bool createWithNewId, Unit parentUnit)
+    public static ItemContainer CreateByTypeName(string containerTypeName, uint ownerId, SlotType slotType, bool createWithNewId, Unit parentUnit)
     {
         if (containerTypeName.EndsWith("SlaveEquipmentContainer"))
             return new SlaveEquipmentContainer(ownerId, slotType, createWithNewId, parentUnit);
@@ -958,11 +959,18 @@ public class ItemContainer
 
     public virtual void OnEnterContainer(Item item, ItemContainer lastContainer, byte previousSlot)
     {
-        // Do nothing
+        item._holdingContainer = this; // назначим новый контейнер
+        //item.SlotType = ContainerType;
+        //item.Slot = previousSlot;
+        item.OwnerId = OwnerId;
     }
 
     public virtual void OnLeaveContainer(Item item, ItemContainer newContainer, byte previousSlot)
     {
         // Do Nothing
+        //item._holdingContainer = null; // назначим новый контейнер
+        //item.SlotType = SlotType.Invalid;
+        //item.Slot = previousSlot;
+        //item.OwnerId = OwnerId;
     }
 }

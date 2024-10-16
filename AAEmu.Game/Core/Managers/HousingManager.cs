@@ -988,7 +988,7 @@ public class HousingManager : Singleton<HousingManager>
             {
                 designItem.Grade = (designTemplate.FixedGrade >= 0) ? (byte)designTemplate.FixedGrade : (byte)0;
                 designItem.OwnerId = house.OwnerId;
-                designItem.SlotType = SlotType.Seized;
+                designItem.SlotType = SlotType.MailAttachment;
                 returnedItems.Add(designItem);
             }
 
@@ -999,7 +999,7 @@ public class HousingManager : Singleton<HousingManager>
                 {
                     var taxItem = ItemManager.Instance.Create(Item.BoundTaxCertificate, (int)(house.Template.Taxation.Tax / 5000), 0);
                     taxItem.OwnerId = house.OwnerId;
-                    taxItem.SlotType = SlotType.Seized;
+                    taxItem.SlotType = SlotType.MailAttachment;
                     returnedItems.Add(taxItem);
                 }
                 else
@@ -1135,7 +1135,7 @@ public class HousingManager : Singleton<HousingManager>
                     var furnitureTemplate = ItemManager.Instance.GetTemplate(f.ItemTemplateId);
                     furnitureItem.Grade = (furnitureTemplate.FixedGrade >= 0) ? (byte)furnitureTemplate.FixedGrade : (byte)0;
                     furnitureItem.OwnerId = house.OwnerId;
-                    furnitureItem.SlotType = SlotType.Seized;
+                    furnitureItem.SlotType = SlotType.MailAttachment;
                     returnedItems.Add(furnitureItem);
                 }
                 returnedThisItem = true;
@@ -1196,7 +1196,7 @@ public class HousingManager : Singleton<HousingManager>
             if (onlineOwner != null)
                 onlineOwner.Inventory.MailAttachments.AddOrMoveExistingItem(ItemTaskType.Invalid, returnedItems[i]);
             else
-                returnedItems[i].SlotType = SlotType.Seized;
+                returnedItems[i].SlotType = SlotType.MailAttachment;
 
             // Attach item
             newMail.Body.Attachments.Add(returnedItems[i]);

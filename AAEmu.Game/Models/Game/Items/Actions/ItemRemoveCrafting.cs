@@ -8,8 +8,8 @@ public class ItemRemoveCrafting : ItemTask
 
     public ItemRemoveCrafting(ulong id)
     {
-        _id = id;
         _type = ItemAction.RemoveCrafting; // 12
+        _id = id;
         _tLogt = SetTlogT(_type, SlotType.Bag); // установим tLogt по значению ItemAction
     }
 

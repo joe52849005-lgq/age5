@@ -25,6 +25,7 @@ public class CSBuyItemsPacket : GamePacket
         List<Merchants> pack = null;
 
         var npcObjId = stream.ReadBc();
+
         var npc = WorldManager.Instance.GetNpc(npcObjId);
         // If a NPC was provided, check if it's valid
         if (npc != null)
@@ -43,11 +44,16 @@ public class CSBuyItemsPacket : GamePacket
         }
 
         var doodadObjId = stream.ReadBc();
+
         var doodad = WorldManager.Instance.GetDoodad(doodadObjId);
         // If a Doodad was provided, check if we're near it
         if (doodadObjId != 0)
         {
-            if (doodad == null) return;
+            if (doodad == null)
+            {
+                return;
+            }
+
             var dist = MathUtil.CalculateDistance(Connection.ActiveChar.Transform.World.Position, doodad.Transform.World.Position);
             if (dist > 3f) // 3m should be enough for these
             {
@@ -77,7 +83,9 @@ public class CSBuyItemsPacket : GamePacket
 
             // If using a NPC shop, check if the NPC is selling the specified item
             if (npcObjId != 0 && (pack == null || !Merchants.SellsItem(itemId, pack)))
+            {
                 continue;
+            }
 
             if (doodadObjId != 0)
             {
@@ -89,13 +97,21 @@ public class CSBuyItemsPacket : GamePacket
             var template = ItemManager.Instance.GetTemplate(itemId);
 
             if (currency == ShopCurrencyType.Money)
+            {
                 money += template.Price * count;
+            }
             else if (currency == ShopCurrencyType.Honor)
+            {
                 honorPoints += template.HonorPrice * count;
+            }
             else if (currency == ShopCurrencyType.VocationBadges)
+            {
                 vocationBadges += template.LivingPointPrice * count;
+            }
             else
+            {
                 Logger.Error("Unknown currency type");
+            }
         }
 
         // Get a list of items to buy from the buyback window
@@ -105,7 +121,10 @@ public class CSBuyItemsPacket : GamePacket
             var index = stream.ReadInt32();
             var item = Connection.ActiveChar.BuyBackItems.GetItemBySlot(index);
             if (item == null)
+            {
                 continue;
+            }
+
             itemsBuyBack.Add(item, index);
             money += (int)(item.Template.Refund * ItemManager.Instance.GetGradeTemplate(item.Grade).RefundMultiplier / 100f) * item.Count;
         }
@@ -114,7 +133,9 @@ public class CSBuyItemsPacket : GamePacket
         var openType = stream.ReadByte();
 
         if (money > Connection.ActiveChar.Money && honorPoints > Connection.ActiveChar.HonorPoint && vocationBadges > Connection.ActiveChar.VocationPoint)
+        {
             return;
+        }
 
         var tasks = new List<ItemTask>();
         foreach (var (itemId, grade, count) in itemsBuy)
@@ -131,13 +152,20 @@ public class CSBuyItemsPacket : GamePacket
         }
 
         if (honorPoints > 0)
+        {
             Connection.ActiveChar.ChangeGamePoints(GamePointKind.Honor, -honorPoints);
+        }
 
         if (vocationBadges > 0)
+        {
             Connection.ActiveChar.ChangeGamePoints(GamePointKind.Vocation, -vocationBadges);
+        }
 
         if (money > 0)
-            Connection.ActiveChar.ChangeMoney(SlotType.Bag, -money);
+        {
+            //Connection.ActiveChar.ChangeMoney(SlotType.Bag, -money);
+            tasks.Add(new MoneyChange(money));
+        }
 
         Connection.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.StoreBuy, tasks, new List<ulong>()));
     }

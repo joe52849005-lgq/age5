@@ -80,7 +80,7 @@ public class Inventory
                     newContainer.ContainerSize = Owner.NumBankSlots;
                     Warehouse = newContainer;
                     break;
-                case SlotType.Seized:
+                case SlotType.MailAttachment:
                     MailAttachments = newContainer;
                     break;
                 case SlotType.Money:
@@ -809,7 +809,7 @@ public class Inventory
             case SlotType.Coffer:
                 // TODO ...
                 break;
-            case SlotType.Seized:
+            case SlotType.MailAttachment:
                 // TODO ...
                 break;
         }

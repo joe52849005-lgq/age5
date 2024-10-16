@@ -316,7 +316,7 @@
         public const ushort CSCleanupLogicLinkPacket = 0x1E3;
         public const ushort CSSelectInteractionExPacket = 0x0A6;
         public const ushort CSChangeDoodadDataPacket = 0x143;
-        //public const ushort CSBuyItemsPacket = 0x180;
+        public const ushort off_39EC35CC = 0x180;
         public const ushort off_39EC35DC = 0x1CB;
         public const ushort off_39EC35EC = 0x0D7;
         public const ushort CSUnitAttachedPacket = 0x1AC; //off_39EC3600

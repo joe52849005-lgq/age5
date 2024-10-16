@@ -41,6 +41,7 @@ public class SCItemTaskSuccessPacket : GamePacket
 
         stream.Write(0xFFFFFFFE); // type(id)
         stream.Write(0u); // lockItemSlotKey
+
         stream.Write(0u); // flags
 
         return stream;

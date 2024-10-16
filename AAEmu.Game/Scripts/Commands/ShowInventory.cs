@@ -76,7 +76,7 @@ public class ShowInventory : ICommand
 
             if (args.Length > firstarg + 0 && uint.TryParse(args[firstarg + 0], out var argcontainerId))
             {
-                if (argcontainerId <= (byte)SlotType.Seized || argcontainerId == (byte)SlotType.Money)
+                if (argcontainerId <= (byte)SlotType.MailAttachment || argcontainerId == (byte)SlotType.Money)
                 {
                     containerId = (SlotType)argcontainerId;
                 }

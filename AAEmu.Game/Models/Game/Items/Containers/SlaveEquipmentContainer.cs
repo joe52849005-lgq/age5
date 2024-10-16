@@ -27,9 +27,10 @@ namespace AAEmu.Game.Models.Game.Items.Containers
             var slaveItem = new ItemAndLocation
             {
                 Item = item,
-                SlotType = lastContainer.ContainerType, // ContainerType,
+                SlotType = ContainerType,
                 SlotNumber = previousSlot,
             };
+
             var inventoryItem = new ItemAndLocation
             {
                 Item = null,

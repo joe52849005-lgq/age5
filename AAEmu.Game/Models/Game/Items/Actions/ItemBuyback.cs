@@ -16,9 +16,12 @@ public class ItemBuyback : ItemTask
     public override PacketStream Write(PacketStream stream)
     {
         base.Write(stream);
-        stream.Write((byte)_item.SlotType); // type
-        stream.Write((byte)_item.Slot);     // index
-        _item.Write(stream);
+
+        stream.Write((byte)_item.SlotType);
+        stream.Write((byte)_item.Slot);
+
+        stream.Write(_item);
+
         return stream;
     }
 }
