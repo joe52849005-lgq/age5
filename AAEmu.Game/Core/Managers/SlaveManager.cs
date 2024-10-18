@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
+
 using AAEmu.Commons.IO;
 using AAEmu.Commons.Utils;
 using AAEmu.Commons.Utils.DB;
@@ -1423,7 +1424,7 @@ public class SlaveManager : Singleton<SlaveManager>
     }
 
     // Spawn Slave's slaves
-    private void SpawnSlaveSlaves(Character owner, SlaveBindings slaveBinding, Slave summonedSlave)
+    public void SpawnSlaveSlaves(Character owner, SlaveBindings slaveBinding, Slave summonedSlave)
     {
         if (slaveBinding.OwnerType != "Slave")
             return;
@@ -1536,7 +1537,12 @@ public class SlaveManager : Singleton<SlaveManager>
         doodad.ParentObj = summonedSlave;
         doodad.Faction = summonedSlave.Faction;
         doodad.Type2 = 1u; // Flag: No idea why it's 1 for slave's doodads, seems to be 0 for everything else
-        doodad.Spawner = null;
+        //doodad.Spawner = null;
+        doodad.Spawner = new DoodadSpawner();
+        doodad.Spawner.Id = 0;
+        doodad.Spawner.UnitId = doodad.TemplateId;
+        doodad.Spawner.Position = doodad.Transform.CloneAsSpawnPosition();
+
 
         doodad.SetScale(doodadBinding.Scale);
 

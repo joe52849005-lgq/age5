@@ -761,6 +761,31 @@ public class Slave : Unit
         }
     }
 
+    public Doodad GetDoodadByItemTemplateId(uint templateId)
+    {
+        foreach (var doodad in AttachedDoodads)
+        {
+            if (doodad.TemplateId == templateId)
+            {
+                return doodad;
+            }
+        }
+
+        return null;
+    }
+    public Slave GetSlaveByItemTemplateId(uint templateId)
+    {
+        foreach (var slave in AttachedSlaves)
+        {
+            if (slave.TemplateId == templateId)
+            {
+                return slave;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// Creates the random debris created by destroying some of the vehicles (mostly ships)
     /// </summary>
