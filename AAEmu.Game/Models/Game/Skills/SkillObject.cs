@@ -657,7 +657,7 @@ public class SkillObjectUnk25 : SkillObject
     
     public override void Read(PacketStream stream)
     {
-        MappingId = stream.ReadByte();
+        MappingId = stream.ReadUInt32();
     }
 
     public override PacketStream Write(PacketStream stream)
