@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 using AAEmu.Commons.Utils;
+using AAEmu.Commons.Utils.DB;
+using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game.Auction;
 using AAEmu.Game.Models.Game.Char;
@@ -20,9 +22,7 @@ public class AuctionManager : Singleton<AuctionManager>
 {
     private static Logger Logger { get; } = LogManager.GetCurrentClassLogger();
 
-    //public Dictionary<ulong, AuctionLot> AuctionLots;
     public List<AuctionLot> AuctionLots;
-    //public List<AuctionBid> AuctionBids;
     public List<AuctionSold> AuctionSolds;
 
     public List<long> _deletedAuctionItemIds;
@@ -33,8 +33,8 @@ public class AuctionManager : Singleton<AuctionManager>
     {
         if (AuctionLots.Contains(itemToRemove))
         {
-            var itemTemplate = ItemManager.Instance.GetItemTemplateFromItemId(itemToRemove.Item.TemplateId);
-            var newItem = ItemManager.Instance.Create(itemTemplate.Id, itemToRemove.Item.Count, itemToRemove.Item.Grade);
+            var newItem = ItemManager.Instance.GetItemByItemId(itemToRemove.Item.Id);
+
             var itemList = new Item[10].ToList();
             itemList[0] = newItem;
 
@@ -64,39 +64,40 @@ public class AuctionManager : Singleton<AuctionManager>
 
     private void BuyPartOfTheAuctionLot(AuctionLot auctionLot, string buyer, int soldAmount, int count)
     {
-        //if (AuctionLots.Contains(auctionLot))
+        // TODO так делить на стопки
+        //var character = WorldManager.Instance.GetCharacterById(auctionLot.ClientId);
+        //character.Inventory.SplitOrMoveItem(ItemTaskType.Split, auctionLot.Item.Id, SlotType.Action, 0, 0, 0, 0, count);
+        // может надо клонировать?
+        //var newItem = Helpers.Clone(auctionLot.Item);
+        //newItem.Item.Count = count;
+        //var itemTemplate = ItemManager.Instance.GetItemTemplateFromItemId(auctionLot.Item.TemplateId);
+        ////var newItem = ItemManager.Instance.Create(itemTemplate.Id, auctionLot.Item.Count, auctionLot.Item.Grade);
+        //var newItem = ItemManager.Instance.Create(itemTemplate.Id, count, auctionLot.Item.Grade);
+
+        var newItem = ItemManager.Instance.GetItemByItemId(auctionLot.Item.Id);
+        //newItem.Count = count;
+
+        var moneyAfterFee = soldAmount * .9;
+
+        // TODO: Read this from saved data
+        var recalculatedFee = auctionLot.DirectMoney * .01 * ((int)auctionLot.Duration - 8 + 1);
+        if (recalculatedFee > MaxListingFee) recalculatedFee = MaxListingFee;
+
+        if (auctionLot.ClientName != "")
         {
-            // TODO позже мы будем так делить на стопки
-            //player.Inventory.SplitOrMoveItem(ItemTaskType.Split, auctionLot.Item.Id, SlotType.Bag, 0, 0, 0, 0, bid.StackSize);
-            // может надо клонировать?
-            //var newItem = Helpers.Clone(auctionLot.Item);
-            //newItem.Item.Count = count;
-            var itemTemplate = ItemManager.Instance.GetItemTemplateFromItemId(auctionLot.Item.TemplateId);
-            //var newItem = ItemManager.Instance.Create(itemTemplate.Id, auctionLot.Item.Count, auctionLot.Item.Grade);
-            var newItem = ItemManager.Instance.Create(itemTemplate.Id, count, auctionLot.Item.Grade);
-
-            var moneyAfterFee = soldAmount * .9;
-
-            // TODO: Read this from saved data
-            var recalculatedFee = auctionLot.DirectMoney * .01 * ((int)auctionLot.Duration - 8 + 1);
-            if (recalculatedFee > MaxListingFee) recalculatedFee = MaxListingFee;
-
-            if (auctionLot.ClientName != "")
-            {
-                // Хозяину отсылаем часть денег за покупку
-                var sellMail = new MailForAuction(newItem, auctionLot.ClientId, soldAmount, (int)recalculatedFee);
-                sellMail.FinalizeForSaleSeller((int)moneyAfterFee, (int)(soldAmount - moneyAfterFee));
-                sellMail.Send();
-            }
-
-            // Покупателю отсылаем купленный лот
-            var buyMail = new MailForAuction(newItem, auctionLot.ClientId, soldAmount, (int)recalculatedFee);
-            var buyerId = NameManager.Instance.GetCharacterId(buyer);
-            buyMail.FinalizeForSaleBuyer(buyerId);
-            buyMail.Send();
-
-            //RemoveAuctionLot(auctionLot);
+            // Хозяину отсылаем часть денег за покупку
+            var sellMail = new MailForAuction(newItem, auctionLot.ClientId, soldAmount, (int)recalculatedFee);
+            sellMail.FinalizeForSaleSeller((int)moneyAfterFee, (int)(soldAmount - moneyAfterFee));
+            sellMail.Send();
         }
+
+        // Покупателю отсылаем купленный лот
+        var buyMail = new MailForAuction(newItem, auctionLot.ClientId, soldAmount, (int)recalculatedFee);
+        var buyerId = NameManager.Instance.GetCharacterId(buyer);
+        buyMail.FinalizeForSaleBuyer(buyerId);
+        buyMail.Send();
+
+        RemoveAuctionLot(auctionLot);
     }
 
     private void RemoveAuctionLotFail(AuctionLot itemToRemove)
@@ -104,15 +105,14 @@ public class AuctionManager : Singleton<AuctionManager>
         if (!AuctionLots.Contains(itemToRemove))
             return;
 
-        if (itemToRemove.BidderName != "") // Player won the bid. 
+        if (itemToRemove.BidderName != "") // Player won the bid.
         {
             RemoveAuctionLotSold(itemToRemove, itemToRemove.BidderName, itemToRemove.BidMoney);
             return;
         }
 
-        // Item did not sell by end of the timer. 
-        var itemTemplate = ItemManager.Instance.GetItemTemplateFromItemId(itemToRemove.Item.TemplateId);
-        var newItem = ItemManager.Instance.Create(itemTemplate.Id, itemToRemove.Item.Count, itemToRemove.Item.Grade);
+        // Item did not sell by end of the timer.
+        var newItem = ItemManager.Instance.GetItemByItemId(itemToRemove.Item.Id);
         var itemList = new Item[10].ToList();
         itemList[0] = newItem;
 
@@ -281,7 +281,7 @@ public class AuctionManager : Singleton<AuctionManager>
 
         if (searchedArticles.Count <= 0)
         {
-            player.SendPacket(new SCAuctionSearchedPacket(0, 0, new List<AuctionLot>(), (short)ErrorMessageType.NoErrorMessage, DateTime.UtcNow));
+            player.SendPacket(new SCAuctionSearchedPacket(0, 0, [], (short)ErrorMessageType.NoErrorMessage, DateTime.UtcNow));
             return;
         }
 
@@ -493,73 +493,57 @@ public class AuctionManager : Singleton<AuctionManager>
 
     public void Load()
     {
-        AuctionLots = new List<AuctionLot>();
-        //AuctionBids = new List<AuctionBid>();
-        AuctionSolds = new List<AuctionSold>();
+        AuctionLots = [];
+        AuctionSolds = [];
+        _deletedAuctionItemIds = [];
 
-        //_auctionItems = new List<AuctionItem>();
-        _deletedAuctionItemIds = new List<long>();
+        using (var connection = MySQL.CreateConnection())
+        {
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM auction_house";
+                command.Prepare();
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var auctionLot = new AuctionLot();
+                        auctionLot.Id = reader.GetUInt64("id");
+                        auctionLot.Duration = (AuctionDuration)reader.GetByte("duration"); // 8 is 6 hours, 9 is 12 hours, 10 is 24 hours, 11 is 48 hours
 
+                        var itemId = reader.GetUInt32("item_id");
+                        var item = ItemManager.Instance.GetItemByItemId(itemId);
+                        if (item == null)
+                        {
+                            continue;
+                        }
+
+                        auctionLot.EndTime = reader.GetDateTime("end_time");
+
+                        auctionLot.WorldId = reader.GetByte("world_id");
+                        auctionLot.ClientId = reader.GetUInt32("client_id");
+                        auctionLot.ClientName = reader.GetString("client_name");
+                        auctionLot.StartMoney = reader.GetInt32("start_money");
+                        auctionLot.DirectMoney = reader.GetInt32("direct_money");
+
+                        auctionLot.ChargePercent = reader.GetInt32("charge_percent"); // added in 5+
+
+                        auctionLot.BidWorldId = (byte)reader.GetInt32("bid_world_id");
+                        auctionLot.BidderId = reader.GetUInt32("bidder_id");
+                        auctionLot.BidderName = reader.GetString("bidder_name");
+                        auctionLot.BidMoney = reader.GetInt32("bid_money");
+                        auctionLot.Extra = reader.GetInt32("extra");
+
+                        auctionLot.MinStack = reader.GetInt32("min_stack"); // added in 5+
+                        auctionLot.MaxStack = reader.GetInt32("max_stack"); // added in 5+
+
+                        AddAuctionLot(auctionLot);
+                    }
+                }
+            }
+        }
         var auctionTask = new AuctionHouseTask();
         TaskManager.Instance.Schedule(auctionTask, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
-
-        // TODO отключим считывание сохранение в базу
-
-        return;
-
-        //using (var connection = MySQL.CreateConnection())
-        //{
-        //    using (var command = connection.CreateCommand())
-        //    {
-        //        command.CommandText = "SELECT * FROM auction_house";
-        //        command.Prepare();
-        //        using (var reader = command.ExecuteReader())
-        //        {
-        //            while (reader.Read())
-        //            {
-        //                var auctionItem = new AuctionItem();
-        //                auctionItem.Id = reader.GetUInt64("id");
-        //                auctionItem.Duration = reader.GetByte("duration"); // 8 is 6 hours, 9 is 12 hours, 10 is 24 hours, 11 is 48 hours
-        //                auctionItem.ItemId = reader.GetUInt32("item_id");
-        //                auctionItem.Id = reader.GetUInt32("object_id");
-        //                auctionItem.Grade = reader.GetByte("grade");
-        //                auctionItem.Flags = (ItemFlag)reader.GetByte("flags");
-        //                auctionItem.StackSize = reader.GetUInt32("stack_size");
-        //                auctionItem.DetailType = reader.GetByte("detail_type");
-        //                auctionItem.CreationTime = reader.GetDateTime("creation_time");
-        //                auctionItem.EndTime = reader.GetDateTime("end_time");
-        //                auctionItem.LifespanMins = reader.GetUInt32("lifespan_mins");
-        //                auctionItem.MadeUnitId = reader.GetUInt32("made_unit_id");
-        //                auctionItem.WorldId = reader.GetByte("world_id");
-        //                auctionItem.UnsecureDateTime = reader.GetDateTime("unsecure_date_time");
-        //                auctionItem.UnpackDateTime = reader.GetDateTime("unpack_date_time");
-
-        //                auctionItem.ChargeUseSkillTime = reader.GetDateTime("charge_use_skill_time"); // added in 5+
-
-        //                auctionItem.WorldId2 = reader.GetByte("world_id_2");
-        //                auctionItem.ClientId = reader.GetUInt32("client_id");
-        //                auctionItem.ClientName = reader.GetString("client_name");
-        //                auctionItem.StartMoney = reader.GetInt32("start_money");
-        //                auctionItem.DirectMoney = reader.GetInt32("direct_money");
-
-        //                auctionItem.ChargePercent = reader.GetInt32("charge_percent"); // added in 5+
-
-        //                auctionItem.BidWorldId = reader.GetByte("bid_world_id");
-        //                auctionItem.BidderId = reader.GetUInt32("bidder_id");
-        //                auctionItem.BidderName = reader.GetString("bidder_name");
-        //                auctionItem.BidMoney = reader.GetInt32("bid_money");
-        //                auctionItem.Extra = reader.GetUInt32("extra");
-
-        //                auctionItem.MinStack = reader.GetUInt32("min_stack"); // added in 5+
-        //                auctionItem.MaxStack = reader.GetUInt32("max_stack"); // added in 5+
-
-        //                AddAuctionItem(auctionItem);
-        //            }
-        //        }
-        //    }
-        //}
-        //var auctionTask = new AuctionHouseTask();
-        //TaskManager.Instance.Schedule(auctionTask, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
     }
 
     public (int, int) Save(MySqlConnection connection, MySqlTransaction transaction)
@@ -625,60 +609,48 @@ public class AuctionManager : Singleton<AuctionManager>
             {
                 // TODO отключим сохранение в базу
 
-                //command.Connection = connection;
-                //command.Transaction = transaction;
+                command.Connection = connection;
+                command.Transaction = transaction;
 
-                //command.CommandText = "REPLACE INTO auction_house(" +
-                //    "`id`, `duration`, `item_id`, `object_id`, `grade`, `flags`, `stack_size`, `detail_type`," +
-                //    " `creation_time`,`end_time`, `lifespan_mins`, `made_unit_id`, `world_id`, `unsecure_date_time`, `unpack_date_time`, `charge_use_skill_time`," +
-                //    " `world_id_2`, `client_id`, `client_name`, `start_money`, `direct_money`, `charge_percent`, `bid_world_id`," +
-                //    " `bidder_id`, `bidder_name`, `bid_money`, `extra`, `min_stack`, `max_stack`" +
-                //    ") VALUES (" +
-                //    "@id, @duration, @item_id, @object_id, @grade, @flags, @stack_size, @detail_type," +
-                //    " @creation_time, @end_time, @lifespan_mins, @made_unit_id, @world_id, @unsecure_date_time, @unpack_date_time, @charge_use_skill_time," +
-                //    " @world_id_2, @client_id, @client_name, @start_money, @direct_money, @charge_percent, @bid_world_id," +
-                //    " @bidder_id, @bidder_name, @bid_money, @extra, @min_stack, @max_stack)";
+                command.CommandText = "REPLACE INTO auction_house(" +
+                    "`id`, `duration`," +
+                    " `item_id`," +
+                    "`end_time`," +
+                    " `world_id`, `client_id`, `client_name`," +
+                    " `start_money`, `direct_money`, `charge_percent`," +
+                    " `bid_world_id`, `bidder_id`, `bidder_name`," +
+                    " `bid_money`, `extra`, `min_stack`, `max_stack`" +
+                    ") VALUES (" +
+                    "@id, @duration," +
+                    " @item_id," +
+                    "@end_time," +
+                    " @world_id, @client_id, @client_name," +
+                    " @start_money, @direct_money, @charge_percent," +
+                    " @bid_world_id, @bidder_id, @bidder_name," +
+                    " @bid_money, @extra, @min_stack, @max_stack)";
 
-                //command.Parameters.AddWithValue("@id", mtbs.Id);
-                //command.Parameters.AddWithValue("@duration", (byte)mtbs.Duration);
+                command.Parameters.AddWithValue("@id", mtbs.Id);
+                command.Parameters.AddWithValue("@duration", (byte)mtbs.Duration);
 
-                //command.Parameters.AddWithValue("@item_id", mtbs.Item.TemplateId); // itemId
-                //command.Parameters.AddWithValue("@object_id", mtbs.Item.Id);       // id
-                //command.Parameters.AddWithValue("@grade", mtbs.Item.Grade);
-                //command.Parameters.AddWithValue("@flags", mtbs.Item.Flags);
-                //command.Parameters.AddWithValue("@stack_size", mtbs.Item.Count);
-                //command.Parameters.AddWithValue("@detail_type", mtbs.Item.DetailType);
+                command.Parameters.AddWithValue("@item_id", mtbs.Item.Id); // item.Id
 
-                //command.Parameters.AddWithValue("@details", details.GetBytes());
+                command.Parameters.AddWithValue("@end_time", mtbs.EndTime);
+                command.Parameters.AddWithValue("@world_id", mtbs.WorldId);
+                command.Parameters.AddWithValue("@client_id", mtbs.ClientId);
+                command.Parameters.AddWithValue("@client_name", mtbs.ClientName);
+                command.Parameters.AddWithValue("@start_money", mtbs.StartMoney);
+                command.Parameters.AddWithValue("@direct_money", mtbs.DirectMoney);
+                command.Parameters.AddWithValue("@charge_percent", mtbs.ChargePercent); // added in 5+
+                command.Parameters.AddWithValue("@bid_world_id", mtbs.BidWorldId);
+                command.Parameters.AddWithValue("@bidder_id", mtbs.BidderId);
+                command.Parameters.AddWithValue("@bidder_name", mtbs.BidderName);
+                command.Parameters.AddWithValue("@bid_money", mtbs.BidMoney);
+                command.Parameters.AddWithValue("@extra", mtbs.Extra);
+                command.Parameters.AddWithValue("@min_stack", mtbs.MinStack); // added in 5+
+                command.Parameters.AddWithValue("@max_stack", mtbs.MaxStack); // added in 5+
 
-                //command.Parameters.AddWithValue("@lifespan_mins", mtbs.Item.LifespanMins);
-                //command.Parameters.AddWithValue("@made_unit_id", mtbs.Item.MadeUnitId);
-                //command.Parameters.AddWithValue("@unsecure_date_time", mtbs.Item.UnsecureTime);
-                //command.Parameters.AddWithValue("@unpack_date_time", mtbs.Item.UnpackTime);
-                //command.Parameters.AddWithValue("@creation_time", mtbs.Item.CreateTime);
-
-                //command.Parameters.AddWithValue("@world_id", mtbs.Item.WorldId);
-
-                //command.Parameters.AddWithValue("@end_time", mtbs.EndTime);
-
-                //command.Parameters.AddWithValue("@charge_use_skill_time", mtbs.Item.ChargeUseSkillTime); // added in 5+
-                //command.Parameters.AddWithValue("@world_id_2", mtbs.WorldId);
-                //command.Parameters.AddWithValue("@client_id", mtbs.ClientId);
-                //command.Parameters.AddWithValue("@client_name", mtbs.ClientName);
-                //command.Parameters.AddWithValue("@start_money", mtbs.StartMoney);
-                //command.Parameters.AddWithValue("@direct_money", mtbs.DirectMoney);
-                //command.Parameters.AddWithValue("@time_left", mtbs.TimeLeft);
-                //command.Parameters.AddWithValue("@charge_percent", mtbs.ChargePercent); // added in 5+
-                //command.Parameters.AddWithValue("@bid_world_id", mtbs.BidWorldId);
-                //command.Parameters.AddWithValue("@bidder_id", mtbs.BidderId);
-                //command.Parameters.AddWithValue("@bidder_name", mtbs.BidderName);
-                //command.Parameters.AddWithValue("@bid_money", mtbs.BidMoney);
-                //command.Parameters.AddWithValue("@extra", mtbs.Extra);
-                //command.Parameters.AddWithValue("@min_stack", mtbs.MinStack); // added in 5+
-                //command.Parameters.AddWithValue("@max_stack", mtbs.MaxStack); // added in 5+
-
-                //command.Prepare();
-                //command.ExecuteNonQuery();
+                command.Prepare();
+                command.ExecuteNonQuery();
                 updatedCount++;
                 mtbs.IsDirty = false;
             }
@@ -811,7 +783,7 @@ public class AuctionManager : Singleton<AuctionManager>
 
         if (searchedArticles.Count == 0)
         {
-            player.SendPacket(new SCAuctionSearchedPacket(0, 0, new List<AuctionLot>(), (short)ErrorMessageType.NoErrorMessage, DateTime.UtcNow));
+            player.SendPacket(new SCAuctionSearchedPacket(0, 0, [], (short)ErrorMessageType.NoErrorMessage, DateTime.UtcNow));
             return;
         }
 
@@ -827,6 +799,7 @@ public class AuctionManager : Singleton<AuctionManager>
         {
             return;
         }
+
         var lot = CreateAuctionLot(player, item, startPrice, buyoutPrice, duration, minStack, maxStack);
         if (lot == null)
         {
@@ -846,17 +819,16 @@ public class AuctionManager : Singleton<AuctionManager>
             return;
         }
 
-        //CheapestAuctionLot(player, item.TemplateId, item.Grade);
+        player.Inventory.AuctionAttachments.AddOrMoveExistingItem(ItemTaskType.Auction, item);
 
-        player.Inventory.Bag.RemoveItem(ItemTaskType.Auction, item, true);
         AddAuctionLot(lot);
         player.SendPacket(new SCAuctionPostedPacket(lot));
     }
 
     public class LanguageDetector
     {
-        private static readonly string[] CyrillicLanguages = { "ru", "uk", "bg", "sr", "mk" };
-        private static readonly string[] LatinLanguages = { "en", "es", "fr", "de", "it" };
+        private static readonly string[] CyrillicLanguages = ["ru", "uk", "bg", "sr", "mk"];
+        private static readonly string[] LatinLanguages = ["en", "es", "fr", "de", "it"];
 
         public static string DetectLanguage(string text)
         {

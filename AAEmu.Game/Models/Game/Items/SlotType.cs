@@ -7,7 +7,7 @@ public enum SlotType : byte
     Bag = 2,
     Bank = 3,
     Coffer = 4,
-    Seized = 5, // связан с почтой
+    Seized = 5,
     Auction = 6,
     Mountable = 64,
     Mountable1Bag = 65,
