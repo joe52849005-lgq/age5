@@ -64,18 +64,9 @@ public class AuctionManager : Singleton<AuctionManager>
 
     private void BuyPartOfTheAuctionLot(AuctionLot auctionLot, string buyer, int soldAmount, int count)
     {
-        // TODO так делить на стопки
-        //var character = WorldManager.Instance.GetCharacterById(auctionLot.ClientId);
-        //character.Inventory.SplitOrMoveItem(ItemTaskType.Split, auctionLot.Item.Id, SlotType.Action, 0, 0, 0, 0, count);
-        // может надо клонировать?
-        //var newItem = Helpers.Clone(auctionLot.Item);
-        //newItem.Item.Count = count;
-        //var itemTemplate = ItemManager.Instance.GetItemTemplateFromItemId(auctionLot.Item.TemplateId);
-        ////var newItem = ItemManager.Instance.Create(itemTemplate.Id, auctionLot.Item.Count, auctionLot.Item.Grade);
-        //var newItem = ItemManager.Instance.Create(itemTemplate.Id, count, auctionLot.Item.Grade);
-
-        var newItem = ItemManager.Instance.GetItemByItemId(auctionLot.Item.Id);
-        //newItem.Count = count;
+        // предмет должен быть с новым id
+        var itemTemplate = ItemManager.Instance.GetItemTemplateFromItemId(auctionLot.Item.TemplateId);
+        var newItem = ItemManager.Instance.Create(itemTemplate.Id, count, auctionLot.Item.Grade);
 
         var moneyAfterFee = soldAmount * .9;
 
