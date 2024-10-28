@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using AAEmu.Commons.Network;
 using AAEmu.Commons.Utils;
 using AAEmu.Commons.Utils.DB;
-using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game.Auction;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Items.Actions;
 using AAEmu.Game.Models.Game.Mails;
+using AAEmu.Game.Scripts.Commands;
 
 using MySql.Data.MySqlClient;
 
@@ -23,7 +24,8 @@ public class AuctionManager : Singleton<AuctionManager>
     private static Logger Logger { get; } = LogManager.GetCurrentClassLogger();
 
     public List<AuctionLot> AuctionLots;
-    public List<AuctionSold> AuctionSolds;
+    public Dictionary<(uint TemplateId, byte Grade), List<(DateTime Date, AuctionLot Lot)>> SalesData = new();
+    public Dictionary<(uint TemplateId, byte Grade), List<(DateTime Date, AuctionSold Sold)>> SoldsData = new();
 
     public List<long> _deletedAuctionItemIds;
 
@@ -185,6 +187,9 @@ public class AuctionManager : Singleton<AuctionManager>
 
                 // Обновление данных в списке AuctionLots
                 UpdateAuctionLotInList(auctionLot);
+
+                auctionLot.BidMoney = bid.Money;
+                auctionLot.Extra = bid.StackSize;
             }
             else if (bid.Money >= auctionLot.DirectMoney && auctionLot.DirectMoney != 0) // Buy now
             {
@@ -197,6 +202,9 @@ public class AuctionManager : Singleton<AuctionManager>
 
                 player.SubtractMoney(SlotType.Bag, auctionLot.DirectMoney);
                 RemoveAuctionLotSold(auctionLot, player.Name, auctionLot.DirectMoney);
+
+                auctionLot.BidMoney = bid.Money;
+                auctionLot.Extra = bid.StackSize;
             }
             else if (bid.Money > auctionLot.BidMoney) // Bid
             {
@@ -230,7 +238,12 @@ public class AuctionManager : Singleton<AuctionManager>
 
                 // Обновление данных в списке AuctionLots
                 UpdateAuctionLotInList(auctionLot);
+
+                auctionLot.BidMoney = bid.Money;
+                auctionLot.Extra = bid.StackSize;
             }
+
+            AddAuctionSold(auctionLot);
         }
     }
 
@@ -279,70 +292,6 @@ public class AuctionManager : Singleton<AuctionManager>
         var articles = SortArticles(searchedArticles, AuctionSearchSortKind.Default, AuctionSearchSortOrder.Asc).ToArray();
         var dividedLists = Helpers.SplitArray(articles, 9); // Разделяем массив на массивы по 9 значений
         player.SendPacket(new SCAuctionSearchedPacket(page, dividedLists[page].Length, dividedLists[page].ToList(), (short)ErrorMessageType.NoErrorMessage, DateTime.UtcNow));
-    }
-
-    public List<AuctionSold> GetSoldAuctionLots(uint templateId, byte itemGrade)
-    {
-        lock (AuctionLots)
-        {
-            var idx = 0;
-            if (AuctionSolds?.Count > 0)
-            {
-                var temp = AuctionSolds.OrderByDescending(x => x.Id).ToList();
-                var auctionSold = temp.First();
-                idx = auctionSold.Id;
-
-            }
-
-            var tempList = AuctionSolds.Where(lot => lot.ItemId == templateId).ToList();
-
-            if (tempList.Count <= 0)
-            {
-                AuctionSolds = GenerateRandomAuctionSolds(templateId, itemGrade, ref idx);
-
-                return AuctionSolds;
-            }
-
-            tempList = tempList.OrderBy(x => x.Day).ToList();
-
-            return tempList;
-        }
-    }
-
-    private static List<AuctionSold> GenerateRandomAuctionSolds(uint templateId, byte itemGrade, ref int idx)
-    {
-        var tempList = new List<AuctionSold>();
-
-        for (var i = 0; i < 14; i++)
-        {
-            tempList.Add(GenerateRandomAuctionSold(templateId, itemGrade, ref idx, i));
-        }
-
-        return tempList;
-    }
-
-    private static AuctionSold GenerateRandomAuctionSold(uint templateId, byte itemGrade, ref int idx, int day)
-    {
-        var Random = new Random();
-        var MinCopper = Random.Next(1, 5999);
-        var MaxCopper = Random.Next(6000, 9999);
-        var AvgCopper = (MaxCopper + MinCopper) / 2;
-        var Volume = Random.Next(1, 5999);
-
-        var item = new AuctionSold
-        {
-            Id = ++idx,
-            ItemId = templateId,
-            Day = day,
-            MinCopper = MinCopper,
-            MaxCopper = MaxCopper,
-            AvgCopper = AvgCopper,
-            Volume = Volume,
-            ItemGrade = itemGrade,
-            WeeklyAvgCopper = 1400
-        };
-
-        return item;
     }
 
     public AuctionLot GetCheapestAuctionLot(uint templateId)
@@ -485,7 +434,7 @@ public class AuctionManager : Singleton<AuctionManager>
     public void Load()
     {
         AuctionLots = [];
-        AuctionSolds = [];
+        SoldsData = [];
         _deletedAuctionItemIds = [];
 
         using (var connection = MySQL.CreateConnection())
@@ -532,6 +481,8 @@ public class AuctionManager : Singleton<AuctionManager>
                     }
                 }
             }
+
+            ReadAuctionSoldsData(connection);
         }
         var auctionTask = new AuctionHouseTask();
         TaskManager.Instance.Schedule(auctionTask, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
@@ -646,6 +597,8 @@ public class AuctionManager : Singleton<AuctionManager>
                 mtbs.IsDirty = false;
             }
         }
+
+        SaveSoldsData(connection);
 
         return (updatedCount, deletedCount);
     }
@@ -816,7 +769,7 @@ public class AuctionManager : Singleton<AuctionManager>
         player.SendPacket(new SCAuctionPostedPacket(lot));
     }
 
-    public class LanguageDetector
+    private class LanguageDetector
     {
         private static readonly string[] CyrillicLanguages = ["ru", "uk", "bg", "sr", "mk"];
         private static readonly string[] LatinLanguages = ["en", "es", "fr", "de", "it"];
@@ -852,5 +805,288 @@ public class AuctionManager : Singleton<AuctionManager>
         {
             return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
         }
+    }
+
+    private void AddAuctionSold(AuctionLot lot)
+    {
+        var key = (lot.Item.TemplateId, lot.Item.Grade);
+        if (!SalesData.ContainsKey(key))
+        {
+            SalesData[key] = new List<(DateTime, AuctionLot)>();
+        }
+        SalesData[key].Add((DateTime.UtcNow, lot));
+    }
+
+    public List<AuctionSold> GetSalesForLast14Days(uint itemTemplateId, byte itemGradeId)
+    {
+        var key = (itemTemplateId, itemGradeId);
+        var result = new List<AuctionSold>();
+
+        // Создаем список из 14 дней с нулевыми значениями
+        for (var i = 0; i < 14; i++)
+        {
+            result.Add(new AuctionSold
+            {
+                ItemId = itemTemplateId,
+                Day = i + 1,
+                MinCopper = 0,
+                MaxCopper = 0,
+                AvgCopper = 0,
+                Volume = 0,
+                ItemGrade = itemGradeId,
+                WeeklyAvgCopper = 0
+            });
+        }
+
+        if (SalesData.Count != 0)
+        {
+            var sales = SalesData[key];
+            var salesByDay = sales.GroupBy(s => s.Date.Date).OrderBy(g => g.Key).TakeLast(14);
+
+            foreach (var daySales in salesByDay)
+            {
+                var day = (daySales.Key - DateTime.UtcNow.Date).Days + 1;
+                var salesForDay = daySales.ToList();
+
+                if (salesForDay.Count > 0)
+                {
+                    var minCopper = salesForDay.Min(s => s.Lot.BidMoney);
+                    var maxCopper = salesForDay.Max(s => s.Lot.BidMoney);
+                    var avgCopper = (long)salesForDay.Average(s => s.Lot.BidMoney);
+                    var volume = salesForDay.Sum(s => s.Lot.Extra);
+
+                    // Расчет WeeklyAvgCopper
+                    var weeklySales = salesByDay.Where(g => (g.Key - daySales.Key).Days >= 0 && (g.Key - daySales.Key).Days < 7).SelectMany(g => g);
+                    var weeklyAvgCopper = weeklySales.Any() ? (long)weeklySales.Average(s => s.Lot.BidMoney) : 0;
+
+                    result[14 - day] = new AuctionSold
+                    {
+                        ItemId = itemTemplateId,
+                        Day = day,
+                        MinCopper = minCopper,
+                        MaxCopper = maxCopper,
+                        AvgCopper = avgCopper,
+                        Volume = volume,
+                        ItemGrade = itemGradeId,
+                        WeeklyAvgCopper = weeklyAvgCopper
+                    };
+                }
+            }
+
+            // Сохраняем результат в SoldsData
+            if (!SoldsData.ContainsKey(key))
+            {
+                SoldsData[key] = [];
+            }
+
+            for (var i = 0; i < 14; i++)
+            {
+                var date = DateTime.UtcNow.Date.AddDays(-i);
+                var sold = result[14 - i - 1];
+                SoldsData[key].Add((date, sold));
+            }
+        }
+        else
+        {
+            var res = GetLast14AuctionSoldByItemId(MySQL.CreateConnection(), key);
+            if (res.Count > 0)
+            {
+                result = res;
+            }
+        }
+
+        return result;
+    }
+
+    private List<AuctionSold> GetLast14AuctionSoldByItemId(MySqlConnection connection, (uint itemTemplateId, byte itemGradeId) key)
+    {
+
+        //public static List<(DateTime Date, AuctionSold Sold)> GetLast14AuctionSoldByItemId(MySqlConnection connection, (uint itemTemplateId, byte itemGradeId) key)
+
+        // Список для хранения данных
+        var last14AuctionSold = new List<AuctionSold>();
+
+        // SQL-запрос для выборки данных с использованием ROW_NUMBER()
+        var query = @"
+            WITH RankedData AS (
+                SELECT 
+                    item_id, 
+                    item_grade, 
+                    date, 
+                    min_copper, 
+                    max_copper, 
+                    avg_copper, 
+                    volume, 
+                    weekly_avg_copper,
+                    ROW_NUMBER() OVER (PARTITION BY item_id, item_grade ORDER BY date ASC) AS rn
+                FROM 
+                    auction_solds_data
+                WHERE 
+                    item_id = @itemTemplateId AND item_grade = @itemGradeId
+            )
+            SELECT 
+                item_id, 
+                item_grade, 
+                date, 
+                min_copper, 
+                max_copper, 
+                avg_copper, 
+                volume, 
+                weekly_avg_copper,
+                rn
+            FROM 
+                RankedData
+            WHERE 
+                rn <= 14";
+
+        var command = new MySqlCommand(query, connection);
+        command.Parameters.AddWithValue("@itemTemplateId", key.itemTemplateId);
+        command.Parameters.AddWithValue("@itemGradeId", key.itemGradeId);
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            var itemId = reader.GetUInt32("item_id");
+            var itemGrade = reader.GetByte("item_grade");
+            var date = reader.GetDateTime("date");
+            var minCopper = reader.GetInt64("min_copper");
+            var maxCopper = reader.GetInt64("max_copper");
+            var avgCopper = reader.GetInt64("avg_copper");
+            var volume = reader.GetInt32("volume");
+            var weeklyAvgCopper = reader.GetInt64("weekly_avg_copper");
+            var day = reader.GetInt32("rn"); // Номер строки (ранг)
+
+            // Создаем объект AuctionSold
+            var sold = new AuctionSold
+            {
+                ItemId = itemId,
+                ItemGrade = itemGrade,
+                MinCopper = minCopper,
+                MaxCopper = maxCopper,
+                AvgCopper = avgCopper,
+                Volume = volume,
+                WeeklyAvgCopper = weeklyAvgCopper,
+                Day = day
+            };
+
+            // Добавляем данные в список
+            last14AuctionSold.Add(sold);
+        }
+
+        return last14AuctionSold;
+    }
+
+    private void ReadAuctionSoldsData(MySqlConnection connection)
+    {
+        // SQL-запрос для выборки данных с использованием ROW_NUMBER()
+        var query = @"
+                WITH RankedData AS (
+                    SELECT 
+                        item_id, 
+                        item_grade, 
+                        date, 
+                        min_copper, 
+                        max_copper, 
+                        avg_copper, 
+                        volume, 
+                        weekly_avg_copper,
+                        ROW_NUMBER() OVER (PARTITION BY item_id, item_grade ORDER BY date ASC) AS rn
+                    FROM 
+                        auction_solds_data
+                )
+                SELECT 
+                    item_id, 
+                    item_grade, 
+                    date, 
+                    min_copper, 
+                    max_copper, 
+                    avg_copper, 
+                    volume, 
+                    weekly_avg_copper,
+                    rn
+                FROM 
+                    RankedData
+                WHERE 
+                    rn <= 14";
+
+        var command = new MySqlCommand(query, connection);
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            var itemId = reader.GetUInt32("item_id");
+            var itemGrade = reader.GetByte("item_grade");
+            var date = reader.GetDateTime("date");
+            var minCopper = reader.GetInt64("min_copper");
+            var maxCopper = reader.GetInt64("max_copper");
+            var avgCopper = reader.GetInt64("avg_copper");
+            var volume = reader.GetInt32("volume");
+            var weeklyAvgCopper = reader.GetInt64("weekly_avg_copper");
+            var day = reader.GetInt32("rn"); // Номер строки (ранг)
+
+            // Создаем объект AuctionSold
+            var sold = new AuctionSold
+            {
+                ItemId = itemId,
+                ItemGrade = itemGrade,
+                MinCopper = minCopper,
+                MaxCopper = maxCopper,
+                AvgCopper = avgCopper,
+                Volume = volume,
+                WeeklyAvgCopper = weeklyAvgCopper,
+                Day = day
+            };
+
+            // Добавляем данные в словарь
+            var key = (itemId, itemGrade);
+            if (!SoldsData.ContainsKey(key))
+            {
+                SoldsData[key] = new List<(DateTime, AuctionSold)>();
+            }
+            SoldsData[key].Add((date, sold));
+        }
+    }
+
+    private void SaveSoldsData(MySqlConnection connection)
+    {
+        if (connection.State != System.Data.ConnectionState.Open)
+        {
+            connection.Open();
+        }
+
+        try
+        {
+            foreach (var (key, solds) in SoldsData)
+            {
+                foreach (var (date, sold) in solds)
+                {
+                    SaveAuctionSold(connection, sold, date);
+                }
+            }
+
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Failed to save solds data to the database.", ex);
+        }
+    }
+
+    private static void SaveAuctionSold(MySqlConnection connection, AuctionSold auctionSold, DateTime date)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = "INSERT INTO auction_solds_data (item_id, item_grade, date, min_copper, max_copper, avg_copper, volume, weekly_avg_copper) " +
+                              "VALUES (@item_id, @item_grade, @date, @min_copper, @max_copper, @avg_copper, @volume, @weekly_avg_copper) " +
+                              "ON DUPLICATE KEY UPDATE min_copper = @min_copper, max_copper = @max_copper, avg_copper = @avg_copper, volume = @volume, weekly_avg_copper = @weekly_avg_copper;";
+
+        command.Parameters.AddWithValue("@item_id", auctionSold.ItemId);
+        command.Parameters.AddWithValue("@item_grade", auctionSold.ItemGrade);
+        command.Parameters.AddWithValue("@date", date);
+        command.Parameters.AddWithValue("@min_copper", auctionSold.MinCopper);
+        command.Parameters.AddWithValue("@max_copper", auctionSold.MaxCopper);
+        command.Parameters.AddWithValue("@avg_copper", auctionSold.AvgCopper);
+        command.Parameters.AddWithValue("@volume", auctionSold.Volume);
+        command.Parameters.AddWithValue("@weekly_avg_copper", auctionSold.WeeklyAvgCopper);
+
+        command.Prepare();
+        command.ExecuteNonQuery();
     }
 }

@@ -121,20 +121,19 @@ CREATE TABLE `auction_house`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = 'Listed AH Items' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
--- Table structure for auction_sold
+-- Table structure for auction_solds_data
 -- ----------------------------
-DROP TABLE IF EXISTS `auction_sold`;
-CREATE TABLE `auction_sold`  (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `item_id` int UNSIGNED NOT NULL,
-  `day` int NOT NULL,
-  `min_copper` bigint NOT NULL,
-  `max_copper` bigint NOT NULL,
-  `avg_copper` bigint NOT NULL,
-  `volume` int NOT NULL,
-  `item_grade` tinyint NOT NULL,
-  `weekly_avg_copper` bigint NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE
+DROP TABLE IF EXISTS `auction_solds_data`;
+CREATE TABLE auction_solds_data (
+    item_id INT UNSIGNED NOT NULL,
+    item_grade TINYINT NOT NULL,
+    date datetime NOT NULL,
+    min_copper BIGINT NOT NULL,
+    max_copper BIGINT NOT NULL,
+    avg_copper BIGINT NOT NULL,
+    volume INT NOT NULL,
+    weekly_avg_copper BIGINT NOT NULL,
+    PRIMARY KEY (item_id, item_grade, date)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
