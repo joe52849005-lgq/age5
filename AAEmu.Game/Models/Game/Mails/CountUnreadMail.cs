@@ -53,6 +53,7 @@ public class CountUnreadMail : PacketMarshaler
             TotalReceived += amount;
         }
     }
+
     public void UpdateUnreadReceived(MailType mailType, int amount)
     {
         if (mailType is MailType.Charged or MailType.Promotion)
@@ -69,5 +70,4 @@ public class CountUnreadMail : PacketMarshaler
             UnreadReceived += amount;
         }
     }
-
 }

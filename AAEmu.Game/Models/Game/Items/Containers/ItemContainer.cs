@@ -404,6 +404,7 @@ public class ItemContainer
         if (sourceContainer != null && sourceContainer != this)
         {
             sourceContainer.Items.Remove(item);
+            sourceContainer.IsDirty = true;
             sourceContainer.UpdateFreeSlotCount();
             if (sourceContainer.ContainerType != SlotType.MailAttachment)
             {

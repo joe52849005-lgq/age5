@@ -441,6 +441,7 @@ public class MailManager : Singleton<MailManager>
             {
                 mail.Header.Status = MailStatus.Read;
                 character.Mails.UnreadMailCount.UpdateReceived(mail.MailType, -1);
+                character.Mails.UnreadMailCount.UpdateUnreadReceived(mail.MailType, -1);
             }
 
             character.SendPacket(new SCChargeMoneyPaidPacket(mail.Id));

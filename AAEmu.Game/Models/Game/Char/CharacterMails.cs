@@ -278,7 +278,7 @@ public class CharacterMails
                 {
                     var dummyItemSlotList = new List<ItemIdAndLocation>();
                     dummyItemSlotList.Add(iSlot);
-                    Self.SendPacket(new SCMailAttachmentTakenPacket(mailId, takeMoney, false, takeAllSelected, dummyItemSlotList));
+                    Self.SendPacket(new SCMailAttachmentTakenPacket(mailId, false, false, false, dummyItemSlotList));
                 }
             }
 
@@ -287,8 +287,14 @@ public class CharacterMails
             {
                 thisMail.Header.Status = MailStatus.Read;
                 UnreadMailCount.UpdateReceived(thisMail.MailType, -1);
+                UnreadMailCount.UpdateUnreadReceived(thisMail.MailType, -1);
                 Self.SendPacket(new SCMailStatusUpdatedPacket(false, mailId, MailStatus.Read));
                 SendUnreadMailCount();
+            }
+            if (thisMail.Header.Status == MailStatus.Unpaid && itemSlotList.Count > 0)
+            {
+                thisMail.Header.Status = MailStatus.Read;
+                Self.Mails.DeleteMail(mailId, false);
             }
 
             // TODO: Make sure attachment settings and mail info is sent back correctly 
@@ -315,6 +321,7 @@ public class CharacterMails
                 else
                 {
                     UnreadMailCount.UpdateReceived(MailManager.Instance._allPlayerMails[id].MailType, -1);
+                    UnreadMailCount.UpdateUnreadReceived(MailManager.Instance._allPlayerMails[id].MailType, -1);
                     Self.SendPacket(new SCMailDeletedPacket(isSent, id, false, UnreadMailCount));
                 }
 

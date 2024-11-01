@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using AAEmu.Game.Core.Managers.World;
+using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Items.Actions;
 using AAEmu.Game.Models.Game.Mails.Static;
@@ -40,11 +41,13 @@ public class CommercialMail : BaseMail
         _purchasedItemTitle = purchasedItemTitle;
 
         MailType = MailType.Charged;
+        Header.Status = MailStatus.Unpaid;
         Header.SenderId = (uint)SystemMailSenderKind.IngameShop;
         Header.SenderName = InGameCashShopSenderName; // Name changes depending on type of mail
         ReceiverName = receiverName;
         Header.ReceiverId = _receiverId;
 
+        Body.SendDate = DateTime.UtcNow;
         Body.RecvDate = DateTime.UtcNow; // These mails should always be instant
     }
 
@@ -58,13 +61,21 @@ public class CommercialMail : BaseMail
         // If the player is exists, move it to their mail container first
         var targetCharacter = WorldManager.Instance.GetCharacter(_receiverName);
         if (targetCharacter != null)
+        {
             foreach (var item in Body.Attachments)
-                targetCharacter.Inventory.MailAttachments.AddOrMoveExistingItem(ItemTaskType.Invalid, item);
+            {
+                if (targetCharacter.Inventory.MailAttachments.AddOrMoveExistingItem(ItemTaskType.BuyItemIngameshop, item))
+                {
+                    // TODO здесь должно уменьшаться то, чем оплатили в магазине
+                    //targetCharacter.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.BuyItemIngameshop, [], []));
+                }
+            }
+        }
 
         // Title looks like it should be the item shop entry names (in multiple language?)
         // Title = "title('Rainbow Pumpkin Taffy|Rainbow Pumpkin Taffy|Rainbow Pumpkin Taffy|彩虹南瓜糖|Радужный марципан')";
         Title = "title('" + _purchasedItemTitle.Replace("'", "\\'") + "')";
-        OpenDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc); // Always in the past
+        OpenDate = new DateTime(1999, 12, 31, 0, 0, 0, DateTimeKind.Utc); // Always in the past
 
         // Not sure what all the body fields mean
         var isPresent = (_isGift && (_senderName != string.Empty)) ? "true" : "false";
