@@ -167,6 +167,7 @@ public class CharacterMails
         if (MailManager.Instance._allPlayerMails.TryGetValue(mailId, out var thisMail))
         {
             var tookMoney = false;
+            var tookItems = false;
             if (thisMail.MailType == MailType.AucOffSuccess && thisMail.Body.CopperCoins > 0 && takeMoney)
             {
                 if (Self.LaborPower < 1)
@@ -187,12 +188,9 @@ public class CharacterMails
                 tookMoney = true;
             }
 
-            if (thisMail.Body.CopperCoins == 0 && takeMoney)
-                takeMoney = false;
-
             var itemSlotList = new List<ItemIdAndLocation>();
             // Check if items need to be taken, and add them to a list
-            if (takeItems)
+            if (takeItems && !takeMoney)
             {
                 var toRemove = new List<Item>();
                 foreach (var itemAttachment in thisMail.Body.Attachments)
@@ -254,6 +252,7 @@ public class CharacterMails
                 {
                     thisMail.Body.Attachments.Remove(ia);
                 }
+                tookItems = true;
             }
             // Mark taken items
 
@@ -262,10 +261,16 @@ public class CharacterMails
             if (tookMoney)
             {
                 Self.SendPacket(new SCMailAttachmentTakenPacket(mailId, true, false, takeAllSelected, new List<ItemIdAndLocation>()));
+                if (takeMoney && !takeItems)
+                {
+                    thisMail.Header.Status = MailStatus.Read;
+                    Self.Mails.DeleteMail(mailId, false);
+                    return true;
+                }
             }
 
             // Items
-            if (itemSlotList.Count > 0)
+            if (tookItems)
             {
                 // Self.SendPacket(new SCAttachmentTakenPacket(mailId, takeMoney, false, takeAllSelected, itemSlotList));
                 /*
@@ -282,16 +287,12 @@ public class CharacterMails
                 }
             }
 
+            // Клиент шлет пакет CSTakeAttachmentSequentiallyPacket два раза. Сначала для получения денег, затем получение предметов.
+            // Письмо удаляем только когда получим и деньги и предметы.
+
             // Mark mail as read in case we took at least one item from it
-            if (thisMail.Header.Status == MailStatus.Unread && (tookMoney || itemSlotList.Count > 0))
-            {
-                thisMail.Header.Status = MailStatus.Read;
-                UnreadMailCount.UpdateReceived(thisMail.MailType, -1);
-                UnreadMailCount.UpdateUnreadReceived(thisMail.MailType, -1);
-                Self.SendPacket(new SCMailStatusUpdatedPacket(false, mailId, MailStatus.Read));
-                SendUnreadMailCount();
-            }
-            if (thisMail.Header.Status == MailStatus.Unpaid && itemSlotList.Count > 0)
+            //if ((thisMail.Header.Status == MailStatus.Unread || thisMail.Header.Status == MailStatus.Unpaid) && (tookMoney || tookItems))
+            if (tookItems)
             {
                 thisMail.Header.Status = MailStatus.Read;
                 Self.Mails.DeleteMail(mailId, false);
