@@ -52,6 +52,8 @@ public class CountUnreadMail : PacketMarshaler
         {
             TotalReceived += amount;
         }
+
+        Logger.Debug($"UpdateReceived: TotalCommercialReceived={TotalCommercialReceived}, TotalMiaReceived={TotalMiaReceived}, TotalReceived={TotalReceived}");
     }
 
     public void UpdateUnreadReceived(MailType mailType, int amount)
@@ -69,5 +71,13 @@ public class CountUnreadMail : PacketMarshaler
         {
             UnreadReceived += amount;
         }
+        Logger.Debug($"UpdateUnreadReceived: UnreadCommercialReceived={UnreadCommercialReceived}, UnreadMiaReceived={UnreadMiaReceived}, UnreadReceived={UnreadReceived}");
+    }
+
+    public void UpdateSend(int amount)
+    {
+        TotalSent += amount;
+
+        Logger.Debug($"UpdateSend: TotalSent={TotalSent}");
     }
 }

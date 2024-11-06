@@ -74,16 +74,28 @@ public class CommercialMail : BaseMail
 
         // Title looks like it should be the item shop entry names (in multiple language?)
         // Title = "title('Rainbow Pumpkin Taffy|Rainbow Pumpkin Taffy|Rainbow Pumpkin Taffy|彩虹南瓜糖|Радужный марципан')";
-        Title = "title('" + _purchasedItemTitle.Replace("'", "\\'") + "')";
+        var purchasedItemTitle = _purchasedItemTitle.Replace("'", "\\'").Replace("(", "").Replace(")", "");
+        Title = "title('"
+                + purchasedItemTitle + "|"
+                + purchasedItemTitle + "|"
+                + purchasedItemTitle + "|"
+                + purchasedItemTitle + "|"
+                + purchasedItemTitle + "')";
         OpenDate = new DateTime(1999, 12, 31, 0, 0, 0, DateTimeKind.Utc); // Always in the past
 
         // Not sure what all the body fields mean
-        var isPresent = (_isGift && (_senderName != string.Empty)) ? "true" : "false";
-        var gifterName = (_isGift ? _senderName : "");
-        var giftString = (_isGift ? "1" : "0");
-        var refundString = (_isRefund ? "1" : "0");
+        var isPresent = _isGift && _senderName != string.Empty ? "true" : "false";
+        var gifterName = _isGift ? _senderName : "";
+        var giftString = _isGift ? "1" : "0";
+        var refundString = _isRefund ? "1" : "0";
         var expireDateString = "2100,12,31,00,00,00";
-        Body.Text = "body(" + isPresent + ",'" + gifterName + "','" + _purchasedItemTitle.Replace("'", "\\'") + "')" +
+        Body.Text = "body(" + isPresent + ",'" + gifterName
+                    + "','"
+                    + purchasedItemTitle + "|"
+                    + purchasedItemTitle + "|"
+                    + purchasedItemTitle + "|"
+                    + purchasedItemTitle + "|"
+                    + purchasedItemTitle + "', 4)" +
                     "|gift:" + giftString + ";|refund:" + refundString + ";|limit:" + expireDateString + ";";
     }
 }

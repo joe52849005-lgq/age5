@@ -107,21 +107,24 @@ public class AuctionManager : Singleton<AuctionManager>
         }
 
         // Item did not sell by end of the timer.
-        var newItem = ItemManager.Instance.GetItemByItemId(itemToRemove.Item.Id);
-        if (newItem != null)
+        if (itemToRemove.Item != null)
         {
-            var itemList = new Item[10].ToList();
-            itemList[0] = newItem;
-
-            // TODO: Read this from saved data
-            var recalculatedFee = itemToRemove.DirectMoney * .01 * ((int)itemToRemove.Duration - 8 + 1);
-            if (recalculatedFee > MaxListingFee) recalculatedFee = MaxListingFee;
-
-            if (itemToRemove.ClientName != "")
+            var newItem = ItemManager.Instance.GetItemByItemId(itemToRemove.Item.Id);
+            if (newItem != null)
             {
-                var failMail = new MailForAuction(newItem, itemToRemove.ClientId, itemToRemove.DirectMoney, (int)recalculatedFee);
-                failMail.FinalizeForFail();
-                failMail.Send();
+                var itemList = new Item[10].ToList();
+                itemList[0] = newItem;
+
+                // TODO: Read this from saved data
+                var recalculatedFee = itemToRemove.DirectMoney * .01 * ((int)itemToRemove.Duration - 8 + 1);
+                if (recalculatedFee > MaxListingFee) recalculatedFee = MaxListingFee;
+
+                if (itemToRemove.ClientName != "")
+                {
+                    var failMail = new MailForAuction(newItem, itemToRemove.ClientId, itemToRemove.DirectMoney, (int)recalculatedFee);
+                    failMail.FinalizeForFail();
+                    failMail.Send();
+                }
             }
         }
 
@@ -145,7 +148,8 @@ public class AuctionManager : Singleton<AuctionManager>
 
         var moneyToSubtract = auctionItem.DirectMoney * .1f;
         var itemList = new Item[10].ToList();
-        var newItem = ItemManager.Instance.Create(auctionItem.Item.TemplateId, auctionItem.Item.Count, auctionItem.Item.Grade);
+        //var newItem = ItemManager.Instance.Create(auctionItem.Item.TemplateId, auctionItem.Item.Count, auctionItem.Item.Grade);
+        var newItem = ItemManager.Instance.GetItemByItemId(auctionItem.Item.Id);
         if (newItem != null)
         {
             itemList[0] = newItem;
@@ -738,7 +742,7 @@ public class AuctionManager : Singleton<AuctionManager>
             return;
         }
 
-        player.Inventory.AuctionAttachments.AddOrMoveExistingItem(ItemTaskType.Auction, item);
+        player.Inventory.AuctionAttachments.AddOrMoveExistingItem2(ItemTaskType.Auction, item);
 
         AddAuctionLot(lot);
         player.SendPacket(new SCAuctionPostedPacket(lot));

@@ -148,7 +148,7 @@ public enum ItemTaskType : byte
     ItemTaskResurrectionInPlace,    // item-task-resurrection-in-place
     TodayAssignmentSupplyItems,     // today-assignment-supply-items
     ItemTaskBattleCoin,             // item-task-battle-coin
-    GiveRewardItem,                 // give-reward-item
+    GiveRewardItem = 144,           // give-reward-item
     ExchangeAapointFromCash,        // exchange-aapoint-from-cash
     SpendItemFromChat,              // spend-item-from-chat
     ItemTaskRemoveHeroReward,       // = 143,// item-task-remove-hero-reward
