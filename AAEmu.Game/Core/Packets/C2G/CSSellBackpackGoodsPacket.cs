@@ -13,6 +13,7 @@ public class CSSellBackpackGoodsPacket : GamePacket
     public override void Read(PacketStream stream)
     {
         var objId = stream.ReadBc();
+        var objId2 = stream.ReadBc();
 
         var basePrice = SpecialtyManager.Instance.SellSpecialty(Connection.ActiveChar, objId);
 

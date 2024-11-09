@@ -120,8 +120,8 @@ public enum ItemTaskType : byte
     ConsumeIndunTicket,             // consume-indun-ticket
     ExpandExpert,                   // expand-expert
     Exchange,                       // exchange
-    SellBackpack,                   // sell-backpack
-    SellSpecialty,                  // sell-specialty
+    SellBackpack = 114,             // sell-backpack
+    SellSpecialty = 115,            // sell-specialty
     BuySpecialty,                   // buy-specialty
     AskMould,                       // ask-mould
     TakeMould,                      // take-mould

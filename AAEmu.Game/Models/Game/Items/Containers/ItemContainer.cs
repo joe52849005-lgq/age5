@@ -649,7 +649,8 @@ public class ItemContainer
         var res = item._holdingContainer.Items.Remove(item);
         if (res && task != ItemTaskType.Invalid)
         {
-            item._holdingContainer?.Owner?.SendPacket(new SCItemTaskSuccessPacket(task, [new ItemRemoveSlot(item)], []));
+            //item._holdingContainer?.Owner?.SendPacket(new SCItemTaskSuccessPacket(task, [new ItemRemoveSlot(item)], []));
+            item._holdingContainer?.Owner?.SendPacket(new SCItemTaskSuccessPacket(task, [new ItemRemove(item)], []));
         }
 
         if (res && releaseIdAsWell)
@@ -700,10 +701,10 @@ public class ItemContainer
             }
 
             var toRemove = Math.Min(preferredItem.Count, amountToConsume);
-            preferredItem.Count -= toRemove;
-            amountToConsume -= toRemove;
+            //preferredItem.Count -= toRemove;
+            //amountToConsume -= toRemove;
 
-            if (preferredItem.Count > 0)
+            if (preferredItem.Count > 1)
             {
                 itemTasks.Add(new ItemCountUpdate(preferredItem, -toRemove));
             }
@@ -712,9 +713,15 @@ public class ItemContainer
                 RemoveItem(taskType, preferredItem, true); // Normally, this can never fail
             }
 
+            preferredItem.Count -= toRemove;
+            amountToConsume -= toRemove;
+
             Owner?.Inventory.OnConsumedItem(preferredItem, toRemove);
 
             totalConsumed += toRemove;
+
+            UpdateFreeSlotCount();
+            return totalConsumed;
         }
 
         // Check all remaining items

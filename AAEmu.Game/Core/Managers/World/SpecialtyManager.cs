@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 using AAEmu.Commons.Utils;
+using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models;
 using AAEmu.Game.Models.Game.Char;
+using AAEmu.Game.Models.Game.Faction;
 using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Items.Actions;
 using AAEmu.Game.Models.Game.Mails;
@@ -13,7 +15,11 @@ using AAEmu.Game.Models.Tasks.Specialty;
 using AAEmu.Game.Utils;
 using AAEmu.Game.Utils.DB;
 
+using Discord;
+
 using NLog;
+
+using Org.BouncyCastle.Utilities.Collections;
 
 namespace AAEmu.Game.Core.Managers.World;
 
@@ -172,6 +178,14 @@ public class SpecialtyManager : Singleton<SpecialtyManager>
         return (int)Math.Floor(_priceRatios[backpack.TemplateId][zoneGroupId]);
     }
 
+    private int GetRatioForItem(Character player, uint itemTemplateId)
+    {
+        var zoneGroupId = ZoneManager.Instance.GetZoneByKey(player.Transform.ZoneId)?.GroupId ?? 0;
+        InitRatioInZoneForPack(itemTemplateId, zoneGroupId);
+
+        return (int)Math.Floor(_priceRatios[itemTemplateId][zoneGroupId]);
+    }
+
     /// <summary>
     /// Gets a list of items and their current trade-rate for given zones
     /// </summary>
@@ -193,7 +207,7 @@ public class SpecialtyManager : Singleton<SpecialtyManager>
         return res;
     }
 
-    public int GetBasePriceForSpecialty(Character player, uint npcId)
+    public int GetBasePriceForSpecialty(Character player, uint npcObjId)
     {
         // Sanity checks
         var backpack = player.Inventory.Equipment.GetItemBySlot((int)EquipmentItemSlot.Backpack);
@@ -203,14 +217,14 @@ public class SpecialtyManager : Singleton<SpecialtyManager>
             return 0;
         }
 
-        var npc = WorldManager.Instance.GetNpc(npcId);
+        var npc = WorldManager.Instance.GetNpc(npcObjId);
         if (npc == null)
         {
             player.SendErrorMessage(ErrorMessageType.InvalidTarget);
             return 0;
         }
 
-        if (MathUtil.CalculateDistance(player.Transform.World.Position, npc.Transform.World.Position) > 2.5)
+        if (MathUtil.CalculateDistance(player.Transform.World.Position, npc.Transform.World.Position) > 4.0)
         {
             player.SendErrorMessage(ErrorMessageType.TooFarAway);
             return 0;
@@ -246,9 +260,41 @@ public class SpecialtyManager : Singleton<SpecialtyManager>
         return (int)(Math.Floor(bundleItem.Profit * (bundleItem.Ratio / 1000f)) + bundleItem.Item.Refund);
     }
 
+    public int GetBasePriceForItem(Character player, uint npcTemplateId, uint itemTemplateId)
+    {
+        if (!_specialtyNpc.TryGetValue(npcTemplateId, out var specialtyNpc))
+        {
+            player.SendErrorMessage(ErrorMessageType.StoreCantSellSameZone);
+            return 1;
+        }
+
+        var bundleIdAtNPC = specialtyNpc.SpecialtyBundleId;
+
+        if (!_specialtyBundleItemsMapped.ContainsKey(itemTemplateId))
+        {
+            player.SendErrorMessage(ErrorMessageType.Invalid);
+            return 0;
+        }
+
+        if (!_specialtyBundleItemsMapped[itemTemplateId].TryGetValue(bundleIdAtNPC, out var value))
+        {
+            player.SendErrorMessage(ErrorMessageType.Invalid);
+            return 0;
+        }
+
+        var bundleItem = value;
+        if (bundleItem == null)
+        {
+            player.SendErrorMessage(ErrorMessageType.Invalid);
+            return 0;
+        }
+
+        return (int)(Math.Floor(bundleItem.Profit * (bundleItem.Ratio / 1000f)) + bundleItem.Item.Refund);
+    }
+
     public int SellSpecialty(Character player, uint npcObjId)
     {
-        if (player.LaborPower < 60)
+        if (player.LaborPower < 70)
         {
             player.SendErrorMessage(ErrorMessageType.NotEnoughLaborPower);
             return 0;
@@ -268,6 +314,8 @@ public class SpecialtyManager : Singleton<SpecialtyManager>
             return basePrice;
         }
 
+        backpack.Count = 1; // TODO почему количество равно нулю?
+
         var npc = WorldManager.Instance.GetNpc(npcObjId);
         if (npc == null)
             return basePrice;
@@ -275,13 +323,13 @@ public class SpecialtyManager : Singleton<SpecialtyManager>
         // Our backpack isn't null, we have the NPC, time to calculate the profits
 
         // TODO: Get crafter ID of tradepack
-        uint crafterId = backpack.MadeUnitId != player.Id ? backpack.MadeUnitId : 0;
+        var crafterId = backpack.MadeUnitId != player.Id ? backpack.MadeUnitId : 0;
         var sellerShare = 0.80f; // 80% default, set this to 1f for packs that don't share profit
 
         var interestRate = 5;
 
-        var finalPriceNoInterest = (basePrice * (priceRatio / 100f));
-        var interest = (finalPriceNoInterest * (interestRate / 100f));
+        var finalPriceNoInterest = basePrice * (priceRatio / 100f);
+        var interest = finalPriceNoInterest * (interestRate / 100f);
         var amountBonus = 0; // TODO: negotiation bonus
         var finalPrice = finalPriceNoInterest + interest + amountBonus;
 
@@ -307,7 +355,7 @@ public class SpecialtyManager : Singleton<SpecialtyManager>
         var fsets = new Models.Game.Features.FeatureSet();
 
         // Split up the profit if needed
-        if ((crafterId != 0) && (crafterId != player.Id) && fsets.Check(Models.Game.Features.Feature.backpackProfitShare))
+        if (crafterId != 0 && crafterId != player.Id && fsets.Check(Models.Game.Features.Feature.backpackProfitShare))
         {
             amountOfItemsSeller = (int)Math.Round(amountOfItemsTotalPayout * sellerShare);
             amountOfItemsCrafter = amountOfItemsTotalPayout - amountOfItemsSeller;
@@ -323,10 +371,12 @@ public class SpecialtyManager : Singleton<SpecialtyManager>
                 player.SendErrorMessage(ErrorMessageType.MailUnknownFailure);
                 return basePrice;
             }
+
+            player.SendErrorMessage(ErrorMessageType.SoldBackpackRefundSentByMail);
         }
 
         // Mail for crafter. If seller is not crafter, send a crafter mail as well
-        if ((amountOfItemsCrafter > 0) && (crafterId != 0))
+        if (amountOfItemsCrafter > 0 && crafterId != 0)
         {
             var crafterMail = new MailForSpeciality(player, crafterId, backpack.TemplateId, priceRatio, itemTypeToDeliver, amountOfItemsBase, amountBonus, amountOfItemsSeller, amountOfItemsCrafter, interestRate);
             crafterMail.FinalizeForCrafter();
@@ -338,9 +388,9 @@ public class SpecialtyManager : Singleton<SpecialtyManager>
         }
 
         // Delete the backpack
-        player.Inventory.Equipment.ConsumeItem(ItemTaskType.SellBackpack, backpack.TemplateId, 1, backpack);
+        player.Inventory.Equipment.ConsumeItem(ItemTaskType.SellSpecialty, backpack.TemplateId, backpack.Count, backpack);
         // TODO: Calculate proper labor by skill level
-        player.ChangeLabor(-60, (int)ActabilityType.Commerce);
+        player.ChangeLabor(-70, (int)ActabilityType.Commerce);
 
         // Add one pack sold in this zone during this tick
         var zoneGroupId = ZoneManager.Instance.GetZoneByKey(player.Transform.ZoneId)?.GroupId ?? 0;
@@ -407,5 +457,56 @@ public class SpecialtyManager : Singleton<SpecialtyManager>
     public static int GetValueOfOne()
     {
         return 1;
+    }
+
+    public void SendProductInformation(Character player, ushort bundleId, uint npcTemplateId)
+    {
+        _specialtyNpc.TryGetValue(npcTemplateId, out var specialtyNpc);
+        var bundleIdAtNPC = (ushort)specialtyNpc.SpecialtyBundleId;
+        var productInformations = new List<ProductInformation>();
+        var bundleItems = GetBundleItems(bundleIdAtNPC);
+
+        foreach (var bundleItem in bundleItems)
+        {
+            var basePrice = GetBasePriceForItem(player, npcTemplateId, bundleItem.ItemId);
+            var priceRatio = GetRatioForItem(player, bundleItem.ItemId);;
+            var finalPriceNoInterest = basePrice * (priceRatio / 100f);
+
+            var productInformation = new ProductInformation();
+            productInformation.ItemId = bundleItem.ItemId;
+            productInformation.Refund = (int)finalPriceNoInterest;
+            productInformation.NoEventRefund = 0;
+            productInformation.Ratio = GetRatioForItem(player, bundleItem.ItemId);
+            productInformation.Stock = 0;
+            productInformation.CanProduce = true;
+            productInformation.Currency = 0;
+            productInformation.Type = 0; // unk
+
+            productInformations.Add(productInformation);
+        }
+
+        var isBegin = true;
+        var isEnd = false;
+        var dividedLists = Helpers.SplitList(productInformations, 20);
+
+        for (var i = 0; i < dividedLists.Count; i++)
+        {
+            // Check if the current iteration is the last one
+            if (i == dividedLists.Count - 1)
+            {
+                isEnd = true;
+            }
+            if (i > 0)
+            {
+                isBegin = false;
+            }
+
+            player.SendPacket(new SCSpecialtyRatioPacket(bundleId, npcTemplateId, dividedLists[i], isBegin, isEnd));
+        }
+    }
+
+    public List<SpecialtyBundleItem> GetBundleItems(ushort bundleId)
+    {
+        return _specialtyBundleItems.Values.Where(specialtyBundleItem => specialtyBundleItem.SpecialtyBundleId == bundleId).ToList();
     }
 }

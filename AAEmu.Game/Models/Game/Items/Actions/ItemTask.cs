@@ -51,7 +51,7 @@ public abstract class ItemTask : PacketMarshaler
                 tlogT = ItemTaskLogType.RemoveItem;
                 break;
             case ItemAction.Remove when slotType == SlotType.Equipment: // 7
-                tlogT = ItemTaskLogType.Place;
+                tlogT = ItemTaskLogType.RemoveItem; // Place
                 break;
             case ItemAction.SwapSlot when slotType == SlotType.Bank: // 8
                 tlogT = ItemTaskLogType.MoveItem;

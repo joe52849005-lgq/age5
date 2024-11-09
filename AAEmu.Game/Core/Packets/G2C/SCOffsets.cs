@@ -138,8 +138,8 @@
         public const ushort SCUnitEquipmentIdsPacket = 0x10A;
         public const ushort SCSplitCofferItemResultPacket = 0x075;
         public const ushort SCSyncItemLifespanPacket = 0x274;
-        public const ushort off_39E9AA8C = 0x2DC;
-        public const ushort off_39E9AA9C = 0x1A2;
+        public const ushort SCSpecialtyRatioPacket = 0x2DC; // off_39E9AA8C
+        public const ushort SCSpecialtyGoodsPacket = 0x1A2; // off_39E9AA9C
         public const ushort SCSpecialtyRecordsPacket = 0x2ED;
         public const ushort off_39E9AABC = 0x077;
         public const ushort SCSocketingResultPacket = 0x257;
@@ -836,7 +836,7 @@
         public const ushort SCFactionCreatedPacket = 0xFFF;
         public const ushort SCDominionTaxBalancedPacket = 0xFFF;
         public const ushort SCItemSocketingLunagemResultPacket = 0xFFF;
-        public const ushort SCSpecialtyRatioPacket = 0xFFF;
+        //public const ushort SCSpecialtyRatioPacket = 0xFFF;
         public const ushort SCHouseBuildPayChangedPacket = 0xFFF;
         public const ushort SCGradeEnchantBroadcastPacket = 0xFFF;
         public const ushort SCPlaytimePacket = 0xFFF;

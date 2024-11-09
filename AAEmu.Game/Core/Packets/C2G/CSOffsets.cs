@@ -425,7 +425,7 @@
         public const ushort CSSellItemsPacket = 0x04A;
         public const ushort CSListSoldItemPacket = 0x055;
         public const ushort CSBuyItemsPacket = 0x03C; // off_39EDCB20
-        public const ushort CSSpecialtyCurrentLoadPacket = 0x08F;
+        public const ushort CSRequestSpecialtyCurrentPacket = 0x08F; // CSSpecialtyCurrentLoadPacket
         public const ushort CSStartTradePacket = 0x1D2;
         public const ushort CSCanStartTradePacket = 0x018;
         public const ushort CSCannotStartTradePacket = 0x18C;
@@ -493,7 +493,7 @@
         public const ushort CSGetSiegeAuctionBidCurrencyPacket = 0xFFF;
         public const ushort CSDominionUpdateTaxRatePacket = 0xFFF;
         public const ushort CSDominionUpdateNationalTaxRatePacket = 0xFFF;
-        public const ushort CSRequestSpecialtyCurrentPacket = 0xFFF;
+        public const ushort CSSpecialtyCurrentLoadPacket = 0xFFF; // CSRequestSpecialtyCurrentPacket
         public const ushort CSPacketUnknown0x166Packet = 0xFFF;
     }
 }
