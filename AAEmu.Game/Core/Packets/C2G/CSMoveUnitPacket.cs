@@ -1,5 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 
 using AAEmu.Commons.Network;
 using AAEmu.Game.Core.Managers;
@@ -7,7 +9,6 @@ using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Network.Game;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game.Char;
-using AAEmu.Game.Models.Game.DoodadObj;
 using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.Skills.Buffs;
 using AAEmu.Game.Models.Game.Units;
@@ -24,8 +25,19 @@ public class CSMoveUnitPacket : GamePacket
 
     private uint _objId;
     private MoveType _moveType;
+
+    // lighthouse ezi's
     private Stopwatch _stopwatch = new Stopwatch();
     private const int DelayInMilliseconds = 1000; // 1 секунда
+    private const double DistanceThreshold = 500.0 * 500.0; // 500 метров
+    private readonly List<Vector3> _targetPositions =
+    [
+        new Vector3(16672.8f, 9303.9f, 175f), // Полуостров Рассвета на восточном материке
+        new Vector3(13131f, 10105.2f, 175.2f), // Две Короны на западном материке
+        new Vector3(18962.6f, 26838f, 176.3f), // Сверкающее побережье на изначальном материке
+        new Vector3(19971f, 26927.2f, 175.8f), // Сверкающее побережье на изначальном материке
+        new Vector3(15227.6f, 22731f, 185.8f)
+    ];
 
     public CSMoveUnitPacket() : base(CSOffsets.CSMoveUnitPacket, 5)
     {
@@ -133,25 +145,8 @@ public class CSMoveUnitPacket : GamePacket
                 {
                     // Logger.Debug($"{targetUnit.Name} => ActorFlags: 0x{dmt.ActorFlags:X} - ClimbData: {dmt.ClimbData:X} - GcId: {dmt.GcId}");
 
-                    // Проверяем, прошло ли достаточно времени с последнего вызова
-                    if (!_stopwatch.IsRunning || _stopwatch.ElapsedMilliseconds >= DelayInMilliseconds)
-                    {
-                        var EzisGlow = 8436;
-                        var doodads = WorldManager.GetAround<Doodad>(character, 300);
-
-                        // Проверяем, есть ли хотя бы один элемент, удовлетворяющий условию
-                        if (doodads.Any(doodad => doodad.TemplateId == EzisGlow))
-                        {
-                            character.Buffs.AddBuff((uint)SkillConstants.Moored, character);
-                        }
-                        else
-                        {
-                            character.Buffs.RemoveBuff((uint)SkillConstants.Moored);
-                        }
-
-                        // Сбрасываем таймер и запускаем его заново
-                        _stopwatch.Restart();
-                    }
+                    // lighthouse ezi's
+                    CheckProximityAndApplyBuff(character);
 
                     // It moving Pets, handle Pet XP for moving
                     if (targetUnit is Mate mate)
@@ -302,6 +297,26 @@ public class CSMoveUnitPacket : GamePacket
     {
         if (moveType.VelX != 0 || moveType.VelY != 0 || moveType.VelZ != 0)
             unit.Buffs.TriggerRemoveOn(BuffRemoveOn.Move);
+    }
+
+    public void CheckProximityAndApplyBuff(Character character)
+    {
+        // Check if enough time has passed since the last call
+        if (!_stopwatch.IsRunning || _stopwatch.ElapsedMilliseconds >= DelayInMilliseconds)
+        {
+            // Check if the character is within 500 meters of any of the target points
+            if (_targetPositions.Any(targetPosition => MathUtil.DistanceSqVectors(character.Transform.World.Position, targetPosition) <= DistanceThreshold))
+            {
+                character.Buffs.AddBuff((uint)SkillConstants.Moored, character);
+            }
+            else
+            {
+                character.Buffs.RemoveBuff((uint)SkillConstants.Moored);
+            }
+
+            // Reset the timer and start it again
+            _stopwatch.Restart();
+        }
     }
 
     public override string Verbose()
