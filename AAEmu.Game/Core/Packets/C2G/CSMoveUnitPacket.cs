@@ -1,9 +1,14 @@
-﻿using AAEmu.Commons.Network;
+﻿using System.Diagnostics;
+using System.Linq;
+
+using AAEmu.Commons.Network;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Network.Game;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game.Char;
+using AAEmu.Game.Models.Game.DoodadObj;
+using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.Skills.Buffs;
 using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Models.Game.Units.Movements;
@@ -19,6 +24,8 @@ public class CSMoveUnitPacket : GamePacket
 
     private uint _objId;
     private MoveType _moveType;
+    private Stopwatch _stopwatch = new Stopwatch();
+    private const int DelayInMilliseconds = 1000; // 1 секунда
 
     public CSMoveUnitPacket() : base(CSOffsets.CSMoveUnitPacket, 5)
     {
@@ -126,6 +133,26 @@ public class CSMoveUnitPacket : GamePacket
                 {
                     // Logger.Debug($"{targetUnit.Name} => ActorFlags: 0x{dmt.ActorFlags:X} - ClimbData: {dmt.ClimbData:X} - GcId: {dmt.GcId}");
 
+                    // Проверяем, прошло ли достаточно времени с последнего вызова
+                    if (!_stopwatch.IsRunning || _stopwatch.ElapsedMilliseconds >= DelayInMilliseconds)
+                    {
+                        var EzisGlow = 8436;
+                        var doodads = WorldManager.GetAround<Doodad>(character, 300);
+
+                        // Проверяем, есть ли хотя бы один элемент, удовлетворяющий условию
+                        if (doodads.Any(doodad => doodad.TemplateId == EzisGlow))
+                        {
+                            character.Buffs.AddBuff((uint)SkillConstants.Moored, character);
+                        }
+                        else
+                        {
+                            character.Buffs.RemoveBuff((uint)SkillConstants.Moored);
+                        }
+
+                        // Сбрасываем таймер и запускаем его заново
+                        _stopwatch.Restart();
+                    }
+
                     // It moving Pets, handle Pet XP for moving
                     if (targetUnit is Mate mate)
                     {
@@ -207,7 +234,7 @@ public class CSMoveUnitPacket : GamePacket
                             $"@ x{dmt.X:F1} y{dmt.Y:F1} z{dmt.Z:F1} || World: {targetUnit.Transform.World}|r");
                     }
                     else if ((targetUnit.Transform.Parent != null) &&
-                             (targetUnit.Transform.Parent.GameObject != null) && 
+                             (targetUnit.Transform.Parent.GameObject != null) &&
                              (parentObject != null) &&
                              (targetUnit.Transform.Parent.GameObject.ObjId != parentObject.ObjId))
                     {

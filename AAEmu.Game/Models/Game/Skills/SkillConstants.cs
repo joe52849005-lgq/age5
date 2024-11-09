@@ -5,6 +5,7 @@ public enum SkillConstants : uint
     DecreaseMoveSpeed = 161,
     Shackle = 160,
     Snare = 27,
+    Moored = 13817,
     Dismount = 35837,
     PatronStatus = 8000001,
     Patron = 8000011,
