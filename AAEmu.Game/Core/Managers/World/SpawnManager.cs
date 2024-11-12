@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,7 +23,6 @@ using AAEmu.Game.Models.Game.Transfers;
 using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Models.Game.World;
 using AAEmu.Game.Models.Game.World.Transform;
-using AAEmu.Game.Scripts.Commands;
 using AAEmu.Game.Utils;
 
 using NLog;
@@ -93,36 +91,25 @@ public class SpawnManager : Singleton<SpawnManager>
             else
             {
                 // TODO добавил список спавнеров // added a list of spawners
-                var pattern = $@"\b{Regex.Escape(npcSpawner.UnitId.ToString())}\b";
-                var regex = new Regex(pattern);
                 foreach (var id in npcSpawnerIds)
                 {
                     // в template.Name обычно должно присутствовать templateId для нашего Npc, по нему будем брать нужный spawnerId
                     // in template.Name there should usually be a templateId for our Npc, we will use it to take the required spawnerId 
                     var template = NpcGameData.Instance.GetNpcSpawnerTemplate(id);
-                    var containsId = regex.IsMatch(template.Name);
-                    if (containsId)
+                    if (template.Npcs.Count != 1)
                     {
-                        npcSpawner.NpcSpawnerIds.Add(id);
-                        npcSpawner.Id = id;
-                        npcSpawner.Template = template;
-                        foreach (var n in npcSpawner.Template.Npcs)
-                        {
-                            n.Position = npcSpawner.Position;
-                        }
+                        continue;
                     }
-                }
 
-                if (npcSpawner.Id == 0 && npcSpawnerIds.Count == 1)
-                {
-                    var id = npcSpawnerIds[0];
                     npcSpawner.NpcSpawnerIds.Add(id);
-                    npcSpawner.Id = id;
-                    npcSpawner.Template = NpcGameData.Instance.GetNpcSpawnerTemplate(id);
+                    if (npcSpawner.Id == 0)
+                        npcSpawner.Id = id;
+                    npcSpawner.Template = template;
                     foreach (var n in npcSpawner.Template.Npcs)
                     {
                         n.Position = npcSpawner.Position;
                     }
+                    break;
                 }
             }
             spawners.Add(npcSpawner);

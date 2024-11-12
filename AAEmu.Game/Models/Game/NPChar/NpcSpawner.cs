@@ -18,8 +18,6 @@ using Newtonsoft.Json;
 
 using NLog;
 
-using static System.String;
-
 namespace AAEmu.Game.Models.Game.NPChar;
 
 public class NpcSpawner : Spawner<Npc>
@@ -563,7 +561,7 @@ public class NpcSpawner : Spawner<Npc>
     public void DoSpawnEffect(uint spawnerId, SpawnEffect effect, BaseUnit caster, BaseUnit target)
     {
         var template = NpcGameData.Instance.GetNpcSpawnerTemplate(spawnerId);
-        if (template.Npcs == null)
+        if (template?.Npcs == null)
         {
             return;
         }

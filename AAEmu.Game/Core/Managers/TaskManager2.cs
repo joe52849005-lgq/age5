@@ -2,9 +2,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+
 using AAEmu.Commons.Utils;
 using AAEmu.Game.Models.Tasks;
+
 using NCrontab;
+
 using NLog;
 
 namespace AAEmu.Game.Core.Managers
@@ -12,7 +15,7 @@ namespace AAEmu.Game.Core.Managers
     // ReSharper disable once ClassNeverInstantiated.Global
     public class TaskManager : Singleton<TaskManager>, ITaskManager
     {
-        private static Logger s_log = LogManager.GetCurrentClassLogger();
+        private static Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly ConcurrentDictionary<uint, Task> _queue = new();
         private readonly HashSet<uint> _taskIds = [];
         private readonly object _taskIdLock = new();
@@ -84,29 +87,46 @@ namespace AAEmu.Game.Core.Managers
             var taskId = NextId();
             task.Id = taskId;
 
-            // If it's only supposed to run once and immediately, then don't queue it, and just run now
-            if ((startDelay.HasValue && startDelay.Value == TimeSpan.Zero) && (count >= 0) && (count <= 1))
+            try
             {
-                task.Execute();
-                ReleaseId(task.Id);
+                // If it's only supposed to run once and immediately, then don't queue it, and just run now
+                if ((startDelay.HasValue && startDelay.Value == TimeSpan.Zero) && (count >= 0) && (count <= 1))
+                {
+                    task.Execute();
+                    ReleaseId(task.Id);
+                    return true;
+                }
+
+                task.TriggerTime = startDelay.HasValue ? DateTime.UtcNow + startDelay.Value : DateTime.UtcNow;
+
+                if (repeatInterval.HasValue)
+                {
+                    task.RepeatInterval = repeatInterval.Value;
+                    task.RepeatCount = count;
+                }
+                else
+                {
+                    task.RepeatCount = 1;
+                }
+
+                if (!_queue.TryAdd(taskId, task))
+                {
+                    // Обработка ошибки добавления в очередь
+                    Logger.Error($"Не удалось добавить задачу с ID {taskId} в очередь.");
+                    ReleaseId(task.Id);
+                    return false;
+                }
+
                 return true;
             }
-
-            task.TriggerTime = startDelay.HasValue ? DateTime.UtcNow + startDelay.Value : DateTime.UtcNow;
-
-            if (repeatInterval.HasValue)
+            catch (Exception ex)
             {
-                task.RepeatInterval = repeatInterval.Value;
-                task.RepeatCount = count;
+                // Логирование ошибки
+                Logger.Error($"Ошибка при планировании задачи с ID {taskId}: {ex.Message}");
+                ReleaseId(task.Id);
+                return false;
             }
-            else
-            {
-                task.RepeatCount = 1;
-            }
-
-            return _queue.TryAdd(taskId, task);
         }
-
 
         /// <summary>
         /// Schedules a task to be executed in the future
