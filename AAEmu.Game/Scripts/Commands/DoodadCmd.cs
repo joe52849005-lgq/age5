@@ -24,6 +24,8 @@ public class DoodadCmd : SubCommandBase, ICommand
         Register(new DoodadSaveSubCommand(), "save");
         Register(new DoodadPositionSubCommand(), "position", "pos");
         Register(new DoodadSpawnSubCommand(), "spawn");
+        Register(new DoodadRemoveSubCommand(), "remove");
+        Register(new DoodadRemovesSubCommand(), "removes");
     }
 
     public void OnLoad()

@@ -27,7 +27,7 @@ public class AuctionManager : Singleton<AuctionManager>
     public ConcurrentBag<AuctionLot> AuctionLots { get; } = [];
     private ConcurrentDictionary<(uint TemplateId, byte Grade), List<(DateTime Date, AuctionLot Lot)>> SalesData { get; } = new();
     private ConcurrentDictionary<(uint TemplateId, byte Grade), List<(DateTime Date, AuctionSold Sold)>> SoldsData { get; } = new();
-    internal ConcurrentBag<long> _deletedAuctionItemIds { get; } = [];
+    public ConcurrentBag<long> DeletedAuctionItemIds { get; } = [];
 
     private static int MaxListingFee = 1000000; // 100g, 100 copper coins = 1 silver, 100 silver = 1 gold.
 
@@ -353,7 +353,7 @@ public class AuctionManager : Singleton<AuctionManager>
         }
 
         AuctionIdManager.Instance.ReleaseId((uint)itemToRemove.Id);
-        _deletedAuctionItemIds.Add((long)itemToRemove.Id);
+        DeletedAuctionItemIds.Add((long)itemToRemove.Id);
         AuctionLots.TryTake(out itemToRemove);
     }
 
@@ -431,7 +431,7 @@ public class AuctionManager : Singleton<AuctionManager>
         {
             AuctionLots.Clear();
             SoldsData.Clear();
-            _deletedAuctionItemIds.Clear();
+            DeletedAuctionItemIds.Clear();
 
             using (var connection = MySQL.CreateConnection())
             {
@@ -486,17 +486,17 @@ public class AuctionManager : Singleton<AuctionManager>
         var deletedCount = 0;
         var updatedCount = 0;
 
-        if (_deletedAuctionItemIds.Count > 0)
+        if (DeletedAuctionItemIds.Count > 0)
         {
             using (var command = connection.CreateCommand())
             {
                 command.Connection = connection;
                 command.Transaction = transaction;
-                command.CommandText = "DELETE FROM auction_house WHERE `id` IN(" + string.Join(",", _deletedAuctionItemIds) + ")";
+                command.CommandText = "DELETE FROM auction_house WHERE `id` IN(" + string.Join(",", DeletedAuctionItemIds) + ")";
                 command.Prepare();
                 deletedCount = command.ExecuteNonQuery();
             }
-            _deletedAuctionItemIds.Clear();
+            DeletedAuctionItemIds.Clear();
         }
 
         var dirtyItems = AuctionLots.Where(c => c.IsDirty == true);

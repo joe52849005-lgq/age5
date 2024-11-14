@@ -1,25 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+
+using AAEmu.Commons.Exceptions;
 using AAEmu.Commons.IO;
 using AAEmu.Commons.Utils;
+using AAEmu.Commons.Utils.Creatures;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game.Char;
+using AAEmu.Game.Models.Game.DoodadObj;
 using AAEmu.Game.Models.Game.World;
 using AAEmu.Game.Models.Json;
-using AAEmu.Game.Utils.Converters;
-using Newtonsoft.Json;
-using AAEmu.Game.Utils.Scripts.SubCommands;
-using AAEmu.Commons.Exceptions;
-using AAEmu.Game.Utils.Scripts;
 using AAEmu.Game.Utils;
+using AAEmu.Game.Utils.Converters;
+using AAEmu.Game.Utils.Scripts;
+using AAEmu.Game.Utils.Scripts.SubCommands;
+
+using Newtonsoft.Json;
 
 namespace AAEmu.Game.Scripts.SubCommands.Npcs;
 
 public class NpcSaveSubCommand : SubCommandBase
 {
+    private static Dictionary<uint, Creature> _creatures;
+
     public NpcSaveSubCommand()
     {
         Title = "[Npc Save]";
@@ -29,21 +37,33 @@ public class NpcSaveSubCommand : SubCommandBase
         AddParameter(new NumericSubCommandParameter<uint>("ObjId", "object Id", false));
     }
 
-    public override void Execute(ICharacter character, string triggerArgument,
-        IDictionary<string, ParameterValue> parameters, IMessageOutput messageOutput)
+    public override void Execute(ICharacter character, string triggerArgument, IDictionary<string, ParameterValue> parameters, IMessageOutput messageOutput)
     {
-        if (parameters.TryGetValue("ObjId", out var npcObjId))
+        // Запускаем метод в отдельной задаче (нити)
+        Task.Run(() =>
         {
-            SaveById(character, npcObjId, messageOutput);
-        }
-        else
-        {
-            SaveAll(character, messageOutput);
-        }
+            try
+            {
+                if (parameters.TryGetValue("ObjId", out var npcObjId))
+                {
+                    SaveById(character, npcObjId, messageOutput);
+                }
+                else
+                {
+                    SaveAll(character, messageOutput);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Обработка исключения, например, запись в лог
+                Logger.Error($"Ошибка при выполнении метода: {ex.Message}");
+            }
+        });
     }
 
     private void SaveAll(ICharacter character, IMessageOutput messageOutput)
     {
+        _creatures = Creature.GetAllCreatures();
         var currentWorld = WorldManager.Instance.GetWorld(((Character)character).Transform.WorldId);
         var allNpcs = WorldManager.Instance.GetAllNpcs();
         var npcsInWorld = WorldManager.Instance.GetAllNpcsFromWorld(currentWorld.Id);
@@ -62,6 +82,7 @@ public class NpcSaveSubCommand : SubCommandBase
                         {
                             Id = allNpcs.Last().ObjId++,
                             UnitId = npc.TemplateId,
+                            Title = GetSpawnName(npc.TemplateId), // обновим Title
                             Position = new JsonPosition
                             {
                                 X = pos.Position.X,
@@ -70,7 +91,8 @@ public class NpcSaveSubCommand : SubCommandBase
                                 Roll = pos.Rotation.X.RadToDeg(),
                                 Pitch = pos.Rotation.Y.RadToDeg(),
                                 Yaw = pos.Rotation.Z.RadToDeg()
-                            }
+                            },
+                            Scale = npc.Scale
                         };
 
                         npcSpawnersToFile.Add(newNpcSpawn);
@@ -83,8 +105,7 @@ public class NpcSaveSubCommand : SubCommandBase
                         // Do not add to the output of a manually remote Npc
                         var npcSpawnsToRemove = new List<JsonNpcSpawns>();
 
-                        foreach (var npcSpawnerToFile in npcSpawnersToFile
-                                     .Where(n => n.UnitId == npc.TemplateId))
+                        foreach (var npcSpawnerToFile in npcSpawnersToFile.Where(n => n.UnitId == npc.TemplateId))
                         {
                             // If the position changed don't mark to be removed
                             if (!npc.Transform.World.Position.Equals(npcSpawnerToFile.Position.AsVector3()))
@@ -107,15 +128,15 @@ public class NpcSaveSubCommand : SubCommandBase
         }
 
         var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", currentWorld.Name, "npc_spawns_new.json");
-        var json = JsonConvert.SerializeObject(npcSpawnersToFile.ToArray(), Formatting.Indented,
-            new JsonModelsConverter());
+        var json = JsonConvert.SerializeObject(npcSpawnersToFile.ToArray(), Formatting.Indented, new JsonModelsConverter());
         File.WriteAllText(jsonPathOut, json);
         SendMessage(messageOutput, "All npcs have been saved!");
     }
 
     private void SaveById(ICharacter character, uint npcObjId, IMessageOutput messageOutput)
     {
-        var spawners = new List<JsonNpcSpawns>();
+        _creatures = Creature.GetAllCreatures();
+        //var spawners = new List<JsonNpcSpawns>();
         var npc = WorldManager.Instance.GetNpc(npcObjId);
         if (npc is null)
         {
@@ -134,6 +155,7 @@ public class NpcSaveSubCommand : SubCommandBase
         {
             Id = npc.ObjId,
             UnitId = npc.TemplateId,
+            Title = GetSpawnName(npc.TemplateId), // обновим Title
             Position = new JsonPosition
             {
                 X = npc.Transform.Local.Position.X,
@@ -142,7 +164,8 @@ public class NpcSaveSubCommand : SubCommandBase
                 Roll = npc.Transform.Local.Rotation.X.RadToDeg(),
                 Pitch = npc.Transform.Local.Rotation.Y.RadToDeg(),
                 Yaw = npc.Transform.Local.Rotation.Z.RadToDeg()
-            }
+            },
+            Scale = npc.Scale
         };
 
         Dictionary<uint, JsonNpcSpawns> spawnersFromFile = new();
@@ -151,21 +174,12 @@ public class NpcSaveSubCommand : SubCommandBase
             spawnersFromFile.TryAdd(spawnerFromFile.Id, spawnerFromFile);
         }
 
-        if (spawnersFromFile.ContainsKey(spawn.Id))
-        {
-            spawnersFromFile[spawn.Id] = spawn;
-        }
-        else
-        {
-            spawnersFromFile.Add(spawn.Id, spawn);
-        }
+        spawnersFromFile[spawn.Id] = spawn;
 
         var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name, "npc_spawns_new.json");
-        var json = JsonConvert.SerializeObject(spawnersFromFile.Values.ToArray(), Formatting.Indented,
-            new JsonModelsConverter());
+        var json = JsonConvert.SerializeObject(spawnersFromFile.Values.ToArray(), Formatting.Indented, new JsonModelsConverter());
         File.WriteAllText(jsonPathOut, json);
-        SendMessage(messageOutput,
-            $"All npcs have been saved with added npc ObjId:{npc.ObjId}, TemplateId:{npc.TemplateId}");
+        SendMessage(messageOutput, $"All npcs have been saved with added npc ObjId:{npc.ObjId}, TemplateId:{npc.TemplateId}");
     }
 
     private List<JsonNpcSpawns> LoadNpcsFromFileByWorld(World world)
@@ -179,13 +193,11 @@ public class NpcSaveSubCommand : SubCommandBase
         var contents = FileManager.GetFileContents(jsonPathIn);
         Logger.Info($"Loading spawns from file {jsonPathIn} ...");
 
-        if (string.IsNullOrWhiteSpace(contents))
-        {
-            return new List<JsonNpcSpawns>();
-        }
-        else
-        {
-            return JsonHelper.DeserializeObject<List<JsonNpcSpawns>>(contents);
-        }
+        return string.IsNullOrWhiteSpace(contents) ? [] : JsonHelper.DeserializeObject<List<JsonNpcSpawns>>(contents);
+    }
+
+    private static string GetSpawnName(uint id)
+    {
+        return _creatures.TryGetValue(id, out var creature) ? creature.Title : string.Empty;
     }
 }
