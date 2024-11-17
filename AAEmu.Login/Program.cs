@@ -31,8 +31,11 @@ public static class Program
 
     public static async Task Main(string[] args)
     {
-        CliUtil.WriteHeader("Login", ConsoleColor.DarkGreen);
-        CliUtil.LoadingTitle();
+        if (Environment.OSVersion.Platform != PlatformID.Unix)
+        {
+            CliUtil.WriteHeader("Login", ConsoleColor.DarkGreen);
+            CliUtil.LoadingTitle();
+        }
         Initialization();
 
         LoadConfiguration(args);

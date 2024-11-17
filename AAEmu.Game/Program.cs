@@ -38,8 +38,11 @@ public static class Program
 
     public static async Task<int> Main(string[] args)
     {
-        CliUtil.WriteHeader("Game & Stream", ConsoleColor.DarkGreen);
-        CliUtil.LoadingTitle();
+        if (Environment.OSVersion.Platform != PlatformID.Unix)
+        {
+            CliUtil.WriteHeader("Game & Stream", ConsoleColor.DarkGreen);
+            CliUtil.LoadingTitle();
+        }
         Initialization();
         _launchArgs = args;
 
