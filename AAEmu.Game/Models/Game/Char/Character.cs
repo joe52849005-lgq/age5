@@ -1494,7 +1494,7 @@ public partial class Character : Unit, ICharacter
         // Send extra info to player if we are still in a real but unreleased zone (not null), this is not retail behaviour!
         if (newZone != null)
             SendMessage(ChatType.System, $"You have entered a closed zone ({newZone.ZoneKey} - {newZone.Name})!\nPlease leave immediately!", Color.Red);
-        
+
         var characterAccessLevel = CharacterManager.Instance.GetEffectiveAccessLevel(this);
         if (characterAccessLevel < 100)
         {
@@ -1511,8 +1511,8 @@ public partial class Character : Unit, ICharacter
                 for (var i = 0; i < 5; i++)
                 {
                     // sendErrorMsg
-                    SendErrorMessage(ErrorMessageType.ClosedZone,0,false);
-                    await Task.Delay(2 * 1000,_unreleasedZoneTransportedOut.Token);
+                    SendErrorMessage(ErrorMessageType.ClosedZone, 0, false);
+                    await Task.Delay(2 * 1000, _unreleasedZoneTransportedOut.Token);
                 }
                 ForceDismount();
                 MateManager.Instance.RemoveAndDespawnAllActiveOwnedMates(this);
@@ -1529,7 +1529,7 @@ public partial class Character : Unit, ICharacter
                     ),
                     true
                 );
-            
+
             }, _unreleasedZoneTransportedOut.Token);
         }
     }

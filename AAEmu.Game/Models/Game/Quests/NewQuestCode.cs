@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game.Items.Actions;
 using AAEmu.Game.Models.Game.Quests.Static;
@@ -288,10 +289,10 @@ public partial class Quest
                 }
             }
         }
-        
-        var res = Template.Selective ?
-        (QuestObjectiveStatus)Math.Max((byte)totalResultStatusMin, (byte)totalResultStatusMax) :
-        (QuestObjectiveStatus)Math.Min((byte)totalResultStatusMin, (byte)totalResultStatusMax);
+
+        var res = Template.Selective
+            ? (QuestObjectiveStatus)Math.Max((byte)totalResultStatusMin, (byte)totalResultStatusMax)
+            : (QuestObjectiveStatus)Math.Min((byte)totalResultStatusMin, (byte)totalResultStatusMax);
 
         return res;
     }

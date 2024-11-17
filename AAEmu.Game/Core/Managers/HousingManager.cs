@@ -965,10 +965,10 @@ public class HousingManager : Singleton<HousingManager>
     /// Returns furniture of a house that's being demolished or sold
     /// </summary>
     /// <param name="house"></param>
-    /// <param name="failedToPayTax">Set true if demilishing due to failed tax, this adds a delay to the mail</param>
+    /// <param name="failedToPayTax">Set true if demolishing due to failed tax, this adds a delay to the mail</param>
     /// <param name="forceRestoreAllDecor">For GM commands or server merges. Will try to send ALL placed furniture if set to true, even those that normally don't get returned.</param>
     /// <param name="newOwner">New owner Character if buying, otherwise leave null</param>
-    private void ReturnHouseItemsToOwner(House house, bool failedToPayTax, bool forceRestoreAllDecor, ICharacter newOwner)
+    private void ReturnHouseItemsToOwner(House house, bool failedToPayTax, bool forceRestoreAllDecor, Character newOwner)
     {
         if (house.OwnerId <= 0)
             return;
