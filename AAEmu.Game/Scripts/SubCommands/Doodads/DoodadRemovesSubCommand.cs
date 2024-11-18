@@ -52,6 +52,7 @@ public class DoodadRemovesSubCommand : SubCommandBase
         if (nearestDoodad is null)
         {
             SendColorMessage(messageOutput, Color.Red, "Nearest Doodad does not exist");
+            Logger.Warn("Nearest Doodad does not exist");
             return;
         }
 
@@ -62,6 +63,7 @@ public class DoodadRemovesSubCommand : SubCommandBase
             doodad.Spawner.Id = 0xffffffff; // removed from the game manually (укажем, что не надо сохранять в файл doodad_spawns_new.json командой /save all)
             doodad.Hide();
             SendMessage(messageOutput, $"Doodad @DOODAD_NAME({doodad.TemplateId}), ObjId: {doodad.ObjId}, TemplateId:{doodad.TemplateId} removed successfully");
+            Logger.Warn($"Doodad @DOODAD_NAME({doodad.TemplateId}), ObjId: {doodad.ObjId}, TemplateId:{doodad.TemplateId} removed successfully");
         }
     }
 

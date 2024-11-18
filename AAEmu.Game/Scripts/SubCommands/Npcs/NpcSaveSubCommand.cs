@@ -32,7 +32,7 @@ public class NpcSaveSubCommand : SubCommandBase
     {
         Title = "[Npc Save]";
         Description = "Save one or all npc positions in the current character world to the world npc spawns file";
-        CallPrefix = $"{CommandManager.CommandPrefix}npc save";
+        CallPrefix = $"{CommandManager.CommandPrefix}save";
         AddParameter(new StringSubCommandParameter("target", "target", true, "all", "id"));
         AddParameter(new NumericSubCommandParameter<uint>("ObjId", "object Id", false));
     }
@@ -131,6 +131,7 @@ public class NpcSaveSubCommand : SubCommandBase
         var json = JsonConvert.SerializeObject(npcSpawnersToFile.ToArray(), Formatting.Indented, new JsonModelsConverter());
         File.WriteAllText(jsonPathOut, json);
         SendMessage(messageOutput, "All npcs have been saved!");
+        Logger.Info("All npcs have been saved!");
     }
 
     private void SaveById(ICharacter character, uint npcObjId, IMessageOutput messageOutput)
@@ -141,6 +142,7 @@ public class NpcSaveSubCommand : SubCommandBase
         if (npc is null)
         {
             SendColorMessage(messageOutput, Color.Red, $"Npc with objId {npcObjId} Does not exist");
+            Logger.Info($"Npc with objId {npcObjId} Does not exist");
             return;
         }
 
@@ -148,6 +150,7 @@ public class NpcSaveSubCommand : SubCommandBase
         if (world is null)
         {
             SendColorMessage(messageOutput, Color.Red, $"Could not find the worldId {npc.Transform.WorldId}");
+            Logger.Info($"Could not find the worldId {npc.Transform.WorldId}");
             return;
         }
 
@@ -180,6 +183,7 @@ public class NpcSaveSubCommand : SubCommandBase
         var json = JsonConvert.SerializeObject(spawnersFromFile.Values.ToArray(), Formatting.Indented, new JsonModelsConverter());
         File.WriteAllText(jsonPathOut, json);
         SendMessage(messageOutput, $"All npcs have been saved with added npc ObjId:{npc.ObjId}, TemplateId:{npc.TemplateId}");
+        Logger.Info($"All npcs have been saved with added npc ObjId:{npc.ObjId}, TemplateId:{npc.TemplateId}");
     }
 
     private List<JsonNpcSpawns> LoadNpcsFromFileByWorld(World world)

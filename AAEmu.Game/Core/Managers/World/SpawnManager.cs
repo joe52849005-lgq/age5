@@ -239,11 +239,7 @@ public class SpawnManager : Singleton<SpawnManager>
             var worldPath = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name);
 
             // Load NPC Spawns
-            var jsonFileName = Path.Combine(worldPath, "npc_spawns_new.json");
-            if (!FileManager.FileExists(jsonFileName))
-            {
-                jsonFileName = Path.Combine(worldPath, "npc_spawns.json");
-            }
+            var jsonFileName = Path.Combine(worldPath, "npc_spawns.json");
             if (!File.Exists(jsonFileName))
             {
                 Logger.Info($"World  {world.Name}  is missing  {Path.GetFileName(jsonFileName)}");
@@ -285,11 +281,7 @@ public class SpawnManager : Singleton<SpawnManager>
             }
 
             // Load Doodad spawns
-            jsonFileName = Path.Combine(worldPath, "doodad_spawns_new.json");
-            if (!FileManager.FileExists(jsonFileName))
-            {
-                jsonFileName = Path.Combine(worldPath, "doodad_spawns.json");
-            }
+            jsonFileName = Path.Combine(worldPath, "doodad_spawns.json");
             if (!File.Exists(jsonFileName))
             {
                 Logger.Info($"World  {world.Name}  is missing  {Path.GetFileName(jsonFileName)}");

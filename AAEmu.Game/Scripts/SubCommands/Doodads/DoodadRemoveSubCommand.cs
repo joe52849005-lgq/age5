@@ -21,7 +21,7 @@ public class DoodadRemoveSubCommand : SubCommandBase
     {
         Title = "[Doodad Remove]";
         Description = "Remove using an Doodad <ObjId> or using ObjId = 0 for the nearest Doodad";
-        CallPrefix = $"{CommandManager.CommandPrefix}doodad remove";
+        CallPrefix = $"{CommandManager.CommandPrefix}remove";
         AddParameter(new StringSubCommandParameter("target", "target", true, "all", "id"));
         AddParameter(new NumericSubCommandParameter<uint>("ObjId", "object id", false));
     }
@@ -56,6 +56,7 @@ public class DoodadRemoveSubCommand : SubCommandBase
         if (nearestDoodad is null)
         {
             SendColorMessage(messageOutput, Color.Red, "Nearest Doodad does not exist");
+            Logger.Warn("Nearest Doodad does not exist");
             return;
         }
 
@@ -68,6 +69,7 @@ public class DoodadRemoveSubCommand : SubCommandBase
             doodad.Spawner.Id = 0xffffffff; // removed from the game manually (укажем, что не надо сохранять в файл doodad_spawns_new.json командой /save all)
             doodad.Hide();
             SendMessage(messageOutput, $"Doodad @DOODAD_NAME({doodad.TemplateId}), ObjId: {doodad.ObjId}, TemplateId:{doodad.TemplateId} removed successfully");
+            Logger.Warn($"Doodad @DOODAD_NAME({doodad.TemplateId}), ObjId: {doodad.ObjId}, TemplateId:{doodad.TemplateId} removed successfully");
         }
     }
 
@@ -80,6 +82,7 @@ public class DoodadRemoveSubCommand : SubCommandBase
             if (doodad is null)
             {
                 SendColorMessage(messageOutput, Color.Red, $"Doodad with objId {doodadObjId} does not exist");
+                Logger.Warn($"Doodad with objId {doodadObjId} does not exist");
                 return;
             }
         }
@@ -88,6 +91,7 @@ public class DoodadRemoveSubCommand : SubCommandBase
         doodad.Spawner.Id = 0xffffffff; // removed from the game manually (укажем, что не надо сохранять в файл doodad_spawns_new.json командой /save all)
         doodad.Hide();
         SendMessage(messageOutput, $"Doodad @DOODAD_NAME({doodad.TemplateId}), ObjId: {doodad.ObjId}, TemplateId:{doodad.TemplateId} removed successfully");
+        Logger.Warn($"Doodad @DOODAD_NAME({doodad.TemplateId}), ObjId: {doodad.ObjId}, TemplateId:{doodad.TemplateId} removed successfully");
     }
 
     private static Doodad GetNearestDoodad(ICharacter character, float radius)
