@@ -102,7 +102,7 @@ public class GameNetwork : Singleton<GameNetwork>
         RegisterPacket(CSOffsets.CSRequestMusicNotesPacket, 5, typeof(CSRequestMusicNotesPacket));
         RegisterPacket(CSOffsets.CSPauseUserMusicPacket, 5, typeof(CSPauseUserMusicPacket));
         //RegisterPacket(CSOffsets.CSUnknown0x5ePacket, 5, typeof(CSUnknown0x5ePacket));
-        //RegisterPacket(CSOffsets.CSBagHandleSelectiveItemsPacket, 5, typeof(CSBagHandleSelectiveItemsPacket));
+        RegisterPacket(CSOffsets.CSBagHandleSelectiveItemsPacket, 5, typeof(CSBagHandleSelectiveItemsPacket));
         RegisterPacket(CSOffsets.CSSkillControllerStatePacket, 5, typeof(CSSkillControllerStatePacket));
         RegisterPacket(CSOffsets.CSMountMatePacket, 5, typeof(CSMountMatePacket));
         RegisterPacket(CSOffsets.CSLeaveWorldPacket, 5, typeof(CSLeaveWorldPacket));

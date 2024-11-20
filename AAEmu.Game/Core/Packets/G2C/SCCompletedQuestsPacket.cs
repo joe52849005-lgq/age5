@@ -33,7 +33,7 @@ public class SCCompletedQuestsPacket : GamePacket
             var body = new byte[8];
             quest.Body.CopyTo(body, 0);
 
-            stream.Write(quest.Id); // idx
+            stream.Write(quest.Id); // idx, UInt16 in 1.2, UInt32 in 5+
             stream.Write(body); // body
         }
         return stream;

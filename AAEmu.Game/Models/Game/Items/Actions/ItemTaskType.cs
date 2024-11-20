@@ -48,15 +48,15 @@ public enum ItemTaskType : byte
     QuestSupplyItems,               // 405-quest-supply-items
     QuestRemoveSupplies,            // 402-403-404-405-quest-remove-supplies
     SkillReagents,                  // skill-reagents
-    SkillEffectConsumption,         // skill-effect-consumption
-    SkillEffectGainItem,            // skill-effect-gain-item
-    SkillEffectGainItemWithPos,     // skill-effect-gain-item-with-pos
+    SkillEffectConsumption = 42,    // skill-effect-consumption
+    SkillEffectGainItem = 43,       // skill-effect-gain-item
+    SkillEffectGainItemWithPos = 44,// skill-effect-gain-item-with-pos
     SkillEffectSiegeTicket,         // skill-effect-siege-ticket
     SkillEffectExpToItem,           // skill-effect-exp-to-item
     Auction = 48,                   // auction
     Mail = 49,                      // mail
-    Trade,                          // trade
-    EnchantMagical,                 // enchant-magical
+    Trade = 50,                     // trade
+    EnchantMagical = 51,            // enchant-magical
     EnchantPhysical,                // enchant-physical
     GetCoinByItem,                  // get-coin-by-item
     GetItemByCoin,                  // get-item-from-doodad
@@ -112,8 +112,8 @@ public enum ItemTaskType : byte
     ShipGradeEnchant,               // ship-grade-enchant
     RechargeRndAttrUnitModifier,    // recharge-rnd-attr-unit-modifier
     RechargeBuff,                   // recharge-buff
-    Socketing,                      // socketing
-    Evolving,                       // evolving
+    Socketing = 106,                // socketing
+    Evolving = 107,                 // evolving
     Smelting,                       // smelting
     Dyeing,                         // dyeing
     RechargeItemProcLifetime,       // recharge-item-proc-lifetime
@@ -128,10 +128,10 @@ public enum ItemTaskType : byte
     FactionDeclareHostile,          // faction-declare-hostile
     EditCosmetic,                   // edit-cosmetic
     ChangeAutoUseAaPoint,           // change-auto-use-aa-point
-    ConvertItemLook,                // convert_item_look
+    ConvertItemLook = 122,          // convert_item_look
     RevertItemLook,                 // revert_item_look
     ChangeExpertLimit,              // change-expert-limit
-    Sknize,                         // sknize
+    Sknize = 126,                   // sknize
     ItemTaskThistimeUnpack,         // item-task-thistime-unpack
     BuyPremiumService,              // buy-premium-service-ingameshop
     BuyAaPoint,                     // buy-aa-point-ingameshop
@@ -159,17 +159,17 @@ public enum ItemTaskType : byte
     ExpandDecoLimit,                // expand-deco-limit
     HouseDemolish,                  // house_demolish
     SiegeAuction,                   // siege-auction
-    SelectiveItem,                  // selective-item
+    SelectiveItem = 154,            // selective-item
     NationRequestFriend,            // nation_request_friend
     DoodadOneshotPlace,             // doodad-oneshot-place
     NationDelegate,                 // nation-delegate
     RenameFaction,                  // rename-faction
-    BlessUthstinInitStats,          // bless-uthstin-init-stats
-    BlessUthstinChangeStats,        // bless-uthstin-change-stats
-    BlessUthstinExpandMaxStats,     // bless-uthstin-expand-max-stats
-    BlessUthstinExpandPage,         // bless-uthstin-expand-page
-    BlessUthstinSelectPage,         // bless-uthstin-select-page
-    BlessUthstinCopyPage,           // bless-uthstin-copy-page
+    BlessUthstinInitStats = 159,    // bless-uthstin-init-stats
+    BlessUthstinChangeStats = 160,  // bless-uthstin-change-stats
+    BlessUthstinExpandMaxStats = 161,// bless-uthstin-expand-max-stats
+    BlessUthstinExpandPage = 162,   // bless-uthstin-expand-page
+    BlessUthstinSelectPage = 163,   // bless-uthstin-select-page
+    BlessUthstinCopyPage = 164,     // bless-uthstin-copy-page
     FamilyJoin,                     // family-join
     FamilyLeave,                    // family-leave
     FamilyKick,                     // family-kick

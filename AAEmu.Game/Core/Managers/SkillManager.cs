@@ -2,8 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using AAEmu.Commons.Network;
 using AAEmu.Commons.Utils;
+using AAEmu.Game.Core.Network.Game;
+using AAEmu.Game.Core.Packets.C2G;
 using AAEmu.Game.Models.Game.AI.Enums;
+using AAEmu.Game.Models.Game.Items.Actions;
+using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.NPChar;
 using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.Skills.Buffs;
@@ -15,8 +20,9 @@ using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Models.Game.World;
 using AAEmu.Game.Models.StaticValues;
 using AAEmu.Game.Utils.DB;
-
+using Newtonsoft.Json.Linq;
 using NLog;
+using AAEmu.Game.Models.Game.Char;
 
 namespace AAEmu.Game.Core.Managers;
 
@@ -42,6 +48,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
     private Dictionary<uint, List<CombatBuffTemplate>> _combatBuffs;
     private Dictionary<uint, SkillReagent> _skillReagents;
     private Dictionary<uint, SkillProduct> _skillProducts;
+    private DynamicEffects _dynamicEffects;
     // private HashSet<ushort> _skillIds = new();
     // private ushort _skillIdIndex = 1;
 
@@ -103,7 +110,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
 
     public List<DefaultSkill> GetDefaultSkills()
     {
-        return new List<DefaultSkill>(_defaultSkills.Values);
+        return [.. _defaultSkills.Values];
     }
 
     public BuffTemplate GetBuffTemplate(uint id)
@@ -118,11 +125,11 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
 
     public List<BuffTriggerTemplate> GetBuffTriggerTemplates(uint buffId)
     {
-        if (_buffTriggers.TryGetValue(buffId, out List<BuffTriggerTemplate> triggers))
+        if (_buffTriggers.TryGetValue(buffId, out var triggers))
         {
             return triggers;
         }
-        return new List<BuffTriggerTemplate>();
+        return [];
     }
 
     public EffectTemplate GetEffectTemplate(uint id)
@@ -168,7 +175,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
     {
         if (_buffTags.TryGetValue(buffId, out var tags))
             return tags;
-        return new List<uint>();
+        return [];
     }
 
     public List<uint> GetBuffsByTagId(uint tagId)
@@ -182,40 +189,43 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
     {
         if (_skillTags.TryGetValue(skillId, out var tags))
             return tags;
-        return new List<uint>();
+        return [];
     }
 
     public List<uint> GetSkillsByTag(uint tagId)
     {
         if (_taggedSkills.TryGetValue(tagId, out var tag))
             return tag;
-        return new List<uint>();
+        return [];
     }
 
     public PassiveBuffTemplate GetPassiveBuffTemplate(uint id)
     {
-        if (_passiveBuffs.TryGetValue(id, out var template))
-            return template;
-        return null;
+        return _passiveBuffs.GetValueOrDefault(id);
+    }
+
+    public SelectiveItems GetSelectiveItems(uint skillId)
+    {
+        return _dynamicEffects.selectiveItems.GetValueOrDefault(skillId);
     }
 
     public List<SkillModifier> GetModifiersByOwnerId(uint id)
     {
         if (_skillModifiers.TryGetValue(id, out var ownerId))
             return ownerId;
-        return new List<SkillModifier>();
+        return [];
     }
 
     public List<CombatBuffTemplate> GetCombatBuffs(uint reqBuffId)
     {
         if (_combatBuffs.TryGetValue(reqBuffId, out var buffs))
             return buffs;
-        return new List<CombatBuffTemplate>();
+        return [];
     }
 
     public List<SkillReagent> GetSkillReagentsBySkillId(uint id)
     {
-        List<SkillReagent> reagents = new List<SkillReagent>();
+        var reagents = new List<SkillReagent>();
 
         foreach (var reagent in _skillReagents)
         {
@@ -228,7 +238,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
 
     public List<SkillProduct> GetSkillProductsBySkillId(uint id)
     {
-        List<SkillProduct> products = new List<SkillProduct>();
+        var products = new List<SkillProduct>();
 
         foreach (var product in _skillProducts)
         {
@@ -267,11 +277,12 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
 
         _skills = new Dictionary<uint, SkillTemplate>();
         _defaultSkills = new Dictionary<uint, DefaultSkill>();
-        _commonSkills = new List<uint>();
+        _commonSkills = [];
         _startAbilitySkills = new Dictionary<AbilityType, List<SkillTemplate>>();
         _passiveBuffs = new Dictionary<uint, PassiveBuffTemplate>();
         _types = new Dictionary<uint, EffectType>();
         _effects = new Dictionary<string, Dictionary<uint, EffectTemplate>>();
+        _dynamicEffects = new DynamicEffects();
         _effects.Add("Buff", new Dictionary<uint, EffectTemplate>()); // missing from the effect table
         _effects.Add("AcceptQuestEffect", new Dictionary<uint, EffectTemplate>());
         _effects.Add("AccountAttributeEffect", new Dictionary<uint, EffectTemplate>());
@@ -1663,11 +1674,11 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         var buffId = reader.GetUInt32("buff_id");
 
                         if (!_buffTags.ContainsKey(buffId))
-                            _buffTags.Add(buffId, new List<uint>());
+                            _buffTags.Add(buffId, []);
                         _buffTags[buffId].Add(tagId);
 
                         if (!_taggedBuffs.ContainsKey(tagId))
-                            _taggedBuffs.Add(tagId, new List<uint>());
+                            _taggedBuffs.Add(tagId, []);
                         _taggedBuffs[tagId].Add(buffId);
                     }
                 }
@@ -1694,7 +1705,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         template.Synergy = reader.GetBoolean("synergy", true);
 
                         if (!_skillModifiers.ContainsKey(template.OwnerId))
-                            _skillModifiers.Add(template.OwnerId, new List<SkillModifier>());
+                            _skillModifiers.Add(template.OwnerId, []);
                         _skillModifiers[template.OwnerId].Add(template);
                     }
                 }
@@ -1713,11 +1724,11 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
 
                         //I guess we need this
                         if (!_skillTags.ContainsKey(skillId))
-                            _skillTags.Add(skillId, new List<uint>());
+                            _skillTags.Add(skillId, []);
                         _skillTags[skillId].Add(tagId);
 
                         if (!_taggedSkills.ContainsKey(tagId))
-                            _taggedSkills.Add(tagId, new List<uint>());
+                            _taggedSkills.Add(tagId, []);
                         _taggedSkills[tagId].Add(skillId);
                     }
                 }
@@ -1745,8 +1756,39 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         };
 
                         if (!_combatBuffs.ContainsKey(combatBuffTemplate.ReqBuffId))
-                            _combatBuffs.Add(combatBuffTemplate.ReqBuffId, new List<CombatBuffTemplate>());
+                            _combatBuffs.Add(combatBuffTemplate.ReqBuffId, []);
                         _combatBuffs[combatBuffTemplate.ReqBuffId].Add(combatBuffTemplate);
+                    }
+                }
+            }
+
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM skill_dynamic_effects";
+                command.Prepare();
+                using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
+                {
+                    // Начальное десятичное значение
+                    int startDecimal = 40572;
+
+                    while (reader.Read())
+                    {
+                        var jsonData = reader.GetString("effect");
+                        var skillId = reader.GetUInt32("skill_id");
+                        // TODO add DecryptJson()
+
+                        var jObj = JObject.Parse(jsonData);
+
+                        var effect = jObj.GetValue("effect").ToString();
+
+                        if (effect == "selective_item")
+                        {
+                            _dynamicEffects.selectiveItems.Add(skillId, new SelectiveItems(jObj));
+                        }
+                        else if (effect == "bless_uthstin")
+                        {
+                            _dynamicEffects.blessUthstins.TryAdd(skillId, new BlessUthstin(jObj, jsonData));
+                        }
                     }
                 }
             }
@@ -1766,7 +1808,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         var buffId = reader.GetUInt32("buff_id");
                         if (!_buffTriggers.ContainsKey(buffId))
                         {
-                            _buffTriggers.Add(buffId, new List<BuffTriggerTemplate>());
+                            _buffTriggers.Add(buffId, []);
                         }
                         trigger.Id = reader.GetUInt32("id");
                         trigger.CheckNoTagSrcInOwner = reader.GetBoolean("check_no_tag_src_in_owner", true);
@@ -1858,7 +1900,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                 continue;
             var ability = (AbilityType)skillTemplate.AbilityId;
             if (!_startAbilitySkills.ContainsKey(ability))
-                _startAbilitySkills.Add(ability, new List<SkillTemplate>());
+                _startAbilitySkills.Add(ability, []);
             _startAbilitySkills[ability].Add(skillTemplate);
         }
 

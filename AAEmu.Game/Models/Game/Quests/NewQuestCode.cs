@@ -52,11 +52,12 @@ public partial class Quest
             return false;
         }
 
+        Status = QuestStatus.Progress;
         Step = QuestComponentKind.Start;
         // Send the first components, or the one that's used to start this ?
         ComponentId = stepStart.Components.Values.FirstOrDefault()?.Template.Id ?? 0;
         Owner.SendPacket(new SCQuestContextStartedPacket(this, ComponentId));
-        Owner.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.QuestStart, [], []));
+        Owner.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.QuestStart, [], [], 4195393552));
         Logger.Debug($"StartQuest, Quest:{TemplateId}, Player {Owner.Name} ({Owner.Id})");
         return true;
     }

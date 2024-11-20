@@ -472,7 +472,7 @@ public partial class Character : Unit, ICharacter
     {
         get
         {
-            double res = 0d;
+            var res = 0d;
             res = CalculateWithBonuses(res, UnitAttribute.IncomingDamageMul);
             res = res / 1000;
             res = 1 + res;
@@ -485,7 +485,7 @@ public partial class Character : Unit, ICharacter
     {
         get
         {
-            double res = 0d;
+            var res = 0d;
             res = CalculateWithBonuses(res, UnitAttribute.IncomingMeleeDamageMul);
             res = CalculateWithBonuses(res, UnitAttribute.IncomingDamageMul);
             res = res / 1000;
@@ -499,7 +499,7 @@ public partial class Character : Unit, ICharacter
     {
         get
         {
-            double res = 0d;
+            var res = 0d;
             res = CalculateWithBonuses(res, UnitAttribute.IncomingRangedDamageMul);
             res = CalculateWithBonuses(res, UnitAttribute.IncomingDamageMul);
             res = res / 1000;
@@ -513,7 +513,7 @@ public partial class Character : Unit, ICharacter
     {
         get
         {
-            double res = 0d;
+            var res = 0d;
             res = CalculateWithBonuses(res, UnitAttribute.IncomingSpellDamageMul);
             res = CalculateWithBonuses(res, UnitAttribute.IncomingDamageMul);
             res = res / 1000;
@@ -527,7 +527,7 @@ public partial class Character : Unit, ICharacter
     {
         get
         {
-            double res = 0d;
+            var res = 0d;
             res = CalculateWithBonuses(res, UnitAttribute.CastingTimeMul);
             res = (res + 1000.00000000) / 1000;
             return (float)Math.Max(res, 0f);
@@ -1160,7 +1160,7 @@ public partial class Character : Unit, ICharacter
     {
         get
         {
-            double res = 0.0;
+            var res = 0.0;
             res = CalculateWithBonuses(res, UnitAttribute.LivingPointGain);
             return (float)res;
         }
@@ -1171,7 +1171,7 @@ public partial class Character : Unit, ICharacter
     {
         get
         {
-            double res = 0.0;
+            var res = 0.0;
             res = CalculateWithBonuses(res, UnitAttribute.LivingPointGainMul);
             return (float)res;
         }
@@ -1182,7 +1182,7 @@ public partial class Character : Unit, ICharacter
     {
         get
         {
-            double res = 0.0;
+            var res = 0.0;
             res = CalculateWithBonuses(res, UnitAttribute.DropRateMul);
             return (float)res;
         }
@@ -1193,7 +1193,7 @@ public partial class Character : Unit, ICharacter
     {
         get
         {
-            double res = 0.0;
+            var res = 0.0;
             res = CalculateWithBonuses(res, UnitAttribute.LootGoldMul);
             return (float)res;
         }
@@ -1711,7 +1711,9 @@ public partial class Character : Unit, ICharacter
     public void DoRepair(List<Item> items)
     {
         var tasks = new List<ItemTask>();
-        int repairCost = 0;
+        var repairCost = 0;
+
+        var isPremium = Buffs.CheckBuff((uint)SkillConstants.PatronStatus);
 
         foreach (var item in items)
         {
@@ -1736,23 +1738,27 @@ public partial class Character : Unit, ICharacter
                 continue;
             }
 
+            if (!isPremium)
+            {
+
 #pragma warning disable CA1508 // Avoid dead conditional code
-            if (CurrentInteractionObject is null || !(CurrentInteractionObject is Npc npc))
-                continue;
+                if (CurrentInteractionObject is null || !(CurrentInteractionObject is Npc npc))
+                    continue;
 #pragma warning restore CA1508 // Avoid dead conditional code
 
-            if (!npc.Template.Blacksmith)
-            {
-                Logger.Warn($"Attempting to repair an item while not at a blacksmith, Item={item.Id}, NPC={npc}");
-                continue;
-            }
+                if (!npc.Template.Blacksmith)
+                {
+                    Logger.Warn($"Attempting to repair an item while not at a blacksmith, Item={item.Id}, NPC={npc}");
+                    continue;
+                }
 
-            var dist = MathUtil.CalculateDistance(Transform.World.Position, npc.Transform.World.Position);
+                var dist = MathUtil.CalculateDistance(Transform.World.Position, npc.Transform.World.Position);
 
-            if (dist > 5f)
-            {
-                SendErrorMessage(ErrorMessageType.TooFarAway);
-                continue;
+                if (dist > 5f)
+                {
+                    SendErrorMessage(ErrorMessageType.TooFarAway);
+                    continue;
+                }
             }
 
             var currentRepairCost = equipItem.RepairCost;
@@ -1766,8 +1772,9 @@ public partial class Character : Unit, ICharacter
             equipItem.Durability = equipItem.MaxDurability;
             equipItem.IsDirty = true;
             repairCost += currentRepairCost;
-            // добавил 4 байта перед Durability для нормальной работы починки предметов 
+            // добавил 4 байта перед Durability для нормальной работы починки предметов и трансформации
             tasks.Add(new ItemUpdateRepair(item));
+            //tasks.Add(new ItemUpdate(item));
         }
 
         if (repairCost > 0)
@@ -1776,7 +1783,10 @@ public partial class Character : Unit, ICharacter
             tasks.Add(new MoneyChange(-repairCost));
         }
 
-        Connection.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Repair, tasks, []));
+        if (tasks is { Count: > 0 })
+        {
+            Connection.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Repair, tasks, []));
+        }
     }
 
     public override void Regenerate()

@@ -18,7 +18,8 @@ public class ItemRemove : ItemTask
     {
         _type = ItemAction.Remove; // 7
         _item = item;
-        _removeReservationTime = DateTime.MinValue;
+        _itemCount = item.Count;
+        _removeReservationTime = DateTime.UtcNow;
         _tLogt = SetTlogT(_type, item.SlotType, _itemCount < 0); // установим tLogt по значению ItemAction
     }
 
@@ -29,7 +30,7 @@ public class ItemRemove : ItemTask
         stream.Write((byte)_item.SlotType);   // type
         stream.Write((byte)_item.Slot);       // index
         stream.Write(_item.Id);               // id
-        stream.Write(_item.Count);            // stack
+        stream.Write(_itemCount);             // stack
         stream.Write(_removeReservationTime); // removeReservationTime
         stream.Write(0u);                     // type
         stream.Write(0u);                     // dbSlaveId

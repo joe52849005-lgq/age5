@@ -5,11 +5,13 @@ namespace AAEmu.Game.Models.Game.Items.Actions;
 public class ItemUpdateRepair : ItemTask
 {
     private readonly Item _item;
+    private readonly uint _templateId;
 
-    public ItemUpdateRepair(Item item)
+    public ItemUpdateRepair(Item item, uint templateId = 0)
     {
         _type = ItemAction.UpdateDetail; // 9
         _item = item;
+        _templateId = templateId;
         _tLogt = SetTlogT(_type, SlotType.Bag); // установим tLogt по значению ItemAction
     }
 
@@ -24,7 +26,7 @@ public class ItemUpdateRepair : ItemTask
         var details = new PacketStream();
         details.Write((byte)_item.DetailType);
 
-        details.Write(0u); // добавил для нормальной работы починки предметов
+        details.Write(_templateId); // добавил для нормальной работы починки предметов и для трансформации
 
         _item.WriteDetails(details);
 

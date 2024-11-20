@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game.Char;
@@ -32,12 +31,12 @@ public class Skinize : SpecialEffectAction
             Logger.Debug("Special effects: Skinize value1 {0}, value2 {1}, value3 {2}, value4 {3}", value1, value2, value3, value4);
         }
 
-        if (caster is not Character character || character is null)
+        if (caster is not Character character)
         {
             return;
         }
 
-        if (targetObj is not SkillCastItemTarget itemTarget || itemTarget is null)
+        if (targetObj is not SkillCastItemTarget itemTarget)
         {
             return;
         }
@@ -50,16 +49,16 @@ public class Skinize : SpecialEffectAction
 
         if (itemToImage.HasFlag(ItemFlag.Skinized))
         {
-            // Already a image item
+            // Already an image item
             return;
         }
 
-        if (casterObj is not SkillItem powderSkillItem || powderSkillItem is null)
+        if (casterObj is not SkillItem powderSkillItem)
         {
             return;
         }
 
-        Item powderItem = character.Inventory.GetItemById(powderSkillItem.ItemId);
+        var powderItem = character.Inventory.GetItemById(powderSkillItem.ItemId);
         if (powderItem == null)
         {
             return;
@@ -71,7 +70,16 @@ public class Skinize : SpecialEffectAction
         }
 
         itemToImage.SetFlag(ItemFlag.Skinized);
-        character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Sknize, new List<ItemTask>() { new ItemUpdateBits(itemToImage) }, new List<ulong>()));
-        powderItem._holdingContainer.ConsumeItem(ItemTaskType.Sknize, powderItem.TemplateId, 1, powderItem);
+        character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Sknize,
+        [
+            new ItemUpdateSecurity(itemToImage, 9, 1, false, false, false)
+        ], [], 1));
+
+        //if (character.Inventory.Bag.ConsumeItem(ItemTaskType.SkillEffectConsumption, powderItem.TemplateId, 1, null) <= 0)
+        if (powderItem.HoldingContainer.ConsumeItem(ItemTaskType.SkillEffectConsumption, powderItem.TemplateId, 1, null) <= 0)
+        {
+            character.SendErrorMessage(ErrorMessageType.FailedToUseItem);
+            Logger.Error($"Couldn't for Sknize item {powderItem.TemplateId}");
+        }
     }
 }

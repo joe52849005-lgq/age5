@@ -58,6 +58,7 @@ public class EquipItem : Item
 
         var mGems = stream.ReadPiscW(GemIds.Length);
         GemIds = mGems.Select(id => (uint)id).ToArray();
+        ImageItemTemplateId = GemIds[0];
         //var mGems = stream.ReadPisc(4);
         //GemIds[0] = (uint)mGems[0];
         //GemIds[1] = (uint)mGems[1];
@@ -88,6 +89,10 @@ public class EquipItem : Item
 
     public override void WriteDetails(PacketStream stream)
     {
+        if (ImageItemTemplateId != 0)
+        {
+            GemIds[0] = ImageItemTemplateId;
+        }
         stream.Write(Durability);     // durability
         stream.Write(ChargeCount);    // chargeCount
         stream.Write(ChargeTime);     // chargeTime

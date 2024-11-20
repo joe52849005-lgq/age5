@@ -363,7 +363,7 @@ public class SCUnitStatePacket : GamePacket
         {
             stream.WritePisc(0, 0, 0, 0); // TODO второе число больше нуля, что это за число?
             stream.WritePisc((uint)(_unit.Faction?.Id ?? 0), (uint)(_unit.Expedition?.Id ?? 0), 0, 0); // pisc
-            stream.WritePisc(0, 255, 0, 0); // pisc
+            stream.WritePisc(0, 0, 0, 0); // pisc
         }
 
         switch (_unit)
@@ -373,6 +373,8 @@ public class SCUnitStatePacket : GamePacket
                     var flags = new BitSet(16); // short
                     if (character.Invisible)
                         flags.Set(5);
+                    if (character.IsInBattle)
+                        flags.Set(9);
                     if (character.IdleStatus)
                         flags.Set(13);
                     stream.Write(flags.ToByteArray()); // flags(ushort)
@@ -398,18 +400,18 @@ public class SCUnitStatePacket : GamePacket
                     break;
                 }
             case Npc:
-                //var flags = new BitSet(16); // short
-                //if (npc.IsInBattle)
-                //    flags.Set(1);
-                //if (npc.Invisible)
-                //    flags.Set(5);
-                //stream.Write(flags.ToByteArray()); // flags(ushort)
+                var nflags = new BitSet(16); // short
+                if (_unit.IdleStatus)
+                    nflags.Set(13);
+                if (_unit.IsInBattle)
+                    nflags.Set(9);
+                stream.Write(nflags.ToByteArray()); // flags(ushort)
                 //if (flags.Get(1)) // если Npc в бою, то шлем дополнительные байты
                 //{
                 //    stream.WriteBc(npc.CurrentAggroTarget);  // objId бойца
                 //    stream.WriteBc(0u); // TeamId команды, кто первая нанесла удар
                 //}
-                stream.Write((ushort)0); // flags
+                //stream.Write((ushort)8192); // flags
                 break;
             default:
                 stream.Write((ushort)0); // flags

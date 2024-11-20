@@ -64,7 +64,7 @@ public class ItemUnwrapSubCommand : SubCommandBase
             item.SetFlag(ItemFlag.SoulBound);
         }
 
-        var updateItemTask = new ItemUpdateSecurity(item, (byte)item.ItemFlags, item.HasFlag(ItemFlag.Secure),
+        var updateItemTask = new ItemUpdateSecurity(item, (byte)item.ItemFlags, 0, item.HasFlag(ItemFlag.Secure),
             item.HasFlag(ItemFlag.Secure), item.ItemFlags.HasFlag(ItemFlag.Unpacked));
         character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.ItemTaskThistimeUnpack, updateItemTask,
             new List<ulong>()));

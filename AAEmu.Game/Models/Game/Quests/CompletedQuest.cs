@@ -1,10 +1,10 @@
-using System.Collections;
+﻿using System.Collections;
 
 namespace AAEmu.Game.Models.Game.Quests;
 
 public class CompletedQuest
 {
-    public ushort Id { get; set; }
+    public uint Id { get; set; } // UInt16 in 1.2, UInt32 in 5+
     public BitArray Body { get; set; }
 
     public CompletedQuest()

@@ -313,7 +313,7 @@ public class ItemContainer
             return false;
         }
 
-        var sourceContainer = item._holdingContainer;
+        var sourceContainer = item.HoldingContainer;
         var sourceSlot = (byte)item.Slot;
         var sourceSlotType = item.SlotType;
 
@@ -380,7 +380,7 @@ public class ItemContainer
         {
             item.SlotType = ContainerType;
             item.Slot = newSlot;
-            item._holdingContainer = this;
+            item.HoldingContainer = this;
             item.OwnerId = OwnerId;
 
             Items.Insert(0, item); // insert at front for easy buyback handling
@@ -465,7 +465,7 @@ public class ItemContainer
             return false;
         }
 
-        var sourceContainer = item._holdingContainer;
+        var sourceContainer = item.HoldingContainer;
         var sourceSlot = (byte)item.Slot;
         var sourceSlotType = item.SlotType;
 
@@ -532,7 +532,7 @@ public class ItemContainer
         {
             item.SlotType = ContainerType;
             item.Slot = newSlot;
-            item._holdingContainer = this;
+            item.HoldingContainer = this;
             item.OwnerId = OwnerId;
 
             Items.Insert(0, item); // insert at front for easy buyback handling
@@ -646,16 +646,16 @@ public class ItemContainer
             Owner?.SendPacket(sync);
         }
 
-        var res = item._holdingContainer.Items.Remove(item);
+        var res = item.HoldingContainer.Items.Remove(item);
         if (res && task != ItemTaskType.Invalid)
         {
             //item._holdingContainer?.Owner?.SendPacket(new SCItemTaskSuccessPacket(task, [new ItemRemoveSlot(item)], []));
-            item._holdingContainer?.Owner?.SendPacket(new SCItemTaskSuccessPacket(task, [new ItemRemove(item)], []));
+            item.HoldingContainer?.Owner?.SendPacket(new SCItemTaskSuccessPacket(task, [new ItemRemove(item)], []));
         }
 
         if (res && releaseIdAsWell)
         {
-            item._holdingContainer = null;
+            item.HoldingContainer = null;
             ItemManager.Instance.ReleaseId(item.Id);
         }
 
@@ -682,7 +682,7 @@ public class ItemContainer
             return 0; // Nothing found
         }
 
-        if (preferredItem != null && templateId != preferredItem.TemplateId)
+        if (preferredItem is not null && templateId != preferredItem.TemplateId)
         {
             return 0; // Preferred item template did not match the requested template
         }
@@ -691,7 +691,7 @@ public class ItemContainer
         var itemTasks = new List<ItemTask>();
 
         // Try to consume preferred item first
-        if (amountToConsume > 0 && preferredItem != null)
+        if (amountToConsume > 0 && preferredItem is not null)
         {
             // Remove this entry from our list
             if (!foundItems.Remove(preferredItem))
@@ -754,7 +754,7 @@ public class ItemContainer
         // We use Invalid when doing internals, don't send to client
         if (taskType != ItemTaskType.Invalid)
         {
-            Owner?.SendPacket(new SCItemTaskSuccessPacket(taskType, itemTasks, new List<ulong>()));
+            Owner?.SendPacket(new SCItemTaskSuccessPacket(taskType, itemTasks, []));
         }
 
         UpdateFreeSlotCount();
@@ -1134,7 +1134,7 @@ public class ItemContainer
 
     public virtual void OnEnterContainer(Item item, ItemContainer lastContainer, byte previousSlot)
     {
-        item._holdingContainer = this; // назначим новый контейнер
+        item.HoldingContainer = this; // назначим новый контейнер
         //item.SlotType = ContainerType;
         //item.Slot = previousSlot;
         item.OwnerId = OwnerId;

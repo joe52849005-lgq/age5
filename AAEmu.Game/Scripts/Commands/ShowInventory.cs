@@ -112,7 +112,7 @@ public class ShowInventory : ICommand
                         invalidItems.Add(item);
                         hasSlotErrors++;
                     }
-                    else if (item.SlotType != item._holdingContainer?.ContainerType)
+                    else if (item.SlotType != item.HoldingContainer?.ContainerType)
                     {
                         additionalErrors += "|cFFFF0000**Container Error**|r";
                         invalidItems.Add(item);

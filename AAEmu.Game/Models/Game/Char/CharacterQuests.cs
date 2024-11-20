@@ -28,13 +28,13 @@ public class CharacterQuests
 
     private Character Owner { get; set; }
     public Dictionary<uint, Quest> ActiveQuests { get; }
-    private Dictionary<ushort, CompletedQuest> CompletedQuests { get; }
+    private Dictionary<uint, CompletedQuest> CompletedQuests { get; }
 
     public CharacterQuests(Character owner)
     {
         Owner = owner;
         ActiveQuests = new Dictionary<uint, Quest>();
-        CompletedQuests = new Dictionary<ushort, CompletedQuest>();
+        CompletedQuests = new Dictionary<uint, CompletedQuest>();
         _removed = new List<uint>();
     }
 
@@ -493,7 +493,7 @@ public class CharacterQuests
                 while (reader.Read())
                 {
                     var quest = new CompletedQuest();
-                    quest.Id = reader.GetUInt16("id");
+                    quest.Id = reader.GetUInt32("id");
                     quest.Body = new BitArray((byte[])reader.GetValue("data"));
                     CompletedQuests.Add(quest.Id, quest);
                 }

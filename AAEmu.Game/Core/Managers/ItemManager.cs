@@ -26,6 +26,8 @@ using AAEmu.Game.Models.StaticValues;
 using AAEmu.Game.Models.Tasks.Item;
 using AAEmu.Game.Utils.DB;
 
+using Discord;
+
 using MySql.Data.MySqlClient;
 
 using NLog;
@@ -586,6 +588,12 @@ public class ItemManager : Singleton<ItemManager>
         if (item.Template.FixedGrade >= 0)
             item.Grade = (byte)item.Template.FixedGrade;
         item.CreateTime = DateTime.UtcNow;
+
+        // Fix Durability
+        if (item is EquipItem equipItem)
+            if (equipItem.Durability < equipItem.MaxDurability)
+                equipItem.Durability = equipItem.MaxDurability;
+
         if (generateId)
         {
             if (!_allItems.TryAdd(item.Id, item))
@@ -1678,7 +1686,7 @@ public class ItemManager : Singleton<ItemManager>
         var deleteCount = 0;
         var updateCount = 0;
         var containerUpdateCount = 0;
-        // Logger.Info("Saving items data ...");
+        Logger.Trace("Saving items data ...");
 
         // Remove deleted items from DB
         using (var command = connection.CreateCommand())
@@ -1772,9 +1780,9 @@ public class ItemManager : Singleton<ItemManager>
                             continue;
 
                         // Try to re-attain the slot type by getting the owning container's type
-                        if (item._holdingContainer != null)
+                        if (item.HoldingContainer != null)
                         {
-                            item.SlotType = GetContainerSlotTypeByContainerId(item._holdingContainer.ContainerId);
+                            item.SlotType = GetContainerSlotTypeByContainerId(item.HoldingContainer.ContainerId);
                         }
 
                         // If the slot type changed, give a warning, otherwise skip this save
@@ -1812,7 +1820,7 @@ public class ItemManager : Singleton<ItemManager>
                     command.Parameters.AddWithValue("@id", item.Id);
                     command.Parameters.AddWithValue("@type", item.GetType().ToString());
                     command.Parameters.AddWithValue("@template_id", item.TemplateId);
-                    command.Parameters.AddWithValue("@container_id", item._holdingContainer?.ContainerId ?? 0);
+                    command.Parameters.AddWithValue("@container_id", item.HoldingContainer?.ContainerId ?? 0);
                     command.Parameters.AddWithValue("@slot_type", (int)item.SlotType);
                     command.Parameters.AddWithValue("@slot", item.Slot);
                     command.Parameters.AddWithValue("@count", item.Count);
@@ -1846,7 +1854,7 @@ public class ItemManager : Singleton<ItemManager>
                     catch (Exception ex)
                     {
                         // Create a manual SQL string with the data provided
-                        var sqlString = $"REPLACE INTO items (id, type, template_id, container_id, slot_type, slot, count, details, lifespan_mins, made_unit_id, unsecure_time, unpack_time, owner, created_at, grade, flags, ucc, expire_time, expire_online_minutes, charge_time, charge_count) VALUES ({item.Id}, {item.GetType()}, {item.TemplateId}, {item._holdingContainer?.ContainerId ?? 0}, {item.SlotType}, {item.Slot}, {item.Count}, {details.GetBytes()}, {item.LifespanMins}, {item.MadeUnitId}, {item.UnsecureTime}, {item.UnpackTime}, {item.CreateTime}, {item.OwnerId}, {item.Grade}, {(byte)item.ItemFlags}, {item.UccId}, {item.ExpirationTime}, {item.ExpirationOnlineMinutesLeft}, {item.ChargeStartTime}, {item.ChargeCount})";
+                        var sqlString = $"REPLACE INTO items (id, type, template_id, container_id, slot_type, slot, count, details, lifespan_mins, made_unit_id, unsecure_time, unpack_time, owner, created_at, grade, flags, ucc, expire_time, expire_online_minutes, charge_time, charge_count) VALUES ({item.Id}, {item.GetType()}, {item.TemplateId}, {item.HoldingContainer?.ContainerId ?? 0}, {item.SlotType}, {item.Slot}, {item.Count}, {details.GetBytes()}, {item.LifespanMins}, {item.MadeUnitId}, {item.UnsecureTime}, {item.UnpackTime}, {item.CreateTime}, {item.OwnerId}, {item.Grade}, {(byte)item.ItemFlags}, {item.UccId}, {item.ExpirationTime}, {item.ExpirationOnlineMinutesLeft}, {item.ChargeStartTime}, {item.ChargeCount})";
 
                         Logger.Error($"Error: {ex.Message}\nSQL Query: {sqlString}\n");
                     }
@@ -2352,7 +2360,7 @@ public class ItemManager : Singleton<ItemManager>
         item.SetFlag(ItemFlag.Unpacked);
         if (item.Template.BindType == ItemBindType.BindOnUnpack)
             item.SetFlag(ItemFlag.SoulBound);
-        var updateItemTask = new ItemUpdateSecurity(item, (byte)item.ItemFlags, item.HasFlag(ItemFlag.Secure), item.HasFlag(ItemFlag.Secure), item.ItemFlags.HasFlag(ItemFlag.Unpacked));
+        var updateItemTask = new ItemUpdateSecurity(item, (byte)item.ItemFlags, 0, item.HasFlag(ItemFlag.Secure), item.HasFlag(ItemFlag.Secure), item.ItemFlags.HasFlag(ItemFlag.Unpacked));
         character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.ItemTaskThistimeUnpack, updateItemTask, new List<ulong>()));
         if ((item.Template is EquipItemTemplate { ChargeLifetime: > 0 }))
             character.SendPacket(new SCSyncItemLifespanPacket(true, item.Id, item.TemplateId, item.UnpackTime));
@@ -2362,5 +2370,94 @@ public class ItemManager : Singleton<ItemManager>
     public ItemSet GetItemSet(uint itemSetId)
     {
         return _itemSets.GetValueOrDefault(itemSetId);
+    }
+
+    public void HandleSelectiveItems(Character character, byte slotType, byte slotIndex, byte[] data)
+    {
+        var item = character.Inventory.GetItem((SlotType)slotType, slotIndex);
+        if (item == null)
+        {
+            character.SendMessage("Item cannot be created. Failed To Use Item.");
+            character.SendErrorMessage(ErrorMessageType.FailedToUseItem);
+            Logger.Debug($"Failed To Use Item from slotType {(SlotType)slotType}, slotIndex {slotIndex}");
+            return;
+        }
+
+        var selectiveItems = SkillManager.Instance.GetSelectiveItems(item.Template.UseSkillId);
+        if (selectiveItems != null)
+        {
+            var selectedItem = selectiveItems.ItemSelections[data[7] - 1];
+            if (selectedItem == null)
+            {
+                character.SendMessage("Item cannot be created. Failed To Use Item.");
+                character.SendErrorMessage(ErrorMessageType.FailedToUseItem);
+                Logger.Debug($"Failed To Use Item {item.Template.Id} with UseSkillId {item.Template.UseSkillId}");
+                return;
+            }
+
+            if (item.Count < selectiveItems.ConsumeItemCount)
+            {
+                character.SendMessage("Item cannot be created.");
+                character.SendErrorMessage(ErrorMessageType.NotEnoughItem);
+                Logger.Debug($"Not Enough Item {item.Template.Id} with UseSkillId {item.Template.UseSkillId} count {selectiveItems.ConsumeItemCount}");
+                return;
+            }
+
+            if (character.Inventory.Bag.ConsumeItem(ItemTaskType.SkillEffectGainItem, item.TemplateId, selectiveItems.ConsumeItemCount, null) <= 0)
+            {
+                character.SendMessage("Item cannot be created. Not Enough Item.");
+                character.SendErrorMessage(ErrorMessageType.NotEnoughItem);
+                Logger.Debug($"Not Enough Item {item.Template.Id} with UseSkillId {item.Template.UseSkillId}");
+                return;
+            }
+
+            if (!character.Inventory.Bag.AcquireDefaultItem(ItemTaskType.SelectiveItem, selectedItem.Item, selectedItem.Count, item.Grade))
+            {
+                character.SendMessage("Item cannot be created. Bag Full.");
+                character.SendErrorMessage(ErrorMessageType.BagFull);
+                Logger.Debug($"The Selective Item {item.Template.Id} with UseSkillId {item.Template.UseSkillId} cannot be created. Bag Full.");
+            }
+        }
+        else
+        {
+            character.SendMessage("The Selective Item could not be found.");
+            character.SendErrorMessage(ErrorMessageType.CraftInteractionItemNotFound);
+            Logger.Debug($"The Selective Item {item.Template.Id} with UseSkillId {item.Template.UseSkillId} could not be found.");
+        }
+    }
+
+    public void HandleConvertItemLook(Character character, ulong baseId, ulong lookId, uint npcId)
+    {
+        var toImage = character.Inventory.GetItemById(baseId);
+        var imageItem = character.Inventory.GetItemById(lookId);
+
+        if (toImage is null || imageItem is null)
+            return;
+
+        if (toImage is not EquipItem itemToImage)
+            return;
+
+        if (itemToImage.Template is not EquipItemTemplate template)
+            return;
+
+        if (!character.Inventory.GetAllItemsByTemplate([SlotType.Bag], template.ItemLookConvert.RequiredItemId, -1, out var powders, out var theseAmounts) && theseAmounts >= template.ItemLookConvert.RequiredItemCount)
+        {
+            character.SendErrorMessage(ErrorMessageType.ItemLookConvertAsNotUseAsSkin, ErrorMessageType.NotEnoughRequiredItem, 0, false);
+            Logger.Debug($"Not Enough Item {template.ItemLookConvert.RequiredItemId} count {template.ItemLookConvert.RequiredItemCount}");
+            return;
+        }
+
+        character.SendPacket(new SCItemUccChangedPacket(0, character.ObjId, toImage.Id));
+
+        itemToImage.ImageItemTemplateId = imageItem.TemplateId;
+
+        character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.ConvertItemLook,
+        [
+            new ItemRemove(imageItem),
+            //new ItemUpdate(toImage),
+            new ItemUpdateRepair(toImage, imageItem.TemplateId),
+            new ItemUpdateSecurity(toImage, 1, 1, false, false, false),
+            theseAmounts > template.ItemLookConvert.RequiredItemCount ? new ItemCountUpdate(powders[0], template.ItemLookConvert.RequiredItemCount) : new ItemRemove(powders[0])
+        ], [], 3));
     }
 }

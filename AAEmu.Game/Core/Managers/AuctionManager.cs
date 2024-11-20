@@ -510,9 +510,9 @@ public class AuctionManager : Singleton<AuctionManager>
                 if (lot.Item.OwnerId <= 0)
                     continue;
 
-                if (lot.Item._holdingContainer != null)
+                if (lot.Item.HoldingContainer != null)
                 {
-                    lot.Item.SlotType = ItemManager.Instance.GetContainerSlotTypeByContainerId(lot.Item._holdingContainer.ContainerId);
+                    lot.Item.SlotType = ItemManager.Instance.GetContainerSlotTypeByContainerId(lot.Item.HoldingContainer.ContainerId);
                 }
 
                 if (lot.Item.SlotType != SlotType.Invalid)

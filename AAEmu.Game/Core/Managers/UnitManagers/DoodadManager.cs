@@ -3283,7 +3283,7 @@ public class DoodadManager : Singleton<DoodadManager>
             var item = ItemManager.Instance.GetItemByItemId(attachedItemId);
             if (item != null)
             {
-                item._holdingContainer = null;
+                item.HoldingContainer = null;
                 ItemManager.Instance.ReleaseId(item.Id);
             }
         }

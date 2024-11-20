@@ -51,7 +51,7 @@ public class CofferContainer : ItemContainer
         {
             var item = Items[i];
             Logger.Warn($"Destroying item {item.Id} from coffer item_container {ContainerId} due to delete");
-            item._holdingContainer.RemoveItem(ItemTaskType.Invalid, item, true);
+            item.HoldingContainer.RemoveItem(ItemTaskType.Invalid, item, true);
         }
 
         // Delete container

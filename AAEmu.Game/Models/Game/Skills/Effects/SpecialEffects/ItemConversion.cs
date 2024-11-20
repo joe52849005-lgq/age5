@@ -33,6 +33,11 @@ public class ItemConversion : SpecialEffectAction
             return;
         }
 
+        if (casterObj is not SkillItem sourceItem)
+        {
+            skill.Cancelled = true;
+            return;
+        }
         if (targetObj is not SkillCastItemTarget itemTarget)
         {
             skill.Cancelled = true;
@@ -75,7 +80,7 @@ public class ItemConversion : SpecialEffectAction
         {
             // give product
             // TODO: add in weights
-            int value = Rand.Next(product.MinOutput, product.MaxOutput + 1);
+            var value = Rand.Next(product.MinOutput, product.MaxOutput + 1);
             if (!character.Inventory.Bag.AcquireDefaultItem(ItemTaskType.Conversion, product.OuputItemId, value))
             {
                 skill.Cancelled = true;
@@ -85,6 +90,15 @@ public class ItemConversion : SpecialEffectAction
         }
 
         // destroy item
-        targetItem._holdingContainer.RemoveItem(ItemTaskType.Conversion, targetItem, true);
+        if (character.Inventory.Bag.ConsumeItem(ItemTaskType.SkillEffectGainItem, sourceItem.ItemTemplateId, 1, null) <= 0)
+        {
+            character.SendErrorMessage(ErrorMessageType.FailedToUseItem);
+            Logger.Error($"Couldn't find Product from Reagent for item {sourceItem.ItemTemplateId}");
+        }
+        if (character.Inventory.Bag.ConsumeItem(ItemTaskType.SkillEffectGainItem, targetItem.TemplateId, 1, null) <= 0)
+        {
+            character.SendErrorMessage(ErrorMessageType.FailedToUseItem);
+            Logger.Error($"Couldn't find Product from Reagent for item {targetItem.TemplateId}");
+        }
     }
 }

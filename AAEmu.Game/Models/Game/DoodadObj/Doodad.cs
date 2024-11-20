@@ -752,11 +752,11 @@ public class Doodad : BaseUnit
         if (ItemId > 0)
         {
             var item = ItemManager.Instance.GetItemByItemId(ItemId);
-            if (item != null && item._holdingContainer != null &&
-                (item._holdingContainer.ContainerType == SlotType.Invalid ||
-                 item._holdingContainer.ContainerType == SlotType.Money))
+            if (item != null && item.HoldingContainer != null &&
+                (item.HoldingContainer.ContainerType == SlotType.Invalid ||
+                 item.HoldingContainer.ContainerType == SlotType.Money))
             {
-                item._holdingContainer.RemoveItem(ItemTaskType.Invalid, item, true);
+                item.HoldingContainer.RemoveItem(ItemTaskType.Invalid, item, true);
             }
         }
 

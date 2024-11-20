@@ -912,7 +912,7 @@ public class CharacterManager : Singleton<CharacterManager>
         if ((oldHair != null) && (oldHair.TemplateId != hairModel))
         {
             // Remove old hair item
-            oldHair._holdingContainer.RemoveItem(ItemTaskType.Invalid, oldHair, true);
+            oldHair.HoldingContainer.RemoveItem(ItemTaskType.Invalid, oldHair, true);
             // Create new hair item
             if (!character.Equipment.AcquireDefaultItemEx(ItemTaskType.Invalid, hairModel, 1, -1,
                     out var newItemsList, out var _, character.Id, (int)EquipmentItemSlot.Hair))

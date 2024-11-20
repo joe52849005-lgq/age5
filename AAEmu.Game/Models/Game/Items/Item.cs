@@ -115,7 +115,7 @@ public class Item : PacketMarshaler, IComparable<Item>
     public byte[] Detail { get; set; }
 
     // Helper
-    public ItemContainer _holdingContainer { get; set; }
+    public ItemContainer HoldingContainer { get; set; }
 
     public static uint Coins => 500;
     public static uint TaxCertificate => 31891;
@@ -142,7 +142,7 @@ public class Item : PacketMarshaler, IComparable<Item>
         WorldId = AppConfiguration.Instance.Id;
         OwnerId = 0;
         Slot = -1;
-        _holdingContainer = null;
+        HoldingContainer = null;
         _isDirty = true;
         GemIds = new uint[18];
     }
@@ -152,7 +152,7 @@ public class Item : PacketMarshaler, IComparable<Item>
         WorldId = worldId;
         OwnerId = 0;
         Slot = -1;
-        _holdingContainer = null;
+        HoldingContainer = null;
         _isDirty = true;
         GemIds = new uint[18];
     }
@@ -166,7 +166,7 @@ public class Item : PacketMarshaler, IComparable<Item>
         Template = template;
         Count = count;
         Slot = -1;
-        _holdingContainer = null;
+        HoldingContainer = null;
         _isDirty = true;
         GemIds = new uint[18];
     }
@@ -180,7 +180,7 @@ public class Item : PacketMarshaler, IComparable<Item>
         Template = template;
         Count = count;
         Slot = -1;
-        _holdingContainer = null;
+        HoldingContainer = null;
         _isDirty = true;
         GemIds = new uint[18];
     }
