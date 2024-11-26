@@ -17,7 +17,7 @@ public class ItemCountUpdate : ItemTask
         _type = ItemAction.AddStack; // 4
         _item = item;
         _count = count;
-        _tLogt = SetTlogT(_type, SlotType.Bag, _count < 0); // установим tLogt по значению ItemAction
+        _tLogt = SetTlogT(_type, SlotType.Bag, _count > 0); // установим tLogt по значению ItemAction
     }
 
     public override PacketStream Write(PacketStream stream)

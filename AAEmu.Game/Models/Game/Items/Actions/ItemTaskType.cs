@@ -108,7 +108,7 @@ public enum ItemTaskType : byte
     ItemLock,                       // item-lock
     ItemUnlock,                     // item-unlock
     ItemUnlockExcess,               // item-unlockexcess
-    GradeEnchant,                   // grade-enchant
+    GradeEnchant = 102,             // grade-enchant
     ShipGradeEnchant,               // ship-grade-enchant
     RechargeRndAttrUnitModifier,    // recharge-rnd-attr-unit-modifier
     RechargeBuff,                   // recharge-buff
@@ -164,12 +164,12 @@ public enum ItemTaskType : byte
     DoodadOneshotPlace,             // doodad-oneshot-place
     NationDelegate,                 // nation-delegate
     RenameFaction,                  // rename-faction
-    BlessUthstinInitStats = 159,    // bless-uthstin-init-stats
-    BlessUthstinChangeStats = 160,  // bless-uthstin-change-stats
-    BlessUthstinExpandMaxStats = 161,// bless-uthstin-expand-max-stats
-    BlessUthstinExpandPage = 162,   // bless-uthstin-expand-page
-    BlessUthstinSelectPage = 163,   // bless-uthstin-select-page
-    BlessUthstinCopyPage = 164,     // bless-uthstin-copy-page
+    BlessUthstinInitStats = 158,    // bless-uthstin-init-stats
+    BlessUthstinChangeStats = 159,  // bless-uthstin-change-stats
+    BlessUthstinExpandMaxStats = 160,// bless-uthstin-expand-max-stats
+    BlessUthstinExpandPage = 161,   // bless-uthstin-expand-page
+    BlessUthstinSelectPage = 162,   // bless-uthstin-select-page
+    BlessUthstinCopyPage = 163,     // bless-uthstin-copy-page
     FamilyJoin,                     // family-join
     FamilyLeave,                    // family-leave
     FamilyKick,                     // family-kick

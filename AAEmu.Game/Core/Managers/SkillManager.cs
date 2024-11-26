@@ -208,6 +208,10 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
     {
         return _dynamicEffects.selectiveItems.GetValueOrDefault(skillId);
     }
+    public BlessUthstin GetBlessUthstinItems(uint skillId)
+    {
+        return _dynamicEffects.blessUthstins.GetValueOrDefault(skillId);
+    }
 
     public List<SkillModifier> GetModifiersByOwnerId(uint id)
     {

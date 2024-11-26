@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Items.Actions;
+
 using NLog;
 
 namespace AAEmu.Game.Models.Game.Items.Loots;
@@ -45,7 +47,7 @@ public class LootPack
 
         var items = new List<(uint itemId, int count, byte grade)>();
 
-        // Logger.Info($"Rolling loot pack {Id} containing max group Id: {GroupCount}");
+        Logger.Info($"Rolling loot pack {Id} containing max group Id: {GroupCount}");
 
         // For every group
         for (uint gIdx = 0; gIdx <= GroupCount; gIdx++)
@@ -57,7 +59,7 @@ public class LootPack
             if (!LootsByGroupNo.ContainsKey(gIdx))
                 continue;
 
-            // Logger.Debug($"Rolling loot with pack {Id}, Group {gIdx}/{GroupCount}, checking Groups conditions");
+            Logger.Debug($"Rolling loot with pack {Id}, Group {gIdx}/{GroupCount}, checking Groups conditions");
 
             // If that group has a LootGroup, roll the dice
             if (Groups.TryGetValue(gIdx, out var lootGroup))
@@ -69,13 +71,13 @@ public class LootPack
                 // Use generic loot multiplier for the groups ?
                 dice = (long)Math.Floor(dice / (lootDropRate * AppConfiguration.Instance.World.LootRate));
 
-                // Logger.Debug($"Rolling loot with pack {Id}, GroupNo {gIdx} rolled {dice}/{lootGroup.DropRate}");
+                Logger.Debug($"Rolling loot with pack {Id}, GroupNo {gIdx} rolled {dice}/{lootGroup.DropRate}");
 
-                if ((lootGroup.DropRate > 1) && (dice > lootGroup.DropRate))
+                if (lootGroup.DropRate > 1 && dice > lootGroup.DropRate)
                     continue;
             }
 
-            // Logger.Debug($"Rolling loot with pack {Id}, Group {gIdx}/{GroupCount}, checking ActAbilityGroups conditions");
+            Logger.Debug($"Rolling loot with pack {Id}, Group {gIdx}/{GroupCount}, checking ActAbilityGroups conditions");
 
             // If that group has a LootActGroup, roll the dice
             if (ActabilityGroups.TryGetValue(gIdx, out var actabilityGroup))
@@ -85,7 +87,7 @@ public class LootPack
                 // Use generic loot multiplier for the ActGroups ?
                 dice = (long)Math.Floor(dice / (lootDropRate * AppConfiguration.Instance.World.LootRate));
 
-                // Logger.Debug($"Rolling loot with pack {Id}, ActAbilityGroupNo {gIdx} rolled {dice}/{actabilityGroup.MinDice}~{actabilityGroup.MaxDice}");
+                Logger.Debug($"Rolling loot with pack {Id}, ActAbilityGroupNo {gIdx} rolled {dice}/{actabilityGroup.MinDice}~{actabilityGroup.MaxDice}");
 
                 // TODO: Use MinDice for something as well?
                 if (dice > actabilityGroup.MaxDice)
@@ -104,10 +106,10 @@ public class LootPack
 
             var itemStackingRoll = 0u;
 
-            List<Loot> selected = new List<Loot>();
+            var selected = new List<Loot>();
 
 
-            if ((alwaysDropGroup == false) && (uniqueItemDrop || hasLootGroup || (GroupCount <= 1)))
+            if (alwaysDropGroup == false && (uniqueItemDrop || hasLootGroup || GroupCount <= 1))
             {
                 selected.Add(loots.RandomElementByWeight(l => l.DropRate));
             }
@@ -205,7 +207,7 @@ public class LootPack
         {
             if (itemTemplateId == Item.Coins)
             {
-                // Logger.Debug("{Category} - {Character} got {Amount} from lootpack {Lootpack}");
+                Logger.Debug("{Category} - {Character} got {Amount} from lootpack {Lootpack}");
                 character.AddMoney(SlotType.Bag, count, taskType);
                 continue;
             }

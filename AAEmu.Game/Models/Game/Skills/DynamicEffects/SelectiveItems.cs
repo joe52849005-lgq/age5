@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-
 using Newtonsoft.Json.Linq;
 
 namespace AAEmu.Game.Models.Game.Skills
@@ -19,45 +18,10 @@ namespace AAEmu.Game.Models.Game.Skills
 
         public SelectiveItems(JObject obj)
         {
-            // Проверка на null для "effect"
-            if (obj.GetValue("effect") != null)
-            {
-                Effect = obj.GetValue("effect")?.ToString();
-            }
-            else
-            {
-                Effect = string.Empty; // или другое значение по умолчанию
-            }
-
-            // Проверка на null для "select"
-            if (obj.GetValue("select") != null)
-            {
-                Select = obj.GetValue("select")!.ToObject<int>();
-            }
-            else
-            {
-                Select = 0; // или другое значение по умолчанию
-            }
-
-            // Проверка на null для "consume_item_count"
-            if (obj.GetValue("consume_item_count") != null)
-            {
-                ConsumeItemCount = obj.GetValue("consume_item_count")!.ToObject<int>();
-            }
-            else
-            {
-                ConsumeItemCount = 0; // или другое значение по умолчанию
-            }
-
-            // Проверка на null для "list"
-            if (obj.GetValue("list") != null)
-            {
-                ItemSelections = obj.GetValue("list")?.ToObject<List<ItemSelections>>();
-            }
-            else
-            {
-                ItemSelections = []; // или другое значение по умолчанию
-            }
+            Effect = obj.GetValue("effect")?.ToString() ?? string.Empty;
+            Select = obj.GetValue("select")?.ToObject<int>() ?? 0;
+            ConsumeItemCount = obj.GetValue("consume_item_count")?.ToObject<int>() ?? 0;
+            ItemSelections = obj.GetValue("list")?.ToObject<List<ItemSelections>>() ?? [];
         }
     }
 }

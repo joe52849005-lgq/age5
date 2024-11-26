@@ -420,7 +420,7 @@ public class SCUnitStatePacket : GamePacket
 
         stream.Write((byte)0); // attckFactionFlags, add 5070
 
-        if (_unit is Character)
+        if (_unit is Character player)
         {
             #region read_Abilities_92B0
             var activeAbilities = character.Abilities.GetActiveAbilities();
@@ -473,33 +473,29 @@ public class SCUnitStatePacket : GamePacket
             stream.Write((byte)100); // stp
 
             stream.Write((byte)7); // flags
-            stream.Write((byte)0); // helmet
-            stream.Write((byte)2); // back_holdable
-            stream.Write((byte)0); // cosplay
-            stream.Write((byte)0); // cosplay_backpack
             stream.Write((byte)0); // cosplay_visual
-            //character.VisualOptions.Write(stream, 0x1f); // cosplay_visual
-            //character.VisualOptions.WriteOptions(stream);
+            //character.VisualOptions.Write(stream, 0x20); // cosplay_visual
             #endregion read_STP_93E0
 
-            stream.Write(1); // premium
+            stream.Write(2); // premium
 
             #region Stats
-            var size = 1u;
-            //stream.Write(size); // size
-            for (var i = 0; i < size; i++)
+            var size = (uint)player.Stats.PageCount; // TODO _pageInfos
+            stream.Write(size); // size
+            for (uint i = 0; i < size; i++)
             {
-                for (var j = 0; j < 5; j++)
+                var stats = player.Stats.GetStatsByPageIndex(i);
+                for (uint j = 0; j < 5; j++)
                 {
-                    stream.Write(0); // stats
+                    stream.Write(stats[j]); // stats
                 }
-                stream.Write(0u); // applyNormalCount
-                stream.Write(0u); // applySpecialCount
+                stream.Write(player.Stats.GetApplyNormalCountByPageIndex(i)); // applyNormalCount
+                stream.Write(player.Stats.GetApplySpecialCountByPageIndex(i));// applySpecialCount
             }
 
-            stream.Write(0u); // _selectPageIndex
-            stream.Write(0u); // _extendMaxStats
-            stream.Write(0u); // _applyExtendCount
+            stream.Write(player.Stats.PageIndex);       // _selectPageIndex
+            stream.Write(player.Stats.ExtendMaxStats);  // _extendMaxStats
+            stream.Write(player.Stats.ApplyExtendCount);// _applyExtendCount
 
             size = 0u; // slotInfoList
             stream.Write(size); // size

@@ -58,10 +58,12 @@ public class GameNetwork : Singleton<GameNetwork>
         RegisterPacket(CSOffsets.CSRefreshResidentMembersPacket, 5, typeof(CSRefreshResidentMembersPacket));
         RegisterPacket(CSOffsets.CSGetResidentZoneListPacket, 5, typeof(CSGetResidentZoneListPacket));
         RegisterPacket(CSOffsets.CSResidentFireNuonsArrowPacket, 5, typeof(CSResidentFireNuonsArrowPacket));
-        //RegisterPacket(CSOffsets.CSUseBlessUthstinInitStatsPacket, 5, typeof(CSUseBlessUthstinInitStatsPacket));
-        //RegisterPacket(CSOffsets.CSUseBlessUthstinExtendMaxStatsPacket, 5, typeof(CSUseBlessUthstinExtendMaxStatsPacket));
-        //RegisterPacket(CSOffsets.CSBlessUthstinUseApplyStatsItemPacket, 5, typeof(CSBlessUthstinUseApplyStatsItemPacket));
-        //RegisterPacket(CSOffsets.CSBlessUthstinApplyStatsPacket, 5, typeof(CSBlessUthstinApplyStatsPacket));
+        RegisterPacket(CSOffsets.CSUseBlessUthstinInitStatsPacket, 5, typeof(CSUseBlessUthstinInitStatsPacket));
+        RegisterPacket(CSOffsets.CSUseBlessUthstinExtendMaxStatsPacket, 5, typeof(CSUseBlessUthstinExtendMaxStatsPacket));
+        RegisterPacket(CSOffsets.CSBlessUthstinUseApplyStatsItemPacket, 5, typeof(CSBlessUthstinUseApplyStatsItemPacket));
+        RegisterPacket(CSOffsets.CSBlessUthstinApplyStatsPacket, 5, typeof(CSBlessUthstinApplyStatsPacket));
+        RegisterPacket(CSOffsets.CSExpandBlessUthstinPagePacket, 5, typeof(CSExpandBlessUthstinPagePacket));
+        RegisterPacket(CSOffsets.CSCopyBlessUthstinPagePacket, 5, typeof(CSCopyBlessUthstinPagePacket));
         RegisterPacket(CSOffsets.CSEventCenterAddAttendancePacket, 5, typeof(CSEventCenterAddAttendancePacket));
         RegisterPacket(CSOffsets.CSRequestGameEventInfoPacket, 5, typeof(CSRequestGameEventInfoPacket));
         //RegisterPacket(CSOffsets.CSUnknown0x0cbPacket, 5, typeof(CSUnknown0x0cbPacket));

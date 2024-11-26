@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using System.Linq;
+using AAEmu.Game.Models.Game.Units;
+using Newtonsoft.Json.Linq;
 
 namespace AAEmu.Game.Models.Game.Skills
 {
@@ -13,83 +16,82 @@ namespace AAEmu.Game.Models.Game.Skills
 
         public BlessUthstin(JObject obj, string json)
         {
-            // Проверка на null для "effect"
-            if (obj.GetValue("effect") != null)
-            {
-                Effect = obj.GetValue("effect")?.ToString();
-            }
-            else
-            {
-                Effect = string.Empty; // или другое значение по умолчанию
-            }
+            Effect = obj.GetValue("effect")?.ToString() ?? string.Empty;
+            ItemFunction = obj.GetValue("item_function")?.ToString() ?? string.Empty;
+            Rise = obj.GetValue("rise")?.ToObject<int>() ?? 0;
+            Drop = obj.GetValue("drop")?.ToObject<int>() ?? 0;
 
-            // Проверка на null для "item_function"
-            if (obj.GetValue("item_function") != null)
-            {
-                ItemFunction = obj.GetValue("item_function")?.ToString();
-            }
-            else
-            {
-                ItemFunction = string.Empty; // или другое значение по умолчанию
-            }
+            RiseWeight = obj.TryGetValue("riseweight", out var riseweight)
+                ? riseweight.ToObject<RiseWeight>()
+                : new RiseWeight();
 
-            // Проверка на null для "rise"
-            if (obj.GetValue("rise") != null)
-            {
-                Rise = obj.GetValue("rise")!.ToObject<int>();
-            }
-            else
-            {
-                Rise = 0; // или другое значение по умолчанию
-            }
-
-            // Проверка на null для "drop"
-            if (obj.GetValue("drop") != null)
-            {
-                Drop = obj.GetValue("drop")!.ToObject<int>();
-            }
-            else
-            {
-                Drop = 0; // или другое значение по умолчанию
-            }
-
-            // Проверка на null для "riseweight"
-            if (obj.TryGetValue("riseweight", out var riseweight))
-            {
-                RiseWeight = riseweight.ToObject<RiseWeight>();
-            }
-            else
-            {
-                RiseWeight = new RiseWeight(); // или другое значение по умолчанию
-            }
-
-            // Проверка на null для "dropweight"
-            if (obj.TryGetValue("dropweight", out var dropweight))
-            {
-                DropWeight = dropweight.ToObject<DropWeight>();
-            }
-            else
-            {
-                DropWeight = new DropWeight(); // или другое значение по умолчанию
-            }
+            DropWeight = obj.TryGetValue("dropweight", out var dropweight)
+                ? dropweight.ToObject<DropWeight>()
+                : new DropWeight();
         }
     }
 
-    public class RiseWeight
+    public class RiseWeight : AttributeWeight { }
+
+    public class DropWeight : AttributeWeight { }
+}
+
+public class AttributeWeight
+{
+    public int Str { get; set; }
+    public int Dex { get; set; }
+    public int Sta { get; set; }
+    public int Int { get; set; }
+    public int Spi { get; set; }
+
+    public UnitAttribute CheckFields()
     {
-        public int Str { get; set; }
-        public int Dex { get; set; }
-        public int Sta { get; set; }
-        public int Int { get; set; }
-        public int Spi { get; set; }
+        var fields = new[] { Str, Dex, Sta, Int, Spi };
+        var countOfOnes = fields.Count(field => field == 1);
+
+        return countOfOnes switch
+        {
+            1 => GetFieldSetToOne(),
+            5 => GetRandomFieldSetToOne(),
+            _ => UnitAttribute.Fai
+        };
     }
 
-    public class DropWeight
+    private UnitAttribute GetFieldSetToOne()
     {
-        public int Str { get; set; }
-        public int Dex { get; set; }
-        public int Sta { get; set; }
-        public int Int { get; set; }
-        public int Spi { get; set; }
+        var fields = new (int Value, UnitAttribute Attribute)[]
+        {
+            (Str, UnitAttribute.Str),
+            (Dex, UnitAttribute.Dex),
+            (Sta, UnitAttribute.Sta),
+            (Int, UnitAttribute.Int),
+            (Spi, UnitAttribute.Spi)
+        };
+
+        var fieldSetToOne = fields.FirstOrDefault(f => f.Value == 1);
+        return fieldSetToOne.Attribute != default ? fieldSetToOne.Attribute : UnitAttribute.Fai;
+    }
+
+    private UnitAttribute GetRandomFieldSetToOne()
+    {
+        var fields = new (int Value, UnitAttribute Attribute)[]
+        {
+            (Str, UnitAttribute.Str),
+            (Dex, UnitAttribute.Dex),
+            (Sta, UnitAttribute.Sta),
+            (Int, UnitAttribute.Int),
+            (Spi, UnitAttribute.Spi)
+        };
+
+        var fieldsSetToOne = fields.Where(f => f.Value == 1).ToList();
+
+        if (fieldsSetToOne.Count == 0)
+        {
+            return UnitAttribute.Fai;
+        }
+
+        var random = new Random();
+        var randomField = fieldsSetToOne[random.Next(fieldsSetToOne.Count)];
+        return randomField.Attribute;
     }
 }

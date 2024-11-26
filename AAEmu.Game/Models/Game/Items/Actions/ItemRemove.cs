@@ -7,10 +7,6 @@ namespace AAEmu.Game.Models.Game.Items.Actions;
 public class ItemRemove : ItemTask
 {
     private readonly Item _item;
-    private readonly ulong _Id;
-    private readonly byte _slotType;
-    private readonly byte _slot;
-    private readonly uint _templateId;
     private readonly int _itemCount;
     private readonly DateTime _removeReservationTime;
 
@@ -20,7 +16,7 @@ public class ItemRemove : ItemTask
         _item = item;
         _itemCount = item.Count;
         _removeReservationTime = DateTime.UtcNow;
-        _tLogt = SetTlogT(_type, item.SlotType, _itemCount < 0); // установим tLogt по значению ItemAction
+        _tLogt = SetTlogT(_type, item.SlotType, _itemCount > 0); // установим tLogt по значению ItemAction
     }
 
     public override PacketStream Write(PacketStream stream)

@@ -143,5 +143,6 @@ public enum SpecialType
     LoseTargetingTheTarget = 146,
     PlayAttachmentAnim = 149,
     PlaySkillControllerAttachmentAnim = 150,
-    ItemSmelting = 151
+    ItemSmelting = 151,
+    ActivateMigrationPendant = 162 // выбор (активировать): изменить страницу со статами
 }

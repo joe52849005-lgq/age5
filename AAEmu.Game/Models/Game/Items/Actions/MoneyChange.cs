@@ -10,7 +10,7 @@ public class MoneyChange : ItemTask
     {
         _type = ItemAction.ChangeMoneyAmount; // 1
         _amount = amount;
-        _tLogt = SetTlogT(_type, SlotType.Bag, _amount < 0); // установим tLogt по значению ItemAction
+        _tLogt = SetTlogT(_type, SlotType.Bag, _amount > 0); // установим tLogt по значению ItemAction
 
     }
 

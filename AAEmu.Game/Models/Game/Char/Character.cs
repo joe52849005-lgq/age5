@@ -166,6 +166,7 @@ public partial class Character : Unit, ICharacter
 
     public CharacterSkills Skills { get; set; }
     public CharacterCraft Craft { get; set; }
+    public CharacterStats Stats { get; set; }
     public uint SubZoneId { get; set; } // понадобилось хранить для составления точек Memory Tome (Recall)
     public int AccessLevel { get; set; }
     public TeamPingPos LocalPingPosition { get; set; } // added as a GM command helper
@@ -2234,6 +2235,7 @@ public partial class Character : Unit, ICharacter
         for (var i = 0; i < Slots.Length; i++)
             Slots[i] = new ActionSlot();
 
+        Stats = new CharacterStats(this);
         Craft = new CharacterCraft(this);
         Procs = new UnitProcs(this);
         LocalPingPosition = new TeamPingPos();
@@ -2262,7 +2264,7 @@ public partial class Character : Unit, ICharacter
             Mates.Load(connection);
             Attendances = new CharacterAttendances(this);
             Attendances.Load(connection);
-
+            Stats.Load(connection);
             LoadActionSlots(connection);
         }
 
@@ -2426,6 +2428,8 @@ public partial class Character : Unit, ICharacter
             Quests?.Save(connection, transaction);
             Mates?.Save(connection, transaction);
             Attendances?.Save(connection, transaction);
+            Stats?.Save(connection, transaction);
+
             result = true;
         }
         catch (Exception ex)

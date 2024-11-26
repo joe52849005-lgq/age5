@@ -101,22 +101,24 @@ public class SCCharacterStatePacket : GamePacket
         #endregion
 
         #region _pageInfos 
-        var size = 1u; // TODO _pageInfos
+        var size = (uint)_character.Stats.PageCount; // TODO _pageInfos
+
         stream.Write(size); // size
-        for (var i = 0; i < size; i++)
+        for (uint i = 0; i < size; i++)
         {
-            for (var j = 0; j < 5; j++)
+            var stats = _character.Stats.GetStatsByPageIndex(i);
+            for (uint j = 0; j < 5; j++)
             {
-                stream.Write(0); // stats
+                stream.Write(stats[j]); // stats
             }
-            stream.Write(0u); // applyNormalCount
-            stream.Write(0u); // applySpecialCount
+            stream.Write(_character.Stats.GetApplyNormalCountByPageIndex(i)); // applyNormalCount
+            stream.Write(_character.Stats.GetApplySpecialCountByPageIndex(i));// applySpecialCount
         }
         #endregion
 
-        stream.Write(0u);       // _selectPageIndex
-        stream.Write(0u);       // _extendMaxStats
-        stream.Write(0u);       // _applyExtendCount
+        stream.Write(_character.Stats.PageIndex);       // _selectPageIndex
+        stream.Write(_character.Stats.ExtendMaxStats);  // _extendMaxStats
+        stream.Write(_character.Stats.ApplyExtendCount);// _applyExtendCount
         stream.Write(0u);       // type
         stream.Write(0);        // appellationStamp
 

@@ -1,7 +1,9 @@
 ﻿// Authors: Nikes, AAGene, ZeromusXYZ
 using System;
 using System.Threading.Tasks;
+
 using AAEmu.Game.Core.Managers;
+
 using NCrontab;
 
 using DotNetTask = System.Threading.Tasks.Task;
@@ -52,5 +54,20 @@ public abstract class Task
 
     public virtual void OnCancel()
     {
+    }
+}
+
+public class ResetAttemptsTask : Task
+{
+    private readonly Action _resetAction;
+
+    public ResetAttemptsTask(Action resetAction)
+    {
+        _resetAction = resetAction;
+    }
+
+    public override void Execute()
+    {
+        _resetAction();
     }
 }
