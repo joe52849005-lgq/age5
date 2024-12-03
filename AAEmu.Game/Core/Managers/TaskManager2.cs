@@ -15,7 +15,7 @@ namespace AAEmu.Game.Core.Managers
     // ReSharper disable once ClassNeverInstantiated.Global
     public class TaskManager : Singleton<TaskManager>, ITaskManager
     {
-        private static Logger Logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly ConcurrentDictionary<uint, Task> _queue = new();
         private readonly HashSet<uint> _taskIds = [];
         private readonly object _taskIdLock = new();

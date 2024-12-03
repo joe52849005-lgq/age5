@@ -6,6 +6,7 @@ using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Items.Actions;
+using AAEmu.Game.Models.Game.Skills;
 
 using NLog;
 
@@ -147,7 +148,7 @@ public class LootPack
                     grade = GetGradeFromDistribution(lootGradeDistribId);
 
                 // Multiply gold as needed
-                if (selectedPack.ItemId == Item.Coins)
+                if (selectedPack.ItemId == (uint)ItemConstants.Coins)
                     lootCount = (int)Math.Round(lootCount * (lootGoldRate * AppConfiguration.Instance.World.GoldLootMultiplier));
 
                 items.Add((selectedPack.ItemId, lootCount, grade));
@@ -187,7 +188,7 @@ public class LootPack
         // First check for room
         foreach (var (itemTemplateId, count, grade) in generatedList)
         {
-            if (itemTemplateId == Item.Coins)
+            if (itemTemplateId == (uint)ItemConstants.Coins)
                 continue;
             var freeSpace = character.Inventory.Bag.SpaceLeftForItem(itemTemplateId);
             if (freeSpace < count)
@@ -205,7 +206,7 @@ public class LootPack
         // Distribute the items (and coins)
         foreach (var (itemTemplateId, count, grade) in generatedList)
         {
-            if (itemTemplateId == Item.Coins)
+            if (itemTemplateId == (uint)ItemConstants.Coins)
             {
                 Logger.Debug("{Category} - {Character} got {Amount} from lootpack {Lootpack}");
                 character.AddMoney(SlotType.Bag, count, taskType);

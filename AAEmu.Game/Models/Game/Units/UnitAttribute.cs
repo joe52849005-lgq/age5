@@ -3,12 +3,12 @@
 public enum UnitAttribute : byte
 {
     // updated to version 5.0.7.0
-    Str = 0, // str
-    Dex = 1, // dex
-    Sta = 2, // sta
-    Int = 3, // int
-    Spi = 4, // spi
-    Fai = 5, // fai
+    Str = 0, // Str (Strength) сила
+    Dex = 1, // Dex (Dexterity) ловкость
+    Sta = 2, // Sta (Stamina) выносливость
+    Int = 3, // Int (Intelligence) интеллект
+    Spi = 4, // Spi (Spirit) сила духа
+    Fai = 5, // Fai (Faith) вера
     MaxHealth = 6, // max_health
     MaxMana = 7, // max_mana
     Armor = 8, // armor
@@ -188,5 +188,6 @@ public enum UnitAttribute : byte
     PersistentHighAbilityResourceRegen = 217, // persistent_high_ability_resource_regen
     AttackSpeedMul = 218, // attack_speed_mul
     SubmergeDepth = 219, // submerge_depth
-    ExpByKillMonsterMul = 220 // exp_by_kill_monster_mul
+    ExpByKillMonsterMul = 220, // exp_by_kill_monster_mul
+    None = 221 // не выбран никакой атрибут
 }

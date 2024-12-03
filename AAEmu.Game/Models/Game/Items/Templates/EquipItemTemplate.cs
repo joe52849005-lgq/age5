@@ -14,4 +14,8 @@ public class EquipItemTemplate : ItemTemplate
     public short ChargeCount { get; set; } // does not seem to be actually used anywhere in the DB
     public ItemLookConvert ItemLookConvert { get; set; }
     public uint EquipItemSetId { get; set; }
+
+    public int ItemRndAttrCategoryId { get; set; }
+    public int RechargeRndAttrUnitModifierRestrictItemId { get; set; }
+    public int RndAttrUnitModifierLifetime { get; set; }
 }

@@ -8,6 +8,8 @@ using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Items.Actions;
 using AAEmu.Game.Models.Game.Music;
+using AAEmu.Game.Models.Game.Skills;
+
 using NLog;
 
 namespace AAEmu.Game.Core.Managers;
@@ -119,7 +121,7 @@ public class MusicManager : Singleton<MusicManager>
         // Save to DB
         if (Save(sud))
         {
-            var sheet = (MusicSheetItem)ItemManager.Instance.Create(Item.SheetMusic, 1, 0, true);
+            var sheet = (MusicSheetItem)ItemManager.Instance.Create((uint)ItemConstants.SheetMusic, 1, 0, true);
             sheet.OwnerId = player.Id;
             sheet.MadeUnitId = player.Id;
             sheet.SongId = sud.Id;

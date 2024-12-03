@@ -15,7 +15,7 @@ public enum SkillObjectType
     ItemGradeEnchantingSupport = 7,
     // added in 3+
     Unk8 = 8,
-    Unk9 = 9,
+    ItemEvolvingSupport = 9,
     Unk10 = 10,
     Unk11 = 11,
     Unk12 = 12,
@@ -75,8 +75,8 @@ public class SkillObject : PacketMarshaler
             case SkillObjectType.Unk8:
                 obj = new SkillObjectUnk8(); // added in 3.5.0.3 NA
                 break;
-            case SkillObjectType.Unk9:
-                obj = new SkillObjectUnk9(); // added in 3.5.0.3 NA
+            case SkillObjectType.ItemEvolvingSupport:
+                obj = new SkillObjectItemEvolvingSupport(); // added in 3.5.0.3 NA
                 break;
             case SkillObjectType.Unk10:
                 obj = new SkillObjectUnk10(); // added in 3.5.0.3 NA
@@ -321,11 +321,11 @@ public class SkillObjectUnk8 : SkillObject
     }
 }
 
-public class SkillObjectUnk9 : SkillObject
+public class SkillObjectItemEvolvingSupport : SkillObject
 {
     public ulong M1ItemId { get; set; }
     public ulong M2ItemId { get; set; }
-    public int ChangeIndex { get; set; }
+    public int ChangeIndex { get; set; } // -1 - не менять аттрибуты, (0..n) - изменить существующий атрибут
     public bool AutoUseAAPoint { get; set; }
 
     public override void Read(PacketStream stream)

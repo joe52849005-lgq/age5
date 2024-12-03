@@ -170,15 +170,15 @@ public class SkillCastPosition2Target : SkillCastTarget
 public class SkillCastItemTarget : SkillCastTarget
 {
     public ulong Id { get; set; }
-    public uint Type1 { get; set; }
-    public byte Type2 { get; set; }
+    public uint ItemType { get; set; }
+    public byte Grade { get; set; }
 
     public override void Read(PacketStream stream)
     {
         ObjId = stream.ReadBc();
         Id = stream.ReadUInt64();
-        Type1 = stream.ReadUInt32();
-        Type2 = stream.ReadByte();
+        ItemType = stream.ReadUInt32();
+        Grade = stream.ReadByte();
     }
 
     public override PacketStream Write(PacketStream stream)
@@ -187,8 +187,8 @@ public class SkillCastItemTarget : SkillCastTarget
 
         stream.WriteBc(ObjId);
         stream.Write(Id);
-        stream.Write(Type1);
-        stream.Write(Type2);
+        stream.Write(ItemType);
+        stream.Write(Grade);
 
         return stream;
     }

@@ -13,7 +13,7 @@ namespace AAEmu.Game.Models.Game.World;
 
 public class World
 {
-    private static Logger Logger = LogManager.GetCurrentClassLogger();
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public uint Id { get; set; } // iid - InstanceId
     public string Name { get; set; }

@@ -2,8 +2,8 @@
 
 public enum ItemGrade : byte
 {
-    Crude = 0,
-    Basic = 1,
+    Crude = 1,
+    Basic = 0,
     Grand = 2,
     Rare = 3,
     Arcane = 4,
@@ -13,5 +13,6 @@ public enum ItemGrade : byte
     Divine = 8,
     Epic = 9,
     Legendary = 10,
-    Mythic = 11
+    Mythic = 11,
+    Ethernal = 12
 }

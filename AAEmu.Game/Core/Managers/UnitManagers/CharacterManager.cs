@@ -903,7 +903,7 @@ public class CharacterManager : Singleton<CharacterManager>
     {
         // TODO: Add support for future X-day Salon Certificate items
 
-        if (character.Inventory.GetItemsCount(SlotType.Bag, Item.SalonCertificate) <= 0)
+        if (character.Inventory.GetItemsCount(SlotType.Bag, (uint)ItemConstants.SalonCertificate) <= 0)
             return;
 
         var oldHair = character.Equipment.GetItemBySlot((byte)EquipmentItemSlot.Hair);
@@ -929,7 +929,7 @@ public class CharacterManager : Singleton<CharacterManager>
 
         character.BroadcastPacket(new SCCharacterGenderAndModelModifiedPacket(character), true);
 
-        if (character.Inventory.Bag.ConsumeItem(ItemTaskType.EditCosmetic, Item.SalonCertificate, 1, null) <= 0)
+        if (character.Inventory.Bag.ConsumeItem(ItemTaskType.EditCosmetic, (uint)ItemConstants.SalonCertificate, 1, null) <= 0)
             Logger.Error($"Could not consume salon certificate for player {character.Name} ({character.Id})!");
 
         // The client will do a salon leave request after it gets the SCCharacterGenderAndModelModifiedPacket

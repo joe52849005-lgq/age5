@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+
 using AAEmu.Commons.Network;
 using AAEmu.Game.Models.Game.Items.Containers;
 using AAEmu.Game.Models.Game.Items.Templates;
@@ -111,20 +112,23 @@ public class Item : PacketMarshaler, IComparable<Item>
     public DateTime ChargeProcTime { get; set; }
     public byte MappingFailBonus { get; set; }
 
-    public uint[] GemIds { get; set; }
+    public uint[] GemIds { get; set; } // 18 in 5.0.7.0, 16 in 3.0.3.0, 7 in 1.2
     public byte[] Detail { get; set; }
+
+    #region AdditionalDetail
+
+    private uint[] _additionalDetails;
+    public uint[] AdditionalDetails // 19 in 5.0.7.0
+    {
+        get => _additionalDetails;
+        set { _additionalDetails = value; _isDirty = true; }
+    }
+    public uint AppearanceTemplateId { get => _imageItemTemplateId; set { _imageItemTemplateId = value; _isDirty = true; } }
+
+    #endregion AdditionalDetail
 
     // Helper
     public ItemContainer HoldingContainer { get; set; }
-
-    public static uint Coins => 500;
-    public static uint TaxCertificate => 31891;
-    public static uint BoundTaxCertificate => 31892;
-    public static uint AppraisalCertificate => 28085;
-    public static uint CrestStamp => 17662;
-    public static uint CrestInk => 17663;
-    public static uint SheetMusic => 28051;
-    public static uint SalonCertificate => 30811;
 
     /// <summary>
     /// Sort will use itemSlot numbers
@@ -145,6 +149,7 @@ public class Item : PacketMarshaler, IComparable<Item>
         HoldingContainer = null;
         _isDirty = true;
         GemIds = new uint[18];
+        AdditionalDetails = new uint[19];
     }
 
     public Item(byte worldId)
@@ -155,6 +160,7 @@ public class Item : PacketMarshaler, IComparable<Item>
         HoldingContainer = null;
         _isDirty = true;
         GemIds = new uint[18];
+        AdditionalDetails = new uint[19];
     }
 
     public Item(ulong id, ItemTemplate template, int count)
@@ -169,6 +175,7 @@ public class Item : PacketMarshaler, IComparable<Item>
         HoldingContainer = null;
         _isDirty = true;
         GemIds = new uint[18];
+        AdditionalDetails = new uint[19];
     }
 
     public Item(byte worldId, ulong id, ItemTemplate template, int count)
@@ -183,6 +190,7 @@ public class Item : PacketMarshaler, IComparable<Item>
         HoldingContainer = null;
         _isDirty = true;
         GemIds = new uint[18];
+        AdditionalDetails = new uint[19];
     }
 
     public override void Read(PacketStream stream)
@@ -243,39 +251,49 @@ public class Item : PacketMarshaler, IComparable<Item>
                 Durability = stream.ReadByte();       // durability
                 ChargeCount = stream.ReadInt16();     // chargeCount
                 ChargeTime = stream.ReadDateTime();   // chargeTime
-                TemperPhysical = stream.ReadUInt16(); // scaledA
+                TemperPhysical = stream.ReadUInt16(); // scaledA - Renovation level
                 TemperMagical = stream.ReadUInt16();  // scaledB
                 ChargeProcTime = stream.ReadDateTime(); // chargeProcTime
-                MappingFailBonus = stream.ReadByte();   // mappingFailBonus - нет в 4.5.2.6, есть в 4.5.1.0 и 5.7
+                MappingFailBonus = stream.ReadByte();   // mappingFailBonus - Compensation for awakening failure. нет в 4.5.2.6, есть в 4.5.1.0 и 5.7
 
                 var mGems = stream.ReadPiscW(GemIds.Length);
                 GemIds = mGems.Select(id => (uint)id).ToArray();
                 //var mGems = stream.ReadPisc(4);
-                //GemIds[0] = (uint)mGems[0];
-                //GemIds[1] = (uint)mGems[1];
-                //GemIds[2] = (uint)mGems[2];
-                //GemIds[3] = (uint)mGems[3];
+                //GemIds[0] = (uint)mGems[0]; // Can modify the appearance, TemplateId предмета для внешнего вида
+                //GemIds[1] = (uint)mGems[1]; // Luna Stone
+                //GemIds[2] = (uint)mGems[2]; // эффект эфенских кубов
+                //GemIds[3] = (uint)mGems[3]; // Synthesis experience
 
                 //mGems = stream.ReadPisc(4);
-                //GemIds[4] = (uint)mGems[0];
-                //GemIds[5] = (uint)mGems[1];
-                //GemIds[6] = (uint)mGems[2];
-                //GemIds[7] = (uint)mGems[3];
+                //GemIds[4] = (uint)mGems[0]; // 1 crescent stone
+                //GemIds[5] = (uint)mGems[1]; // 2 crescent stone
+                //GemIds[6] = (uint)mGems[2]; // 3 crescent stone
+                //GemIds[7] = (uint)mGems[3]; // 4 crescent stone
 
                 //mGems = stream.ReadPisc(4);
-                //GemIds[8] = (uint)mGems[0];
-                //GemIds[9] = (uint)mGems[1];
-                //GemIds[10] = (uint)mGems[2];
-                //GemIds[11] = (uint)mGems[3];
+                //GemIds[8] = (uint)mGems[0];  // 5 crescent stone
+                //GemIds[9] = (uint)mGems[1];  // 6 crescent stone
+                //GemIds[10] = (uint)mGems[2]; // 7 crescent stone
+                //GemIds[11] = (uint)mGems[3]; // 8 crescent stone
 
                 //mGems = stream.ReadPisc(4);
-                //GemIds[12] = (uint)mGems[0];
-                //GemIds[13] = (uint)mGems[1];
-                //GemIds[14] = (uint)mGems[2];
-                //GemIds[15] = (uint)mGems[3];
+                //GemIds[12] = (uint)mGems[0]; // 9 crescent stone
+                //GemIds[13] = (uint)mGems[1]; // 0 attribute Str
+                //GemIds[14] = (uint)mGems[2]; // 1 attribute Dex
+                //GemIds[15] = (uint)mGems[3]; // 2 attribute Sta
                 //mGems = stream.ReadPisc(2);
-                //GemIds[16] = (uint)mGems[0];
-                //GemIds[17] = (uint)mGems[1];
+                //GemIds[16] = (uint)mGems[0]; // 3 attribute Int
+                //GemIds[17] = (uint)mGems[1]; // 4 attribute Spi
+                //if (stream.LeftBytes < DetailBytesLength + 28)
+                //    return;
+                //// TODO ~19 Additional bytes
+                //AdditionalDetail[0] = stream.ReadUInt32(); // details.Write(0u); // Unknown
+                //AdditionalDetail[1] = stream.ReadUInt32(); // details.Write(0u); // Unknown
+                //AdditionalDetail[2] = stream.ReadUInt32(); // details.Write(_tempering); // Tempering - эффект эфенских кубов
+                //AdditionalDetail[3] = stream.ReadUInt32(); // details.Write(_synthesisExperience); // 752 - Synthesis/Evolving experience
+                //AdditionalDetail[4] = stream.ReadUInt32(); // details.Write(_unk1); // 12 - максимально доступный grade
+                //AdditionalDetail[5] = stream.ReadUInt32(); // details.Write(_unk2); // 23
+                //AdditionalDetail[6] = stream.ReadUInt32(); // details.Write(_unk3); // 24
                 break;
             case ItemDetailType.Slave: // 2
                 mDetailLength = 34; // есть расшифровка в items/SummonSlave 30 in 3.5, 4.5.2.6, 34 in 4.5.1.0, 5.7
@@ -335,7 +353,7 @@ public class Item : PacketMarshaler, IComparable<Item>
                 stream.Write(TemperMagical);  // scaledB
                 stream.Write(ChargeProcTime);   // chargeProcTime
                 stream.Write(MappingFailBonus); // mappingFailBonus - нет в 4.5.2.6, есть в 4.5.1.0 и 5.7
-                
+
                 var gemIds = GemIds.Select(id => (long)id).ToArray();
                 stream.WritePiscW(gemIds.Length, gemIds);
                 //stream.WritePisc(GemIds[0], GemIds[1], GemIds[2], GemIds[3]);
@@ -343,6 +361,16 @@ public class Item : PacketMarshaler, IComparable<Item>
                 //stream.WritePisc(GemIds[8], GemIds[9], GemIds[10], GemIds[11]);
                 //stream.WritePisc(GemIds[12], GemIds[13], GemIds[14], GemIds[15]); // в 3+ длина данных 36 (когда нет информации), в 1.2 было 56
                 //stream.WritePisc(GemIds[16], GemIds[17]);
+                ////if (stream.LeftBytes < DetailBytesLength + 28)
+                ////    return;
+                //// TODO ~19 Additional bytes
+                //stream.Write(AdditionalDetail[0]); // details.Write(0u); // Unknown
+                //stream.Write(AdditionalDetail[1]); // details.Write(0u); // Unknown
+                //stream.Write(AdditionalDetail[2]); // details.Write(_tempering); // Tempering - эффект эфенских кубов
+                //stream.Write(AdditionalDetail[3]); // details.Write(_synthesisExperience); // 752 - Synthesis/Evolving experience
+                //stream.Write(AdditionalDetail[4]); // details.Write(_unk1); // 12 - grade
+                //stream.Write(AdditionalDetail[5]); // details.Write(_unk2); // 23
+                //stream.Write(AdditionalDetail[6]); // details.Write(_unk3); // 24
                 break;
             case ItemDetailType.Slave:
                 mDetailLength = 34; // есть расшифровка в items/SummonSlave 30 in 3.5, 4.5.2.6, 34 in 4.5.1.0, 5.7
@@ -385,6 +413,105 @@ public class Item : PacketMarshaler, IComparable<Item>
         {
             Detail = new byte[mDetailLength];
             stream.Write(Detail);
+        }
+    }
+
+    public virtual void WriteDetails(PacketStream stream, bool additionalEffect)
+    {
+        var mDetailLength = 0;
+        switch (DetailType)
+        {
+            case ItemDetailType.Equipment:
+                //mDetailLength = 36; // есть расшифровка в items/EquipItem, в 3+ длина данных 36 (когда нет информации), в 1.2 было 56
+                stream.Write(Durability);     // durability
+                stream.Write(ChargeCount);    // chargeCount
+                stream.Write(ChargeTime);     // chargeTime
+                stream.Write(TemperPhysical); // scaledA
+                stream.Write(TemperMagical);  // scaledB
+                stream.Write(ChargeProcTime);   // chargeProcTime
+                stream.Write(MappingFailBonus); // mappingFailBonus - нет в 4.5.2.6, есть в 4.5.1.0 и 5.7
+
+                var gemIds = GemIds.Select(id => (long)id).ToArray();
+                stream.WritePiscW(gemIds.Length, gemIds);
+                if (additionalEffect)
+                {
+                    GemIds[0] = AppearanceTemplateId; // AdditionalDetails[0];
+                    GemIds[1] = AdditionalDetails[1]; // Luna stone
+                    GemIds[2] = AdditionalDetails[2]; // Tempering эффект эфенских кубов
+                    GemIds[3] = AdditionalDetails[3]; // RemainingExperience
+                    //GemIds[4] = AdditionalDetails[]; // crescent stone
+                    //GemIds[5] = AdditionalDetails[];
+                    //GemIds[6] = AdditionalDetails[];
+                    //GemIds[7] = AdditionalDetails[];
+                    //GemIds[8] = AdditionalDetails[];
+                    //GemIds[9] = AdditionalDetails[];
+                    //GemIds[10] = AdditionalDetails[];
+                    //GemIds[11] = AdditionalDetails[];
+                    //GemIds[12] = AdditionalDetails[];
+                    GemIds[13] = AdditionalDetails[4]; // 1 attribute
+                    GemIds[14] = AdditionalDetails[5]; // 2 attribute
+                    GemIds[15] = AdditionalDetails[6]; // 3 attribute
+                    GemIds[16] = AdditionalDetails[7]; // 4 attribute
+                    GemIds[17] = AdditionalDetails[8]; // 5 attribute
+                }
+                break;
+            case ItemDetailType.Slave:
+                mDetailLength = 34; // есть расшифровка в items/SummonSlave 30 in 3.5, 4.5.2.6, 34 in 4.5.1.0, 5.7
+                break;
+            case ItemDetailType.Mate:
+                mDetailLength = 21; // in 1.2 - 7, in 3+ - 21 - есть расшифровка в items/SummonMate
+                break;
+            case ItemDetailType.Ucc:
+                mDetailLength = 10; // есть расшифровка в items/UccItem
+                break;
+            case ItemDetailType.Treasure:
+            case ItemDetailType.Location: // нет в 1.2
+                mDetailLength = 25;
+                break;
+            case ItemDetailType.BigFish: // есть расшифровка в items/BigFish
+            case ItemDetailType.Decoration:
+                mDetailLength = 17;
+                break;
+            case ItemDetailType.MusicSheet:
+                mDetailLength = 9; // есть расшифровка в items/MusicSheetItem
+                break;
+            case ItemDetailType.Glider:
+                mDetailLength = 5;
+                break;
+            case ItemDetailType.SlaveEquipment: // есть расшифровка в items/SlaveEquip, нет в 1.2
+                mDetailLength = 13;
+                break;
+            case ItemDetailType.Unk12: // 12
+                mDetailLength = 11; // 12 in 3.5, 4.5, 11 in 5.0
+                break;
+            case ItemDetailType.Unk13: // 13
+                mDetailLength = 14; // added in 5.7, 4.5
+                break;
+            case ItemDetailType.Invalid:
+            default:
+                break;
+        }
+        mDetailLength -= 1;
+        if (mDetailLength > 0)
+        {
+            Detail = new byte[mDetailLength];
+            stream.Write(Detail);
+        }
+    }
+
+    public virtual void ReadAdditionalDetails(PacketStream stream)
+    {
+        for (var i = 0; i < 19; i++)
+        {
+            AdditionalDetails[i] = stream.ReadUInt32();
+        }
+    }
+
+    public virtual void WriteAdditionalDetails(PacketStream stream)
+    {
+        for (var i = 0; i < 19; i++)
+        {
+            stream.Write(AdditionalDetails[i]);
         }
     }
 

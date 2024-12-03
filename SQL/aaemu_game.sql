@@ -515,6 +515,7 @@ CREATE TABLE `items`  (
   `slot` int NOT NULL,
   `count` int NOT NULL,
   `details` blob NULL,
+  `additional_details` blob NULL,
   `lifespan_mins` int NOT NULL,
   `made_unit_id` int UNSIGNED NOT NULL DEFAULT 0,
   `unsecure_time` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',

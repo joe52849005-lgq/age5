@@ -19,7 +19,7 @@ public class Spawn : ICommand
     public string[] CommandNames { get; set; } = new string[] { "spawn" };
     private const uint DUMMY_NPC_TEMPLATE_ID = 7512;
 
-    // Unused protected static Logger Logger = LogManager.GetCurrentClassLogger();
+    // Unused protected static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     public void OnLoad()
     {
         CommandManager.Instance.Register(CommandNames, this);

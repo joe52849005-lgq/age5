@@ -4,7 +4,7 @@ namespace AAEmu.Commons.Network;
 
 public abstract class PacketMarshaler
 {
-    protected static Logger Logger { get; } = LogManager.GetCurrentClassLogger();
+    protected static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public virtual void Read(PacketStream stream)
     {

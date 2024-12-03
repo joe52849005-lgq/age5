@@ -24,7 +24,7 @@ public class ItemAddSubCommand : SubCommandBase
         AddParameter(new NumericSubCommandParameter<int>("amount", "amount=1", false, 1, 1000) { DefaultValue = 1 });
         AddParameter(
             new NumericSubCommandParameter<byte>("grade", "item grade=0", false, (byte)ItemGrade.Crude,
-                (byte)ItemGrade.Mythic) { DefaultValue = (byte)ItemGrade.Crude });
+                (byte)ItemGrade.Ethernal) { DefaultValue = (byte)ItemGrade.Crude });
     }
 
     public override void Execute(ICharacter character, string triggerArgument,
@@ -71,9 +71,7 @@ public class ItemAddSubCommand : SubCommandBase
             return;
         }
 
-        if (ItemManager.Instance
-            .IsAutoEquipTradePack(itemTemplate
-                .Id)) // .Category_Id == 133) || (itemTemplate.Category_Id == 122)) // Speciality Packs or Tradepacks
+        if (ItemManager.Instance.IsAutoEquipTradePack(itemTemplate.Id)) // .Category_Id == 133) || (itemTemplate.Category_Id == 122)) // Speciality Packs or Tradepacks
         {
             var currentBackpack = addTarget.Equipment.GetItemBySlot((int)EquipmentItemSlot.Backpack);
             if (currentBackpack != null)
@@ -96,10 +94,8 @@ public class ItemAddSubCommand : SubCommandBase
 
         if (selfCharacter.Id != addTarget.Id)
         {
-            SendMessage(messageOutput,
-                $"Added item {ChatConverter.ConvertAsChatMessageReference(templateId, itemGrade)} to {addTarget.Name}'s inventory");
-            SendMessage(addTarget, messageOutput,
-                $"[GM] {selfCharacter.Name} added {ChatConverter.ConvertAsChatMessageReference(templateId, itemGrade)} to your inventory");
+            SendMessage(messageOutput, $"Added item {ChatConverter.ConvertAsChatMessageReference(templateId, itemGrade)} to {addTarget.Name}'s inventory");
+            SendMessage(addTarget, messageOutput, $"[GM] {selfCharacter.Name} added {ChatConverter.ConvertAsChatMessageReference(templateId, itemGrade)} to your inventory");
         }
     }
 }

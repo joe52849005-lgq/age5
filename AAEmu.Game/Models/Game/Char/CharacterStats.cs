@@ -131,16 +131,6 @@ public class CharacterStats
         TaskManager.Instance.CronSchedule(new ResetAttemptsTask(ResetAttempts), cronExpression);
     }
 
-    public UnitAttribute GetRandomAttribute(UnitAttribute exclude)
-    {
-        var random = new Random();
-        var allAttributes = (UnitAttribute[])Enum.GetValues(typeof(UnitAttribute));
-        var availableAttributes = allAttributes.Where(attr => attr != exclude).ToList();
-
-        var randomIndex = random.Next(availableAttributes.Count);
-        return availableAttributes[randomIndex];
-    }
-
     public void IncreaseLimit()
     {
         if (_currentLimit + Points > MaxLimit)

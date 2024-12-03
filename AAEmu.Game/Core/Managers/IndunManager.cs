@@ -18,7 +18,7 @@ namespace AAEmu.Game.Core.Managers;
 
 public class IndunManager : Singleton<IndunManager>
 {
-    private static Logger Logger = LogManager.GetCurrentClassLogger();
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     private Dictionary<Team, List<Dungeon>> _teamDungeons;
     private Dictionary<uint, Dungeon> _soloDungeons;

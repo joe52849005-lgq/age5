@@ -10,23 +10,40 @@ public class SCItemGradeEnchantResultPacket : GamePacket
     //  0 = break, 1 = downgrade, 2 = fail, 3 = success, 4 = great success 
     private readonly byte _result;
     private readonly Item _item;
-    private readonly byte _type1;
-    private readonly byte _type2;
+    private readonly byte _initialGrade;
+    private readonly byte _grade;
+    private readonly uint _type3;
+    private readonly int _breakRewardItemCount;
+    private readonly bool _breakRewardByMail;
 
-    public SCItemGradeEnchantResultPacket(byte result, Item item, byte type1, byte type2) : base(SCOffsets.SCItemGradeEnchantResultPacket, 5)
+    public SCItemGradeEnchantResultPacket(
+        byte result,
+        Item item,
+        byte initialGrade,
+        byte grade,
+        uint type3,
+        int breakRewardItemCount,
+        bool breakRewardByMail)
+        : base(SCOffsets.SCItemGradeEnchantResultPacket, 5)
     {
         _result = result;
         _item = item;
-        _type1 = type1;
-        _type2 = type2;
+        _initialGrade = initialGrade;
+        _grade = grade;
+        _type3 = type3;
+        _breakRewardItemCount = breakRewardItemCount;
+        _breakRewardByMail = breakRewardByMail;
     }
 
     public override PacketStream Write(PacketStream stream)
     {
         stream.Write(_result);
         stream.Write(_item);
-        stream.Write(_type1);
-        stream.Write(_type2);
+        stream.Write(_initialGrade);
+        stream.Write(_grade);
+        stream.Write(_type3);
+        stream.Write(_breakRewardItemCount);
+        stream.Write(_breakRewardByMail);
 
         return stream;
     }

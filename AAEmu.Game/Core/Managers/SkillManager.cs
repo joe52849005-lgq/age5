@@ -1772,9 +1772,6 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                 command.Prepare();
                 using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
                 {
-                    // Начальное десятичное значение
-                    int startDecimal = 40572;
-
                     while (reader.Read())
                     {
                         var jsonData = reader.GetString("effect");

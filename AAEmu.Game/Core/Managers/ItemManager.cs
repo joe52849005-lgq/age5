@@ -20,6 +20,7 @@ using AAEmu.Game.Models.Game.Items.Loots;
 using AAEmu.Game.Models.Game.Items.Procs;
 using AAEmu.Game.Models.Game.Items.Slave;
 using AAEmu.Game.Models.Game.Items.Templates;
+using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.Skills.Templates;
 using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Models.StaticValues;
@@ -365,7 +366,7 @@ public class ItemManager : Singleton<ItemManager>
     public bool TookLootDropItem(Character character, List<Item> lootDropItems, Item lootDropItem, int count)
     {
         var objId = (uint)(lootDropItem.Id >> 32);
-        if (lootDropItem.TemplateId == Item.Coins)
+        if (lootDropItem.TemplateId == (uint)ItemConstants.Coins)
         {
             character.AddMoney(SlotType.Bag, lootDropItem.Count);
         }
@@ -1004,6 +1005,22 @@ public class ItemManager : Singleton<ItemManager>
                         template.ChargeCount = reader.GetInt16("charge_count");
                         template.ItemLookConvert = GetWearableItemLookConvert(slotTypeId);
                         template.EquipItemSetId = reader.GetUInt32("eiset_id", 0);
+                        template.AssetId = reader.GetUInt32("asset_id", 0);
+                        template.Asset2Id = reader.GetUInt32("asset2_id", 0);
+                        template.EnhancedItemMaterialId = reader.GetUInt32("enhanced_item_material_id", 0);
+                        template.EquipOnlyHasArmorVisual = reader.GetBoolean("equip_only_has_armor_visual", true);
+                        template.InvisibleAsset = reader.GetBoolean("invisible_asset", true);
+                        template.NoVisualErrorMessage = reader.GetString("no_visual_error_message", "");
+                        template.RechargeRestrictItemId = reader.GetUInt32("recharge_restrict_item_id", 0);
+                        template.SkinKindId = reader.GetUInt32("skin_kind_id", 0);
+                        template.UseAsStat = reader.GetBoolean("useAsStat", true);
+                        template.OrUnitReqs = reader.GetBoolean("or_unit_reqs", true);
+
+                        template.ItemRndAttrCategoryId = reader.GetInt32("item_rnd_attr_category_id", 0);
+                        template.RechargeRndAttrUnitModifierRestrictItemId = reader.GetInt32("recharge_rnd_attr_unit_modifier_restrict_item_id", 0);
+                        template.RndAttrUnitModifierLifetime = reader.GetInt32("rnd_attr_unit_modifier_lifetime", 0);
+
+
                         _templates.Add(template.Id, template);
                     }
                 }
@@ -1019,21 +1036,36 @@ public class ItemManager : Singleton<ItemManager>
                     while (reader.Read())
                     {
                         var holdableId = reader.GetUInt32("holdable_id");
-                        var template = new WeaponTemplate
-                        {
-                            Id = reader.GetUInt32("item_id"),
-                            BaseEnchantable = reader.GetBoolean("base_enchantable"),
-                            HoldableTemplate = _holdables[holdableId],
-                            ModSetId = reader.GetUInt32("mod_set_id", 0),
-                            Repairable = reader.GetBoolean("repairable", true),
-                            DurabilityMultiplier = reader.GetInt32("durability_multiplier"),
-                            BaseEquipment = reader.GetBoolean("base_equipment", true),
-                            RechargeBuffId = reader.GetUInt32("recharge_buff_id", 0),
-                            ChargeLifetime = reader.GetInt32("charge_lifetime", 0),
-                            ChargeCount = reader.GetInt16("charge_count"),
-                            ItemLookConvert = GetHoldableItemLookConvert(holdableId),
-                            EquipItemSetId = reader.GetUInt32("eiset_id", 0)
-                        };
+                        var template = new WeaponTemplate();
+                        template.Id = reader.GetUInt32("item_id");
+                        template.BaseEnchantable = reader.GetBoolean("base_enchantable");
+                        template.HoldableTemplate = _holdables[holdableId];
+                        template.ModSetId = reader.GetUInt32("mod_set_id", 0);
+                        template.Repairable = reader.GetBoolean("repairable", true);
+                        template.DurabilityMultiplier = reader.GetInt32("durability_multiplier");
+                        template.BaseEquipment = reader.GetBoolean("base_equipment", true);
+                        template.RechargeBuffId = reader.GetUInt32("recharge_buff_id", 0);
+                        template.ChargeLifetime = reader.GetInt32("charge_lifetime", 0);
+                        template.ChargeCount = reader.GetInt16("charge_count");
+                        template.ItemLookConvert = GetHoldableItemLookConvert(holdableId);
+                        template.EquipItemSetId = reader.GetUInt32("eiset_id", 0);
+
+                        template.AssetId = reader.GetUInt32("asset_id", 0);
+                        template.DrawnScale = reader.GetFloat("drawn_scale", 0);
+                        template.EnhancedItemMaterialId = reader.GetUInt32("enhanced_item_material_id", 0);
+                        template.FixedAttackedSoundId = reader.GetUInt32("fixed_attacked_sound_id", 0);
+                        template.FixedVisualEffectId = reader.GetUInt32("fixed_visual_effect_id", 0);
+                        template.RechargeRestrictItemId = reader.GetUInt32("recharge_restrict_item_id", 0);
+                        template.SkinKindId = reader.GetUInt32("skin_kind_id", 0);
+                        template.UseAsStat = reader.GetBoolean("useAsStat", true);
+                        template.WornScale = reader.GetFloat("worn_scale", 0);
+
+                        template.OrUnitReqs = reader.GetBoolean("or_unit_reqs", true);
+                        template.EquipItemSetId = reader.GetUInt32("item_rnd_attr_category_id", 0);
+                        template.EquipItemSetId = reader.GetUInt32("recharge_rnd_attr_unit_modifier_restrict_item_id", 0);
+                        template.EquipItemSetId = reader.GetUInt32("rnd_attr_unit_modifier_lifetime", 0);
+
+
                         _templates.Add(template.Id, template);
                     }
                 }
@@ -1051,20 +1083,25 @@ public class ItemManager : Singleton<ItemManager>
                         var slotTypeId = reader.GetUInt32("slot_type_id");
                         var typeId = reader.GetUInt32("type_id");
 
-                        var template = new AccessoryTemplate
-                        {
-                            Id = reader.GetUInt32("item_id"),
-                            WearableTemplate = _wearables[typeId * 128 + slotTypeId],
-                            KindTemplate = _wearableKinds[typeId],
-                            SlotTemplate = _wearableSlots[slotTypeId],
-                            ModSetId = reader.GetUInt32("mod_set_id", 0),
-                            Repairable = reader.GetBoolean("repairable", true),
-                            DurabilityMultiplier = reader.GetInt32("durability_multiplier"),
-                            RechargeBuffId = reader.GetUInt32("recharge_buff_id", 0),
-                            ChargeLifetime = reader.GetInt32("charge_lifetime", 0),
-                            ChargeCount = reader.GetInt16("charge_count"),
-                            EquipItemSetId = reader.GetUInt32("eiset_id", 0)
-                        };
+                        var template = new AccessoryTemplate();
+                        template.Id = reader.GetUInt32("item_id");
+                        template.WearableTemplate = _wearables[typeId * 128 + slotTypeId];
+                        template.KindTemplate = _wearableKinds[typeId];
+                        template.SlotTemplate = _wearableSlots[slotTypeId];
+                        template.ModSetId = reader.GetUInt32("mod_set_id", 0);
+                        template.Repairable = reader.GetBoolean("repairable", true);
+                        template.DurabilityMultiplier = reader.GetInt32("durability_multiplier");
+                        template.RechargeBuffId = reader.GetUInt32("recharge_buff_id", 0);
+                        template.ChargeLifetime = reader.GetInt32("charge_lifetime", 0);
+                        template.ChargeCount = reader.GetInt16("charge_count");
+                        template.EquipItemSetId = reader.GetUInt32("eiset_id", 0);
+                        template.RechargeRestrictItemId = reader.GetUInt32("recharge_restrict_item_id", 0);
+                        template.OrUnitReqs = reader.GetBoolean("or_unit_reqs", true);
+                        
+                        template.ItemRndAttrCategoryId = reader.GetInt32("item_rnd_attr_category_id", 0);
+                        template.RechargeRndAttrUnitModifierRestrictItemId = reader.GetInt32("recharge_rnd_attr_unit_modifier_restrict_item_id", 0);
+                        template.RndAttrUnitModifierLifetime = reader.GetInt32("rnd_attr_unit_modifier_lifetime", 0);
+
                         _templates.Add(template.Id, template);
                     }
                 }
@@ -1185,13 +1222,13 @@ public class ItemManager : Singleton<ItemManager>
             }
 
             // TODO: HACK-FIX FOR CREST INK/STAMP/MUSIC
-            var crestInkItemTemplate = new UccTemplate { Id = Item.CrestInk };
+            var crestInkItemTemplate = new UccTemplate { Id = (uint)ItemConstants.CrestInk };
             _templates.Add(crestInkItemTemplate.Id, crestInkItemTemplate);
 
-            var crestStampItemTemplate = new UccTemplate { Id = Item.CrestStamp };
+            var crestStampItemTemplate = new UccTemplate { Id = (uint)ItemConstants.CrestStamp };
             _templates.Add(crestStampItemTemplate.Id, crestStampItemTemplate);
 
-            var sheetMusicItemTemplate = new MusicSheetTemplate { Id = Item.SheetMusic };
+            var sheetMusicItemTemplate = new MusicSheetTemplate { Id = (uint)ItemConstants.SheetMusic };
             _templates.Add(sheetMusicItemTemplate.Id, sheetMusicItemTemplate);
 
             using (var command = connection.CreateCommand())
@@ -1760,7 +1797,6 @@ public class ItemManager : Singleton<ItemManager>
             }
         }
 
-
         using (var command = connection.CreateCommand())
         {
             command.Connection = connection;
@@ -1804,15 +1840,17 @@ public class ItemManager : Singleton<ItemManager>
                     if (!item.IsDirty)
                         continue;
 
+                    var additionalDetails = new Commons.Network.PacketStream();
+                    item.WriteAdditionalDetails(additionalDetails);
                     var details = new Commons.Network.PacketStream();
-                    item.WriteDetails(details);
+                    item.WriteDetails(details, true);
 
                     command.CommandText = "REPLACE INTO items (" +
-                        "`id`,`type`,`template_id`,`container_id`,`slot_type`,`slot`,`count`,`details`,`lifespan_mins`,`made_unit_id`," +
+                        "`id`,`type`,`template_id`,`container_id`,`slot_type`,`slot`,`count`,`details`,`additional_details`,`lifespan_mins`,`made_unit_id`," +
                         "`unsecure_time`,`unpack_time`,`owner`,`created_at`,`grade`,`flags`,`ucc`," +
                         "`expire_time`,`expire_online_minutes`,`charge_time`,`charge_count`" +
                         ") VALUES ( " +
-                        "@id, @type, @template_id, @container_id, @slot_type, @slot, @count, @details, @lifespan_mins, @made_unit_id, " +
+                        "@id, @type, @template_id, @container_id, @slot_type, @slot, @count, @details, @additional_details, @lifespan_mins, @made_unit_id, " +
                         "@unsecure_time,@unpack_time,@owner,@created_at,@grade,@flags,@ucc," +
                         "@expire_time,@expire_online_minutes,@charge_time,@charge_count" +
                         ")";
@@ -1825,6 +1863,7 @@ public class ItemManager : Singleton<ItemManager>
                     command.Parameters.AddWithValue("@slot", item.Slot);
                     command.Parameters.AddWithValue("@count", item.Count);
                     command.Parameters.AddWithValue("@details", details.GetBytes());
+                    command.Parameters.AddWithValue("@additional_details", additionalDetails.GetBytes());
                     command.Parameters.AddWithValue("@lifespan_mins", item.LifespanMins);
                     command.Parameters.AddWithValue("@made_unit_id", item.MadeUnitId);
                     command.Parameters.AddWithValue("@unsecure_time", item.UnsecureTime);
@@ -2077,6 +2116,8 @@ public class ItemManager : Singleton<ItemManager>
                     item.CreateTime = reader.GetDateTime("created_at");
                     item.ItemFlags = (ItemFlag)reader.GetByte("flags");
                     item.UccId = reader.GetUInt32("ucc"); // Make sure this UCC is set BEFORE reading details as UccItem needs to be able to override it
+                    var additionalDetails = (Commons.Network.PacketStream)(byte[])reader.GetValue("additional_details");
+                    item.ReadAdditionalDetails(additionalDetails);
                     var details = (Commons.Network.PacketStream)(byte[])reader.GetValue("details");
                     item.ReadDetails(details);
 
@@ -2455,7 +2496,7 @@ public class ItemManager : Singleton<ItemManager>
         [
             new ItemRemove(imageItem),
             //new ItemUpdate(toImage),
-            new ItemUpdateRepair(toImage, imageItem.TemplateId),
+            new ItemUpdateRepair(toImage), //, imageItem.TemplateId),
             new ItemUpdateSecurity(toImage, 1, 1, false, false, false),
             theseAmounts > template.ItemLookConvert.RequiredItemCount ? new ItemCountUpdate(powders[0], template.ItemLookConvert.RequiredItemCount) : new ItemRemove(powders[0])
         ], [], 3));

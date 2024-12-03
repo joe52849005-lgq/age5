@@ -17,7 +17,7 @@ namespace AAEmu.Login.Core.Controllers
 {
     public class LoginController : Singleton<LoginController>
     {
-        private static Logger Logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         private Dictionary<byte, Dictionary<uint, ulong>> _tokens; // gsId, [token, accountId]
         private static bool _autoAccount = AppConfiguration.Instance.AutoAccount;

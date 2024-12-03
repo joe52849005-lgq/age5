@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace AAEmu.Game.Models.Game.Items.Templates;
 
@@ -9,4 +9,6 @@ public class AccessoryTemplate : EquipItemTemplate
     public Wearable WearableTemplate { get; set; }
     public WearableKind KindTemplate { get; set; }
     public WearableSlot SlotTemplate { get; set; }
+    public uint RechargeRestrictItemId { get; set; }
+    public bool OrUnitReqs { get; set; }
 }

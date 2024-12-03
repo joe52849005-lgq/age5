@@ -5,9 +5,9 @@ using AAEmu.Game.Models.Game.Units;
 
 namespace AAEmu.Game.Models.Game.Skills.Effects.SpecialEffects;
 
-public class ItemRefurbishment : SpecialEffectAction
+public class EquipmentAwakening : SpecialEffectAction
 {
-    protected override SpecialType SpecialEffectActionType => SpecialType.ItemRefurbishment;
+    protected override SpecialType SpecialEffectActionType => SpecialType.EquipmentAwakening;
     
     public override void Execute(BaseUnit caster,
         SkillCaster casterObj,
@@ -25,7 +25,7 @@ public class ItemRefurbishment : SpecialEffectAction
         // TODO ...
         if (caster is Character)
         {
-            Logger.Debug("Special effects: ItemRefurbishment value1 {0}, value2 {1}, value3 {2}, value4 {3}", value1, value2, value3, value4);
+            Logger.Debug("Special effects: EquipmentAwakening value1 {0}, value2 {1}, value3 {2}, value4 {3}", value1, value2, value3, value4);
         }
     }
 }

@@ -145,7 +145,7 @@
         public const ushort SCSocketingResultPacket = 0x257;
         public const ushort SCEnchantMagicalResultPacket = 0x27C;
         public const ushort SCItemSmeltingResultPacket = 0x08B;
-        public const ushort off_39E9AAFC = 0x0F3;
+        public const ushort SCItemEvolvingPacket = 0x0F3; // off_39E9AAFC
         public const ushort SCSkillStartedPacket = 0x1CB;
         public const ushort SCSkillFiredPacket = 0x1CE;
         public const ushort SCSkillEndedPacket = 0x271;
@@ -699,8 +699,8 @@
         public const ushort SCItemChangeMappingResultPacket = 0x022;
         public const ushort SCItemAcquisitionPacket = 0x216;
         public const ushort SCItemGradeEnchantResultPacket = 0x103;
-        public const ushort off_39E9E638 = 0x02C;
-        public const ushort off_39E9E660 = 0x1D9;
+        public const ushort SCItemTemperingResultPacket = 0x02C; // off_39E9E638
+        public const ushort SCItemAwakeningResultPacket = 0x1D9; // off_39E9E660
         public const ushort off_39E9E670 = 0x279;
         public const ushort SCCvfCombatPacket = 0x076;
         public const ushort SCAddHousePacket = 0x235;

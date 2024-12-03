@@ -9,6 +9,7 @@ using AAEmu.Game.Core.Packets.S2C;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Items.Actions;
+using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Stream;
 using NLog;
 
@@ -346,7 +347,7 @@ public class UccManager : Singleton<UccManager>
 
         connection.GameConnection.ActiveChar.ChangeMoney(SlotType.Bag, -50000);
 
-        var newItem = (UccItem)ItemManager.Instance.Create(Item.CrestInk, 1, 0, true); // Crest Ink
+        var newItem = (UccItem)ItemManager.Instance.Create((uint)ItemConstants.CrestInk, 1, 0, true); // Crest Ink
         newItem.UccId = id;
         Save(ucc);
         character.Inventory.Bag.AddOrMoveExistingItem(ItemTaskType.CreateOriginUcc, newItem);
@@ -354,7 +355,7 @@ public class UccManager : Singleton<UccManager>
 
     public static void CreateStamp(Character player, Item sourceInk)
     {
-        var newItem = ItemManager.Instance.Create(Item.CrestStamp, 1, 0, true); // Crest Stamp
+        var newItem = ItemManager.Instance.Create((uint)ItemConstants.CrestStamp, 1, 0, true); // Crest Stamp
         newItem.UccId = sourceInk.UccId;
         player.Inventory.Bag.AddOrMoveExistingItem(ItemTaskType.CreateOriginUcc, newItem);
     }
