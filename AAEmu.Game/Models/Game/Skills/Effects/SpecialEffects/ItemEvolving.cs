@@ -88,18 +88,21 @@ public class ItemEvolving : SpecialEffectAction
 
         if (needChangeAttribute)
         {
-            var selectAttribute = ItemGameData.Instance.GetUnitAttributeFromModifierGroup((int)item.AdditionalDetails[changeIndex + 4]);
-            beforeAttribute.Attribute = (ushort)selectAttribute;
-            beforeAttribute.AttributeType = 0;
-            beforeAttribute.AttributeValue = 0;
+            if (afterItemGrade > beforeItemGrade)
+            {
+                var selectAttribute = ItemGameData.Instance.GetUnitAttributeFromModifierGroup((int)item.AdditionalDetails[changeIndex + 4]);
+                beforeAttribute.Attribute = (ushort)selectAttribute;
+                beforeAttribute.AttributeType = 0;
+                beforeAttribute.AttributeValue = 0;
 
-            var newAttribute = ItemGameData.Instance.ReplaceSelectAttribute(equipItem.ItemRndAttrCategoryId, item.Grade, currentAttributes, selectAttribute);
-            item.AdditionalDetails[changeIndex + 4] = (uint)newAttribute.id;
-            afterAttribute.Attribute = (ushort)newAttribute.attribute;
-            afterAttribute.AttributeType = 0;
-            afterAttribute.AttributeValue = newAttribute.value;
+                var newAttribute = ItemGameData.Instance.ReplaceSelectAttribute(equipItem.ItemRndAttrCategoryId, item.Grade, currentAttributes, selectAttribute);
+                item.AdditionalDetails[changeIndex + 4] = (uint)newAttribute.id;
+                afterAttribute.Attribute = (ushort)newAttribute.attribute;
+                afterAttribute.AttributeType = 0;
+                afterAttribute.AttributeValue = newAttribute.value;
 
-            Logger.Debug($"ItemEvolving: beforeAttribute id={item.AdditionalDetails[changeIndex + 4]}, attribute={selectAttribute}, value={beforeAttribute.AttributeValue}, afterAttribute id={newAttribute.id}, attribute={newAttribute.attribute}, value={newAttribute.value}");
+                Logger.Debug($"ItemEvolving: beforeAttribute id={item.AdditionalDetails[changeIndex + 4]}, attribute={selectAttribute}, value={beforeAttribute.AttributeValue}, afterAttribute id={newAttribute.id}, attribute={newAttribute.attribute}, value={newAttribute.value}");
+            }
         }
         else if (ItemGameData.Instance.GetMaxUnitModifierNum(equipItem.ItemRndAttrCategoryId, item.Grade) > currentAttributes.Count && afterItemGrade > beforeItemGrade)
         {
