@@ -244,7 +244,20 @@ namespace AAEmu.Game.GameData
                 if (modifier != null)
                 {
                     var random = new Random();
-                    var value = random.Next(modifier.Min, modifier.Max + 1);
+                    var min = modifier.Min; // can be negative
+                    var max = modifier.Max; // can also be negative
+
+                    // Check and swap if necessary
+                    if (min > max)
+                    {
+                        // Swap places
+                        var temp = min;
+                        min = max;
+                        max = temp;
+                    }
+
+                    // Generate a random number 
+                    var value = random.Next(min, max + 1); // +1 if you need to enable max
                     return value;
                 }
             }
