@@ -93,7 +93,7 @@ public class ItemEvolving : SpecialEffectAction
             beforeAttribute.AttributeType = 0;
             beforeAttribute.AttributeValue = 0;
 
-            var newAttribute = ItemGameData.Instance.ReplaceSelectAttribute(equipItem.ItemRndAttrCategoryId, item.Grade, currentAttributes);
+            var newAttribute = ItemGameData.Instance.ReplaceSelectAttribute(equipItem.ItemRndAttrCategoryId, item.Grade, currentAttributes, selectAttribute);
             item.AdditionalDetails[changeIndex + 4] = (uint)newAttribute.id;
             afterAttribute.Attribute = (ushort)newAttribute.attribute;
             afterAttribute.AttributeType = 0;

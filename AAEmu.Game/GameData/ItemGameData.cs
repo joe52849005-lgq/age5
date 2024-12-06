@@ -120,40 +120,24 @@ namespace AAEmu.Game.GameData
             if (!_itemRndAttrUnitModifierGroupSets.TryGetValue(categoryId, out var unitModifierGroupSets))
                 return selectedAttributes;
 
-            var random = new Random();
-            var availableAttributes = unitModifierGroupSets.Values.ToList();
-            foreach (var groupSet in availableAttributes)
+            var random = Random.Shared; // Use Random.Shared for better randomness and thread safety
+            var existingAttributesSet = new HashSet<int>(existingAttributes);
+            foreach (var groupSet in unitModifierGroupSets.Values)
             {
                 var pickNum = groupSet.PickNum; // how much can you take from the list
 
                 if (!_itemRndAttrUnitModifierGroups.TryGetValue(groupSet.Id, out var unitModifierGroups))
                     continue;
 
-                var allAttributes = unitModifierGroups.Values.ToList();
-
-                // remove existing attributes from the list 
-                var deletes = new List<ItemRndAttrUnitModifierGroup>();
-                foreach (var group in allAttributes)
-                {
-                    foreach (var existingAttribute in existingAttributes)
-                    {
-                        if (group.Id == existingAttribute)
-                        {
-                            deletes.Add(group);
-                        }
-                    }
-                }
-
-                foreach (var delete in deletes)
-                {
-                    allAttributes.Remove(delete);
-                    pickNum--;
-                }
+                var allAttributes = unitModifierGroups.Values
+                    .Where(group => !existingAttributesSet.Contains(group.Id))
+                    .ToList();
 
                 if (allAttributes.Count <= 0 || pickNum <= 0)
                     continue;
 
-                for (var i = 0; i < pickNum; i++)
+                var numToPick = Math.Min(pickNum, allAttributes.Count);
+                for (var i = 0; i < numToPick; i++)
                 {
                     var randomIndex = random.Next(allAttributes.Count);
                     var selectedAttribute = allAttributes[randomIndex];
@@ -172,13 +156,15 @@ namespace AAEmu.Game.GameData
         /// <param name="categoryId"></param>
         /// <param name="grade"></param>
         /// <param name="existingAttributes"></param>
+        /// <param name="selectAttribute"></param>
         /// <returns></returns>
-        public (int id, int attribute, int value) ReplaceSelectAttribute(int categoryId, byte grade, List<int> existingAttributes)
+        public (int id, int attribute, int value) ReplaceSelectAttribute(int categoryId, byte grade, List<int> existingAttributes, int selectAttribute)
         {
             if (!_itemRndAttrUnitModifierGroupSets.TryGetValue(categoryId, out var unitModifierGroupSets))
                 return (0, 0, 0);
 
-            var random = new Random();
+            var random = Random.Shared; // Use Random.Shared for better randomness and thread safety
+            var existingAttributesSet = new HashSet<int>(existingAttributes);
             var availableAttributes = unitModifierGroupSets.Values.ToList();
 
             foreach (var groupSet in availableAttributes)
@@ -186,26 +172,14 @@ namespace AAEmu.Game.GameData
                 if (!_itemRndAttrUnitModifierGroups.TryGetValue(groupSet.Id, out var unitModifierGroups))
                     continue;
 
-                var allAttributes = unitModifierGroups.Values.ToList();
+                // Check if the specified attribute is present in any group's attributes
+                var isAttributePresent = unitModifierGroups.Values.Any(attr => attr.UnitAttributeId == selectAttribute);
+                if (!isAttributePresent)
+                    continue; // if the group does not contain the required attribute, skip it
 
-                // remove existing attributes from the list 
-                var deletes = new List<ItemRndAttrUnitModifierGroup>();
-                foreach (var group in allAttributes)
-                {
-                    foreach (var existingAttribute in existingAttributes)
-                    {
-                        if (group.Id == existingAttribute)
-                        {
-                            deletes.Add(group);
-                        }
-                    }
-                }
-
-                foreach (var delete in deletes)
-                {
-                    allAttributes.Remove(delete);
-                }
-
+                var allAttributes = unitModifierGroups.Values
+                    .Where(group => !existingAttributesSet.Contains(group.Id))
+                    .ToList();
 
                 if (allAttributes.Count == 0)
                     continue;
@@ -237,32 +211,26 @@ namespace AAEmu.Game.GameData
 
         public int GetUnitModifierRandomValue(int groupId, byte grade)
         {
-            if (_itemRndAttrUnitModifiers.TryGetValue(groupId, out var modifiers))
-            {
-                modifiers.TryGetValue(grade, out var modifier);
+            if (!_itemRndAttrUnitModifiers.TryGetValue(groupId, out var modifiers))
+                return 0;
 
-                if (modifier != null)
-                {
-                    var random = new Random();
-                    var min = modifier.Min; // can be negative
-                    var max = modifier.Max; // can also be negative
+            if (!modifiers.TryGetValue(grade, out var modifier))
+                return 0;
 
-                    // Check and swap if necessary
-                    if (min > max)
-                    {
-                        // Swap places
-                        var temp = min;
-                        min = max;
-                        max = temp;
-                    }
+            if (modifier == null)
+                return 0;
 
-                    // Generate a random number 
-                    var value = random.Next(min, max + 1); // +1 if you need to enable max
-                    return value;
-                }
-            }
+            var min = modifier.Min;
+            var max = modifier.Max;
 
-            return 0;
+            // Ensure min <= max
+            if (min > max)
+                (min, max) = (max, min);
+
+            // Generate a random number between min and max (inclusive)
+            var value = Random.Shared.Next(min, max + 1);
+            return value;
+
         }
 
         public ItemRndAttrUnitModifier GetUnitModifier(int groupId, int modifierId)
