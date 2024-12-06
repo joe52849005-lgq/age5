@@ -74,6 +74,17 @@ public class ItemEvolving : SpecialEffectAction
             addExperience += bonusExp;
         }
 
+        // ограничим грейд предмета
+        var gradeExp = ItemGameData.Instance.GetGradeExp(equipItem.ItemRndAttrCategoryId, item.Grade);
+        var maxEvolvingGrade = ItemGameData.Instance.GetItemRndAttrCategory(equipItem.ItemRndAttrCategoryId).MaxEvolvingGrade;
+        if (beforeItemGrade >= maxEvolvingGrade && currentExperience >= gradeExp)
+        {
+            currentExperience = gradeExp;
+            addExperience = gradeExp;
+            item.AdditionalDetails[3] = 0;
+            Logger.Debug($"ItemEvolving: Reached grade limit! beforeItemGrade:maxEvolvingGrade={beforeItemGrade}:{maxEvolvingGrade}, currentExperience={currentExperience}");
+        }
+
         var (afterItemGrade, remainingExperience) = CalculateGradeAndExp(currentExperience, equipItem.ItemRndAttrCategoryId, beforeItemGrade);
         item.AdditionalDetails[3] = (uint)remainingExperience; // сохраним оставшийся опыт
         item.Grade = afterItemGrade;
