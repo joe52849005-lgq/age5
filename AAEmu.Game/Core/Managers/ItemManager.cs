@@ -1059,11 +1059,11 @@ public class ItemManager : Singleton<ItemManager>
                         template.SkinKindId = reader.GetUInt32("skin_kind_id", 0);
                         template.UseAsStat = reader.GetBoolean("useAsStat", true);
                         template.WornScale = reader.GetFloat("worn_scale", 0);
-
                         template.OrUnitReqs = reader.GetBoolean("or_unit_reqs", true);
-                        template.EquipItemSetId = reader.GetUInt32("item_rnd_attr_category_id", 0);
-                        template.EquipItemSetId = reader.GetUInt32("recharge_rnd_attr_unit_modifier_restrict_item_id", 0);
-                        template.EquipItemSetId = reader.GetUInt32("rnd_attr_unit_modifier_lifetime", 0);
+
+                        template.ItemRndAttrCategoryId = reader.GetInt32("item_rnd_attr_category_id", 0);
+                        template.RechargeRndAttrUnitModifierRestrictItemId = reader.GetInt32("recharge_rnd_attr_unit_modifier_restrict_item_id", 0);
+                        template.RndAttrUnitModifierLifetime = reader.GetInt32("rnd_attr_unit_modifier_lifetime", 0);
 
 
                         _templates.Add(template.Id, template);
