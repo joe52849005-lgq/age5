@@ -22,9 +22,7 @@ public class ItemAddSubCommand : SubCommandBase
         AddParameter(new StringSubCommandParameter("target", "player name||target||self", true));
         AddParameter(new NumericSubCommandParameter<uint>("templateId", "template id", true));
         AddParameter(new NumericSubCommandParameter<int>("amount", "amount=1", false, 1, 1000) { DefaultValue = 1 });
-        AddParameter(
-            new NumericSubCommandParameter<byte>("grade", "item grade=0", false, (byte)ItemGrade.Crude,
-                (byte)ItemGrade.Ethernal) { DefaultValue = (byte)ItemGrade.Crude });
+        AddParameter(new NumericSubCommandParameter<byte>("grade", "item grade=0", false, (byte)ItemGrade.Basic, (byte)ItemGrade.Ethernal) { DefaultValue = (byte)ItemGrade.Basic });
     }
 
     public override void Execute(ICharacter character, string triggerArgument,
