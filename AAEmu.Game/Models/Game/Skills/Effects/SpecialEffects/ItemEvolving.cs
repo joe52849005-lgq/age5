@@ -58,6 +58,14 @@ public class ItemEvolving : SpecialEffectAction
             return;
         }
 
+        // We do not allow the item being upgraded to be destroyed
+        if (item.Id == item1.Id || item.Id == item2.Id)
+        {
+            Logger.Debug($"You cannot use the same item for improvement! Item={item.Id}, Item1={item1.Id}, Item2={item2.Id}");
+            character.SendMessage($"You cannot use the same item for improvement! Item @ITEM_NAME({item.TemplateId})'s");
+            return;
+        }
+
         var autoUseAAPoint = ((SkillObjectItemEvolvingSupport)skillObject).AutoUseAAPoint;
 
         var beforeItemGrade = item.Grade;
