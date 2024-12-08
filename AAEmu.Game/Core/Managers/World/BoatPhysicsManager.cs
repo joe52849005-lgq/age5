@@ -46,26 +46,26 @@ namespace AAEmu.Game.Core.Managers.World
             _buoyancy = new Buoyancy(_physWorld);
             _buoyancy.UseOwnFluidArea(CustomWater);
 
-            // Add terrain shape based on height map
-            if (SimulationWorld.Name != "main_world") { return; }
-            try
-            {
-                var hmap = WorldManager.Instance.GetWorld(0).HeightMaps;
-                var heightMaxCoefficient = WorldManager.Instance.GetWorld(0).HeightMaxCoefficient;
-                var dx = hmap.GetLength(0);
-                var dz = hmap.GetLength(1);
-                var hmapTerrain = new float[dx, dz];
-                for (var x = 0; x < dx; x++)
-                    for (var y = 0; y < dz; y++)
-                        hmapTerrain[x, y] = (float)(hmap[x, y] / heightMaxCoefficient);
-                var terrain = new TerrainShape(hmapTerrain, 2.0f, 2.0f);
-                var body = new RigidBody(terrain) { IsStatic = true };
-                _physWorld.AddBody(body);
-            }
-            catch (Exception e)
-            {
-                Logger.Error(e);
-            }
+            //// Add terrain shape based on height map
+            //if (SimulationWorld.Name != "main_world") { return; }
+            //try
+            //{
+            //    var hmap = WorldManager.Instance.GetWorld(0).HeightMaps;
+            //    var heightMaxCoefficient = WorldManager.Instance.GetWorld(0).HeightMaxCoefficient;
+            //    var dx = hmap.GetLength(0);
+            //    var dz = hmap.GetLength(1);
+            //    var hmapTerrain = new float[dx, dz];
+            //    for (var x = 0; x < dx; x++)
+            //        for (var y = 0; y < dz; y++)
+            //            hmapTerrain[x, y] = (float)(hmap[x, y] / heightMaxCoefficient);
+            //    var terrain = new TerrainShape(hmapTerrain, 2.0f, 2.0f);
+            //    var body = new RigidBody(terrain) { IsStatic = true };
+            //    _physWorld.AddBody(body);
+            //}
+            //catch (Exception e)
+            //{
+            //    Logger.Error(e);
+            //}
 
             Logger.Info("BoatPhysicsManager initialized.");
         }
