@@ -4,6 +4,8 @@ using System.Numerics;
 using AAEmu.Commons.Utils;
 using AAEmu.Game.Utils;
 
+using Jitter.LinearMath;
+
 namespace AAEmu.Game.Models.Game.World.Transform;
 
 public class PositionAndRotation
@@ -106,6 +108,33 @@ public class PositionAndRotation
     public void SetRotationDegree(float roll, float pitch, float yaw)
     {
         Rotation = new Vector3(roll.DegToRad(), pitch.DegToRad(), yaw.DegToRad());
+    }
+
+    public void SetRotation(JMatrix rotationMatrix)
+    {
+        // Преобразование матрицы поворота в углы Эйлера
+        var (roll, pitch, yaw) = ConvertMatrixToEulerAngles(rotationMatrix);
+        SetRotation(roll, pitch, yaw);
+    }
+
+    private (float roll, float pitch, float yaw) ConvertMatrixToEulerAngles(JMatrix rotationMatrix)
+    {
+        float roll, yaw;
+
+        // Вычисление углов Эйлера из матрицы поворота
+        var pitch = (float)Math.Asin(-rotationMatrix.M32);
+        if (Math.Cos(pitch) > 0.0001)
+        {
+            roll = (float)Math.Atan2(rotationMatrix.M31, rotationMatrix.M33);
+            yaw = (float)Math.Atan2(rotationMatrix.M12, rotationMatrix.M22);
+        }
+        else
+        {
+            roll = (float)Math.Atan2(-rotationMatrix.M13, rotationMatrix.M11);
+            yaw = 0;
+        }
+
+        return (roll, pitch, yaw);
     }
 
     /// <summary>
