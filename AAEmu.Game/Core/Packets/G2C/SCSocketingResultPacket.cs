@@ -6,12 +6,12 @@ namespace AAEmu.Game.Core.Packets.G2C;
 public class SCSocketingResultPacket : GamePacket
 {
     private readonly byte _result;
-    private readonly long _itemId;
+    private readonly ulong _itemId;
     private readonly uint _itemType;
     private readonly byte _kind;
     private readonly bool _success;
 
-    public SCSocketingResultPacket(byte result, long itemId, uint itemType, byte kind, bool success)
+    public SCSocketingResultPacket(byte result, ulong itemId, uint itemType, byte kind, bool success)
         : base(SCOffsets.SCSocketingResultPacket, 5)
     {
         _result = result;

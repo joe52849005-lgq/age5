@@ -5,11 +5,11 @@ namespace AAEmu.Game.Core.Packets.G2C;
 
 public class SCEnchantMagicalResultPacket : GamePacket
 {
-    private readonly byte _result;
-    private readonly long _itemId;
+    private readonly bool _result;
+    private readonly ulong _itemId;
     private readonly uint _itemType;
 
-    public SCEnchantMagicalResultPacket(byte result, long itemId, uint itemType)
+    public SCEnchantMagicalResultPacket(bool result, ulong itemId, uint itemType)
         : base(SCOffsets.SCEnchantMagicalResultPacket, 5)
     {
         _result = result;

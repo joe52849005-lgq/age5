@@ -7,7 +7,10 @@ using System.Linq;
 using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.GameData.Framework;
+using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Items.ItemRndAttr;
+using AAEmu.Game.Models.Game.Items.ItemSockets;
+using AAEmu.Game.Models.Game.Items.Templates;
 using AAEmu.Game.Models.Game.Skills.Templates;
 using AAEmu.Game.Utils.DB;
 
@@ -24,6 +27,7 @@ namespace AAEmu.Game.GameData
         private Random _random = new();
 
         private ConcurrentDictionary<uint, ConcurrentDictionary<byte, uint>> _itemGradeBuffs;
+        // Synthesis
         private ConcurrentDictionary<int, ItemRndAttrCategory> _itemRndAttrCategories;
         private ConcurrentDictionary<int, ConcurrentDictionary<int, ItemRndAttrCategoryMaterial>> _itemRndAttrCategoryMaterials;
         private ConcurrentDictionary<int, ConcurrentDictionary<int, ItemRndAttrCategoryProperty>> _itemRndAttrCategoryProperties;
@@ -31,6 +35,12 @@ namespace AAEmu.Game.GameData
         private ConcurrentDictionary<int, ConcurrentDictionary<int, ItemRndAttrUnitModifierGroup>> _itemRndAttrUnitModifierGroups;
         private ConcurrentDictionary<int, ItemRndAttrUnitModifierGroup> _itemRndAttributUnitModifierGroups;
         private ConcurrentDictionary<int, ConcurrentDictionary<int, ItemRndAttrUnitModifier>> _itemRndAttrUnitModifiers;
+
+        // Socketing
+        private ConcurrentDictionary<int, ItemSocket> _itemSockets;
+        private ConcurrentDictionary<int, ConcurrentDictionary<int, ItemSocketNumLimit>> _itemSocketNumLimits;
+        private ConcurrentDictionary<int, int> _itemSocketLevelLimits;
+        private ConcurrentDictionary<int, (bool, int)> _itemSocketChances;
 
         public BuffTemplate GetItemBuff(uint itemId, byte gradeId)
         {
@@ -241,8 +251,41 @@ namespace AAEmu.Game.GameData
             return modifier;
         }
 
+        public int GetSocketChance(Item item)
+        {
+            _itemSockets.TryGetValue((int)item.TemplateId, out var itemSocket);
+            if (itemSocket == null)
+            {
+                return 0;
+            }
+
+            _itemSocketChances.TryGetValue(itemSocket.ItemSocketChanceId, out var chance);
+
+            return chance.Item2;
+
+        }
+
+        public int GetSocketChance(int numSockets)
+        {
+            return _itemSocketChances.TryGetValue(numSockets, out var chance) ? chance.Item2 : 0;
+        }
+
+        public int GetSocketNumLimit(int slotTypeId, byte grade)
+        {
+            if (_itemSocketNumLimits.TryGetValue(slotTypeId, out var itemSocketNumLimits))
+            {
+                if (itemSocketNumLimits.TryGetValue(grade, out var value))
+                {
+                    return value.NumSocket;
+                }
+            }
+
+            return 0;
+        }
+
         public void Load(SqliteConnection connection, SqliteConnection connection2)
         {
+            // Synthesis
             InitializeDictionaries();
             LoadItemGradeBuffs(connection);
             LoadItemRndAttrCategories(connection);
@@ -251,10 +294,17 @@ namespace AAEmu.Game.GameData
             LoadItemRndAttrUnitModifierGroupSets(connection);
             LoadItemRndAttrUnitModifierGroups(connection);
             LoadItemRndAttrUnitModifiers(connection);
+
+            // Socketing
+            LoadItemSockets(connection);
+            LoadItemSocketNumLimits(connection);
+            LoadItemSocketLevelLimits(connection);
+            LoadItemSocketChances(connection);
         }
 
         private void InitializeDictionaries()
         {
+            // Synthesis
             _itemGradeBuffs = new ConcurrentDictionary<uint, ConcurrentDictionary<byte, uint>>();
             _itemRndAttrCategories = new ConcurrentDictionary<int, ItemRndAttrCategory>();
             _itemRndAttrCategoryMaterials = new ConcurrentDictionary<int, ConcurrentDictionary<int, ItemRndAttrCategoryMaterial>>();
@@ -263,6 +313,12 @@ namespace AAEmu.Game.GameData
             _itemRndAttrUnitModifierGroups = new ConcurrentDictionary<int, ConcurrentDictionary<int, ItemRndAttrUnitModifierGroup>>();
             _itemRndAttributUnitModifierGroups = new ConcurrentDictionary<int, ItemRndAttrUnitModifierGroup>();
             _itemRndAttrUnitModifiers = new ConcurrentDictionary<int, ConcurrentDictionary<int, ItemRndAttrUnitModifier>>();
+
+            // Socketing
+            _itemSockets = new ConcurrentDictionary<int, ItemSocket>();
+            _itemSocketNumLimits = new ConcurrentDictionary<int, ConcurrentDictionary<int, ItemSocketNumLimit>>();
+            _itemSocketLevelLimits = new ConcurrentDictionary<int, int>();
+            _itemSocketChances = new ConcurrentDictionary<int, (bool, int)>();
         }
 
         private void LoadItemGradeBuffs(SqliteConnection connection)
@@ -414,6 +470,97 @@ namespace AAEmu.Game.GameData
                 if (!_itemRndAttrUnitModifiers.ContainsKey(modifier.GroupId))
                     _itemRndAttrUnitModifiers[modifier.GroupId] = new ConcurrentDictionary<int, ItemRndAttrUnitModifier>();
                 _itemRndAttrUnitModifiers[modifier.GroupId][modifier.GradeId] = modifier;
+            }
+        }
+
+        private void LoadItemSockets(SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM item_sockets";
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                var itemSocket = new ItemSocket();
+                itemSocket.Id = reader.GetInt32("id");
+                itemSocket.ItemId = reader.GetInt32("item_id");
+                itemSocket.BuffModifierTooltip = reader.GetString("buff_modifier_tooltip");
+                itemSocket.EisetId = reader.GetInt32("eiset_id");
+                itemSocket.EquipItemTagId = reader.GetInt32("equip_item_tag_id");
+                itemSocket.EquipItemId = reader.GetInt32("equip_item_id");
+                itemSocket.EquipSlotGroupId = reader.GetInt32("equip_slot_group_id");
+                itemSocket.Extractable = reader.GetBoolean("extractable");
+                itemSocket.IgnoreEquipItemTag = reader.GetBoolean("ignore_equip_item_tag");
+                itemSocket.ItemSocketChanceId = reader.GetInt32("item_socket_chance_id");
+                itemSocket.SkillModifierTooltip = reader.GetString("skill_modifier_tooltip");
+
+                if (!_itemSockets.ContainsKey(itemSocket.ItemId))
+                    _itemSockets[itemSocket.ItemId] = new ItemSocket();
+                _itemSockets[itemSocket.ItemId] = itemSocket;
+            }
+        }
+
+        private void LoadItemSocketLevelLimits(SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM item_socket_level_limits";
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                var itemSocketLevelLimit = new ItemSocketLevelLimit();
+                itemSocketLevelLimit.ItemId = reader.GetInt32("item_id");
+                itemSocketLevelLimit.Level = reader.GetInt32("level");
+
+                if (!_itemSocketLevelLimits.ContainsKey(itemSocketLevelLimit.ItemId))
+                {
+                    _itemSocketLevelLimits[itemSocketLevelLimit.ItemId] = itemSocketLevelLimit.Level;
+                }
+                else
+                {
+                    Logger.Warn($"Duplicate entry for item_socket_level_limits {itemSocketLevelLimit.ItemId}");
+                    _itemSocketLevelLimits[itemSocketLevelLimit.ItemId] = itemSocketLevelLimit.Level;
+                }
+            }
+        }
+
+        private void LoadItemSocketNumLimits(SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM item_socket_num_limits";
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                var itemSocketNumLimit = new ItemSocketNumLimit();
+                itemSocketNumLimit.SlotId = reader.GetInt32("slot_id");
+                itemSocketNumLimit.GradeId = reader.GetInt32("grade_id");
+                itemSocketNumLimit.NumSocket = reader.GetInt32("num_socket");
+
+                if (!_itemSocketNumLimits.ContainsKey(itemSocketNumLimit.SlotId))
+                    _itemSocketNumLimits[itemSocketNumLimit.SlotId] = new ConcurrentDictionary<int, ItemSocketNumLimit>();
+                _itemSocketNumLimits[itemSocketNumLimit.SlotId][itemSocketNumLimit.GradeId] = itemSocketNumLimit;
+            }
+        }
+
+        private void LoadItemSocketChances(SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM item_socket_chances";
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                var itemSocketChance = new ItemSocketChance();
+                itemSocketChance.Id = reader.GetInt32("id");
+                itemSocketChance.FailBreak = reader.GetBoolean("fail_break");
+                itemSocketChance.CostRatio = reader.GetInt32("cost_ratio");
+
+                if (!_itemSocketChances.ContainsKey(itemSocketChance.Id))
+                {
+                    _itemSocketChances[itemSocketChance.Id] = (itemSocketChance.FailBreak, itemSocketChance.CostRatio);
+                }
+                else
+                {
+                    Logger.Warn($"Duplicate entry for item_socket_chances {itemSocketChance.Id}");
+                    _itemSocketChances[itemSocketChance.Id] = (itemSocketChance.FailBreak, itemSocketChance.CostRatio);
+                }
             }
         }
 

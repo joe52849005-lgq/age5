@@ -721,7 +721,7 @@ public class ItemContainer
             totalConsumed += toRemove;
 
             UpdateFreeSlotCount();
-            return totalConsumed;
+            //return totalConsumed;
         }
 
         // Check all remaining items

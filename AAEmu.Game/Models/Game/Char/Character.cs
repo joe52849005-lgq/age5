@@ -1774,7 +1774,7 @@ public partial class Character : Unit, ICharacter
             equipItem.IsDirty = true;
             repairCost += currentRepairCost;
             // добавил 4 байта перед Durability для нормальной работы починки предметов и трансформации
-            tasks.Add(new ItemUpdateRepair(item));
+            tasks.Add(new ItemUpdate(item));
             //tasks.Add(new ItemUpdate(item));
         }
 

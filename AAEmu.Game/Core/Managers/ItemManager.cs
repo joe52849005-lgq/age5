@@ -987,11 +987,12 @@ public class ItemManager : Singleton<ItemManager>
                 {
                     while (reader.Read())
                     {
+                        var template = new ArmorTemplate();
+                        template.Id = reader.GetUInt32("item_id");
+
                         var slotTypeId = reader.GetUInt32("slot_type_id");
                         var typeId = reader.GetUInt32("type_id");
 
-                        var template = new ArmorTemplate();
-                        template.Id = reader.GetUInt32("item_id");
                         template.WearableTemplate = _wearables[typeId * 128 + slotTypeId];
                         template.KindTemplate = _wearableKinds[typeId];
                         template.SlotTemplate = _wearableSlots[slotTypeId];
@@ -1020,6 +1021,8 @@ public class ItemManager : Singleton<ItemManager>
                         template.RechargeRndAttrUnitModifierRestrictItemId = reader.GetInt32("recharge_rnd_attr_unit_modifier_restrict_item_id", 0);
                         template.RndAttrUnitModifierLifetime = reader.GetInt32("rnd_attr_unit_modifier_lifetime", 0);
 
+                        template.TypeId = typeId;
+                        template.SlotTypeId = (EquipmentItemSlotType)slotTypeId;
 
                         _templates.Add(template.Id, template);
                     }
@@ -1097,10 +1100,13 @@ public class ItemManager : Singleton<ItemManager>
                         template.EquipItemSetId = reader.GetUInt32("eiset_id", 0);
                         template.RechargeRestrictItemId = reader.GetUInt32("recharge_restrict_item_id", 0);
                         template.OrUnitReqs = reader.GetBoolean("or_unit_reqs", true);
-                        
+
                         template.ItemRndAttrCategoryId = reader.GetInt32("item_rnd_attr_category_id", 0);
                         template.RechargeRndAttrUnitModifierRestrictItemId = reader.GetInt32("recharge_rnd_attr_unit_modifier_restrict_item_id", 0);
                         template.RndAttrUnitModifierLifetime = reader.GetInt32("rnd_attr_unit_modifier_lifetime", 0);
+
+                        template.TypeId = typeId;
+                        template.SlotTypeId = (EquipmentItemSlotType)slotTypeId;
 
                         _templates.Add(template.Id, template);
                     }
@@ -1840,17 +1846,18 @@ public class ItemManager : Singleton<ItemManager>
                     if (!item.IsDirty)
                         continue;
 
-                    var additionalDetails = new Commons.Network.PacketStream();
-                    item.WriteAdditionalDetails(additionalDetails);
+                    //var additionalDetails = new Commons.Network.PacketStream();
+                    //item.WriteAdditionalDetails(additionalDetails);
                     var details = new Commons.Network.PacketStream();
-                    item.WriteDetails(details, true);
+                    item.WriteDetails(details);
+                    //item.WriteDetails(details, true);
 
                     command.CommandText = "REPLACE INTO items (" +
-                        "`id`,`type`,`template_id`,`container_id`,`slot_type`,`slot`,`count`,`details`,`additional_details`,`lifespan_mins`,`made_unit_id`," +
+                        "`id`,`type`,`template_id`,`container_id`,`slot_type`,`slot`,`count`,`details`,`lifespan_mins`,`made_unit_id`," +
                         "`unsecure_time`,`unpack_time`,`owner`,`created_at`,`grade`,`flags`,`ucc`," +
                         "`expire_time`,`expire_online_minutes`,`charge_time`,`charge_count`" +
                         ") VALUES ( " +
-                        "@id, @type, @template_id, @container_id, @slot_type, @slot, @count, @details, @additional_details, @lifespan_mins, @made_unit_id, " +
+                        "@id, @type, @template_id, @container_id, @slot_type, @slot, @count, @details, @lifespan_mins, @made_unit_id, " +
                         "@unsecure_time,@unpack_time,@owner,@created_at,@grade,@flags,@ucc," +
                         "@expire_time,@expire_online_minutes,@charge_time,@charge_count" +
                         ")";
@@ -1863,7 +1870,7 @@ public class ItemManager : Singleton<ItemManager>
                     command.Parameters.AddWithValue("@slot", item.Slot);
                     command.Parameters.AddWithValue("@count", item.Count);
                     command.Parameters.AddWithValue("@details", details.GetBytes());
-                    command.Parameters.AddWithValue("@additional_details", additionalDetails.GetBytes());
+                    //command.Parameters.AddWithValue("@additional_details", additionalDetails.GetBytes());
                     command.Parameters.AddWithValue("@lifespan_mins", item.LifespanMins);
                     command.Parameters.AddWithValue("@made_unit_id", item.MadeUnitId);
                     command.Parameters.AddWithValue("@unsecure_time", item.UnsecureTime);
@@ -2116,8 +2123,9 @@ public class ItemManager : Singleton<ItemManager>
                     item.CreateTime = reader.GetDateTime("created_at");
                     item.ItemFlags = (ItemFlag)reader.GetByte("flags");
                     item.UccId = reader.GetUInt32("ucc"); // Make sure this UCC is set BEFORE reading details as UccItem needs to be able to override it
-                    var additionalDetails = (Commons.Network.PacketStream)(byte[])reader.GetValue("additional_details");
-                    item.ReadAdditionalDetails(additionalDetails);
+
+                    //var additionalDetails = (Commons.Network.PacketStream)(byte[])reader.GetValue("additional_details");
+                    //item.ReadAdditionalDetails(additionalDetails);
                     var details = (Commons.Network.PacketStream)(byte[])reader.GetValue("details");
                     item.ReadDetails(details);
 
@@ -2469,36 +2477,60 @@ public class ItemManager : Singleton<ItemManager>
 
     public void HandleConvertItemLook(Character character, ulong baseId, ulong lookId, uint npcId)
     {
+        // Get the target items
         var toImage = character.Inventory.GetItemById(baseId);
-        var imageItem = character.Inventory.GetItemById(lookId);
-
-        if (toImage is null || imageItem is null)
-            return;
-
-        if (toImage is not EquipItem itemToImage)
-            return;
-
-        if (itemToImage.Template is not EquipItemTemplate template)
-            return;
-
-        if (!character.Inventory.GetAllItemsByTemplate([SlotType.Bag], template.ItemLookConvert.RequiredItemId, -1, out var powders, out var theseAmounts) && theseAmounts >= template.ItemLookConvert.RequiredItemCount)
+        if (toImage is null)
         {
-            character.SendErrorMessage(ErrorMessageType.ItemLookConvertAsNotUseAsSkin, ErrorMessageType.NotEnoughRequiredItem, 0, false);
-            Logger.Debug($"Not Enough Item {template.ItemLookConvert.RequiredItemId} count {template.ItemLookConvert.RequiredItemCount}");
+            Logger.Debug($"Item with ID {baseId} not found in inventory.");
             return;
         }
 
+        var imageItem = character.Inventory.GetItemById(lookId);
+        if (imageItem is null)
+        {
+            Logger.Debug($"Item with ID {lookId} not found in inventory.");
+            return;
+        }
+
+        // Validate target item type
+        if (toImage is not EquipItem itemToImage)
+        {
+            Logger.Debug("Target item is not an EquipItem.");
+            return;
+        }
+
+        // Validate template type
+        if (itemToImage.Template is not EquipItemTemplate template)
+        {
+            Logger.Debug("Target item template is not an EquipItemTemplate.");
+            return;
+        }
+
+        // Check if the character has enough required items
+        if (!character.Inventory.GetAllItemsByTemplate([SlotType.Bag], template.ItemLookConvert.RequiredItemId, -1, out var powders, out var theseAmounts) && theseAmounts >= template.ItemLookConvert.RequiredItemCount)
+        {
+            character.SendErrorMessage(ErrorMessageType.ItemLookConvertAsNotUseAsSkin, ErrorMessageType.NotEnoughRequiredItem, 0, false);
+            Logger.Debug($"Not enough item {template.ItemLookConvert.RequiredItemId}. Required count: {template.ItemLookConvert.RequiredItemCount}, available: {theseAmounts}");
+            return;
+        }
+
+        // Notify the client about the UCC change
         character.SendPacket(new SCItemUccChangedPacket(0, character.ObjId, toImage.Id));
 
-        itemToImage.ImageItemTemplateId = imageItem.TemplateId;
+        // Set the first gem slot to the image item template ID
+        //itemToImage.ImageItemTemplateId = imageItem.TemplateId;
+        itemToImage.GemIds[0] = imageItem.TemplateId; // Set the first gem slot to the image item template ID
 
+        // Send the success packet to the client
         character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.ConvertItemLook,
         [
             new ItemRemove(imageItem),
-            //new ItemUpdate(toImage),
-            new ItemUpdateRepair(toImage), //, imageItem.TemplateId),
+            new ItemUpdate(toImage),
             new ItemUpdateSecurity(toImage, 1, 1, false, false, false),
             theseAmounts > template.ItemLookConvert.RequiredItemCount ? new ItemCountUpdate(powders[0], template.ItemLookConvert.RequiredItemCount) : new ItemRemove(powders[0])
         ], [], 3));
+
+        // Log the action
+        Logger.Debug($"ConvertItemLook executed by {character.Name} on item {baseId} with image item {lookId} and required item {template.ItemLookConvert.RequiredItemId} (count: {template.ItemLookConvert.RequiredItemCount})");
     }
 }

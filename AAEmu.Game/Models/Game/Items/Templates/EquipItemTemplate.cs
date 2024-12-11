@@ -18,4 +18,7 @@ public class EquipItemTemplate : ItemTemplate
     public int ItemRndAttrCategoryId { get; set; }
     public int RechargeRndAttrUnitModifierRestrictItemId { get; set; }
     public int RndAttrUnitModifierLifetime { get; set; }
+
+    public uint TypeId { get; set; }
+    public EquipmentItemSlotType SlotTypeId { get; set; }
 }

@@ -5,17 +5,12 @@ namespace AAEmu.Game.Models.Game.Items.Actions;
 public class ItemUpdateRepair : ItemTask
 {
     private readonly Item _item;
-    private readonly uint _appearanceTemplateId;
-    private readonly uint[] _additionalDetail;
 
     public ItemUpdateRepair(Item item)
     {
         _type = ItemAction.UpdateDetail; // 9
         _item = item;
         _tLogt = SetTlogT(_type, SlotType.Bag); // set tLogt by ItemAction value
-
-        _appearanceTemplateId = item.AppearanceTemplateId;
-        _additionalDetail = item.AdditionalDetails;
     }
 
     public override PacketStream Write(PacketStream stream)
@@ -29,20 +24,37 @@ public class ItemUpdateRepair : ItemTask
         var details = new PacketStream();
         details.Write((byte)_item.DetailType);
 
-        details.Write(_appearanceTemplateId); // added for normal operation of repairing objects and for transformation
+        //details.Write(_appearanceTemplateId); // added for normal operation of repairing objects and for transformation
+        details.Write(_item.GemIds[0]);  // added for normal operation of repairing objects and for transformation
+        
+        details.Write(_item.Durability); // durability
+        details.Write((short)0);         // unk
+        
+        details.Write(_item.GemIds[1]);  // Luna Gem, TemplateId EnchantingGem - Позволяет зачаровать предмет снаряжения.
+        details.Write(_item.GemIds[2]);  // Tempering
 
-        _item.WriteDetails(details, false);
-        details.Write(new byte[23]); // added for normal synthesis operation
+        details.Write(0);  //
+        details.Write(0);  //
 
-        // TODO ~19 Additional bytes
-        details.Write(_additionalDetail[0]);
-        details.Write(_additionalDetail[1]);
-        details.Write(_additionalDetail[2]); // Tempering effect of Ephen cubes
-        details.Write(_additionalDetail[3]); // RemainingExperience
-        for (var i = 4; i < 9; i++)
-        {
-            details.Write(_additionalDetail[i]); // 15 Additional Effects
-        }
+        details.Write(_item.GemIds[4]);  // 1 crescent stone, TemplateId Socket - Позволяет придать предмету снаряжения дополнительные свойства.
+        details.Write(_item.GemIds[5]);  // 2 crescent stone
+        details.Write(_item.GemIds[6]);  // 3 crescent stone
+        details.Write(_item.GemIds[7]);  // 4 crescent stone
+        details.Write(_item.GemIds[8]);  // 5 crescent stone
+        details.Write(_item.GemIds[9]);  // 6 crescent stone
+        details.Write(_item.GemIds[10]); // 7 crescent stone
+        details.Write(_item.GemIds[11]); // 8 crescent stone
+        details.Write(_item.GemIds[12]); // 9 crescent stone
+
+        details.Write(0);  //
+
+        details.Write(_item.GemIds[3]);  // RemainingExperience
+
+        details.Write(_item.GemIds[13]); // 5 Additional Effects
+        details.Write(_item.GemIds[14]); //
+        details.Write(_item.GemIds[15]); //
+        details.Write(_item.GemIds[16]); //
+        details.Write(_item.GemIds[17]); //
 
         stream.Write((short)128);
         stream.Write(details, false);

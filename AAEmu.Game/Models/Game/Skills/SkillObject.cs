@@ -17,8 +17,8 @@ public enum SkillObjectType
     Unk8 = 8,
     ItemEvolvingSupport = 9,
     Unk10 = 10,
-    Unk11 = 11,
-    Unk12 = 12,
+    AddSocketingSupport = 11,
+    ExtractSocketingSupport = 12,
     Unk13 = 13,
     Unk14 = 14,
     Unk15 = 15,
@@ -81,11 +81,11 @@ public class SkillObject : PacketMarshaler
             case SkillObjectType.Unk10:
                 obj = new SkillObjectUnk10(); // added in 3.5.0.3 NA
                 break;
-            case SkillObjectType.Unk11:
-                obj = new SkillObjectUnk11(); // added in 3.5.0.3 NA
+            case SkillObjectType.AddSocketingSupport:
+                obj = new SkillObjectAddSocketingSupport(); // added in 3.5.0.3 NA
                 break;
-            case SkillObjectType.Unk12:
-                obj = new SkillObjectUnk12(); // added in 3.5.0.3 NA
+            case SkillObjectType.ExtractSocketingSupport:
+                obj = new SkillObjectExtractSocketingSupport(); // added in 3.5.0.3 NA
                 break;
             case SkillObjectType.Unk13:
                 obj = new SkillObjectUnk13(); // added in 3.5.0.3 NA
@@ -368,7 +368,7 @@ public class SkillObjectUnk10 : SkillObject
     }
 }
 
-public class SkillObjectUnk11 : SkillObject
+public class SkillObjectAddSocketingSupport : SkillObject
 {
     public bool AutoUseAAPoint { get; set; }
     public int Count { get; set; }
@@ -393,7 +393,7 @@ public class SkillObjectUnk11 : SkillObject
     }
 }
 
-public class SkillObjectUnk12 : SkillObject
+public class SkillObjectExtractSocketingSupport : SkillObject
 {
     public int Index { get; set; }
     public bool IsAll { get; set; }
