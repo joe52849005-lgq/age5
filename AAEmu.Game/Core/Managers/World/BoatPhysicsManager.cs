@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Numerics;
 using System.Threading;
 
@@ -28,15 +27,16 @@ namespace AAEmu.Game.Core.Managers.World
     public class BoatPhysicsManager
     {
         private float TargetPhysicsTps { get; set; } = 100f;
-        private Thread _thread;
+        internal Thread _thread;
         private static Logger Logger { get; } = LogManager.GetCurrentClassLogger();
 
-        private CollisionSystem _collisionSystem;
-        private Jitter.World _physWorld;
-        private Buoyancy _buoyancy;
-        private bool ThreadRunning { get; set; }
+        internal CollisionSystem _collisionSystem;
+        internal Jitter.World _physWorld;
+        internal Buoyancy _buoyancy;
+        public bool ThreadRunning { get; set; }
         public InstanceWorld SimulationWorld { get; set; }
         private readonly object _slaveListLock = new();
+        private Random _random = new();
         private float _waterLevel = 100f; // Default water level
 
         public void Initialize()
@@ -46,31 +46,31 @@ namespace AAEmu.Game.Core.Managers.World
             _buoyancy = new Buoyancy(_physWorld);
             _buoyancy.UseOwnFluidArea(CustomWater);
 
-            //// Add terrain shape based on height map
-            //if (SimulationWorld.Name != "main_world") { return; }
-            //try
-            //{
-            //    var hmap = WorldManager.Instance.GetWorld(0).HeightMaps;
-            //    var heightMaxCoefficient = WorldManager.Instance.GetWorld(0).HeightMaxCoefficient;
-            //    var dx = hmap.GetLength(0);
-            //    var dz = hmap.GetLength(1);
-            //    var hmapTerrain = new float[dx, dz];
-            //    for (var x = 0; x < dx; x++)
-            //        for (var y = 0; y < dz; y++)
-            //            hmapTerrain[x, y] = (float)(hmap[x, y] / heightMaxCoefficient);
-            //    var terrain = new TerrainShape(hmapTerrain, 2.0f, 2.0f);
-            //    var body = new RigidBody(terrain) { IsStatic = true };
-            //    _physWorld.AddBody(body);
-            //}
-            //catch (Exception e)
-            //{
-            //    Logger.Error(e);
-            //}
+            // Add terrain shape based on height map
+            if (SimulationWorld.Name != "main_world") { return; }
+            try
+            {
+                var hmap = WorldManager.Instance.GetWorld(0).HeightMaps;
+                var heightMaxCoefficient = WorldManager.Instance.GetWorld(0).HeightMaxCoefficient;
+                var dx = hmap.GetLength(0);
+                var dz = hmap.GetLength(1);
+                var hmapTerrain = new float[dx, dz];
+                for (var x = 0; x < dx; x++)
+                    for (var y = 0; y < dz; y++)
+                        hmapTerrain[x, y] = (float)(hmap[x, y] / heightMaxCoefficient);
+                var terrain = new TerrainShape(hmapTerrain, 2.0f, 2.0f);
+                var body = new RigidBody(terrain) { IsStatic = true };
+                _physWorld.AddBody(body);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
 
             Logger.Info("BoatPhysicsManager initialized.");
         }
 
-        private bool CustomWater(ref JVector area)
+        public bool CustomWater(ref JVector area)
         {
             return SimulationWorld?.IsWater(new Vector3(area.X, area.Z, area.Y)) ?? area.Y <= _waterLevel;
         }
@@ -78,10 +78,8 @@ namespace AAEmu.Game.Core.Managers.World
         public void StartPhysics()
         {
             ThreadRunning = true;
-            _thread = new Thread(PhysicsThread)
-            {
-                Name = "Physics-" + (SimulationWorld?.Name ?? "???")
-            };
+            _thread = new Thread(PhysicsThread);
+            _thread.Name = "Physics-" + (SimulationWorld?.Name ?? "???");
             _thread.Start();
         }
 
@@ -178,32 +176,72 @@ namespace AAEmu.Game.Core.Managers.World
             Logger.Debug($"RemoveShip {slave.Name} <- {SimulationWorld.Name}");
         }
 
-        private void BoatPhysicsTick(Slave slave, RigidBody rigidBody)
+        public void BoatPhysicsTick(Slave slave, RigidBody rigidBody)
         {
             var shipModel = ModelManager.Instance.GetShipModel(slave.Template.ModelId);
             if (shipModel == null) return;
 
             // Calculate submerged depth and buoyancy force
             var submergedDepth = Math.Max(0, _waterLevel - rigidBody.Position.Y);
-            var buoyancyForce = new JVector(0, submergedDepth * shipModel.Mass * shipModel.WaterDensity * 9.81f, 0);
-            rigidBody.AddForce(buoyancyForce);
+            var isOnWater = submergedDepth > 0;
+            var isOnLand = !isOnWater && submergedDepth <= 0;
 
-            // Apply drag force
-            var dragForce = new JVector(-rigidBody.LinearVelocity.X * shipModel.WaterResistance,
-                                        -rigidBody.LinearVelocity.Y * shipModel.WaterResistance,
-                                        -rigidBody.LinearVelocity.Z * shipModel.WaterResistance);
-            rigidBody.AddForce(dragForce);
+            if (isOnWater)
+            {
+                // Apply buoyancy and drag forces
+                var buoyancyForce = new JVector(0, submergedDepth * shipModel.Mass * shipModel.WaterDensity * 9.81f, 0);
+                rigidBody.AddForce(buoyancyForce);
 
-            // Проверяем, есть ли у корабля водитель
+                var dragForce = new JVector(-rigidBody.LinearVelocity.X * shipModel.WaterResistance,
+                    -rigidBody.LinearVelocity.Y * shipModel.WaterResistance,
+                    -rigidBody.LinearVelocity.Z * shipModel.WaterResistance);
+                rigidBody.AddForce(dragForce);
+            }
+            else if (isOnLand)
+            {
+                // Apply ground friction and stop the ship
+                const float GroundFriction = 0.4f; // Sand: around 0.4
+                var frictionForce = new JVector(-rigidBody.LinearVelocity.X * GroundFriction,
+                    0,
+                    -rigidBody.LinearVelocity.Z * GroundFriction);
+                rigidBody.AddForce(frictionForce);
+
+                // Gradually reduce speed
+                const float CollisionDamping = 0.5f;
+                rigidBody.LinearVelocity *= CollisionDamping;
+                rigidBody.AngularVelocity *= CollisionDamping;
+
+                // Stop the ship and apply roll
+                if (rigidBody.LinearVelocity.Length() < 0.01f)
+                {
+                    rigidBody.LinearVelocity = JVector.Zero;
+                    rigidBody.AngularVelocity = JVector.Zero;
+
+                    // Apply roll to the ship
+                    var rollAngle = GetRollAngle(rigidBody.Orientation);
+                    if (Math.Abs(rollAngle) < 0.1f)
+                    {
+                        var correctionTorque = new JVector(0, 0, -rollAngle * rigidBody.Mass * 0.1f);
+                        rigidBody.AddTorque(correctionTorque);
+                    }
+
+                    // Disable control
+                    slave.ThrottleRequest = 0;
+                    slave.SteeringRequest = 0;
+                    slave.Throttle = 0;
+                    slave.Steering = 0;
+                }
+            }
+
+            // Check if the ship has a driver
             var hasDriver = slave.AttachedCharacters.ContainsKey(AttachPointKind.Driver);
-
             if (hasDriver)
             {
                 // If there is a driver, we update the control
                 // Smooth throttle and steering inputs
-                var smoothingFactor = 0.1f;
-                slave.Throttle = (sbyte)(slave.Throttle + (slave.ThrottleRequest - slave.Throttle) * smoothingFactor);
-                slave.Steering = (sbyte)(slave.Steering + (slave.SteeringRequest - slave.Steering) * smoothingFactor);
+                const float SmoothingFactor = 0.1f;
+                slave.Throttle = (sbyte)(slave.Throttle + (slave.ThrottleRequest - slave.Throttle) * SmoothingFactor);
+                slave.Steering = (sbyte)(slave.Steering + (slave.SteeringRequest - slave.Steering) * SmoothingFactor);
             }
             else
             {
@@ -214,15 +252,60 @@ namespace AAEmu.Game.Core.Managers.World
                 slave.Steering = 0;
             }
 
+            //ApplyCollisions(slave, rigidBody, shipModel);
             ApplyForceAndTorque(slave, rigidBody, shipModel);
             SendUpdatedMovementData(slave, rigidBody);
+        }
 
-            //Logger.Debug($"Applied Force: {forwardForce}, Torque: {steeringTorque}, Position: {rigidBody.Position}, Velocity: {rigidBody.LinearVelocity}");
+        public static float GetRollAngle(JMatrix orientation)
+        {
+            var yawPitchRoll = GetYawPitchRollFromJMatrix(orientation);
+            return yawPitchRoll.Item2; // Roll angle in radians
+        }
+
+        public static (float, float, float) GetYawPitchRollFromJMatrix(JMatrix mat)
+        {
+            return MathUtil.GetYawPitchRollFromQuat(JMatrixToQuaternion(mat));
+        }
+
+        public static Quaternion JMatrixToQuaternion(JMatrix matrix)
+        {
+            var jq = JQuaternion.CreateFromMatrix(matrix);
+
+            return new Quaternion()
+            {
+                X = jq.X,
+                Y = jq.Y,
+                Z = jq.Z,
+                W = jq.W
+            };
         }
 
         public void Stop()
         {
             ThreadRunning = false;
+        }
+
+        private void ApplyCollisions(Slave slave, RigidBody rigidBody, ShipModel shipModel)
+        {
+            var floor = WorldManager.Instance.GetHeight(slave.Transform);
+            var boxSize = rigidBody.Shape.BoundingBox.Max - rigidBody.Shape.BoundingBox.Min;
+            var boatBottom = rigidBody.Position.Y/* - boxSize.Y / 2*/ - shipModel.MassBoxSizeZ / 2 - shipModel.KeelHeight + shipModel.MassCenterZ;
+
+            if (boatBottom < floor)
+            {
+                var penetration = floor - boatBottom;
+                rigidBody.Position += new JVector(0, penetration, 0);
+                var collisionForce = new JVector(0, shipModel.Mass * 9.81f, 0);
+                rigidBody.AddForce(collisionForce);
+
+                // Gradually reduce speed
+                var collisionDamping = 0.5f;
+                rigidBody.LinearVelocity *= collisionDamping;
+                rigidBody.AngularVelocity *= collisionDamping;
+
+                Logger.Debug($"Collision detected. Boat adjusted position: {rigidBody.Position}");
+            }
         }
 
         private void ApplyForceAndTorque(Slave slave, RigidBody rigidBody, ShipModel shipModel)
@@ -317,7 +400,7 @@ namespace AAEmu.Game.Core.Managers.World
 
             // Do not allow the body to flip
             //slave.RigidBody.Orientation = JMatrix.CreateFromYawPitchRoll(rpy.Item1, 0, 0); // TODO: Fix me with proper physics
-            
+
             // Apply new Location/Rotation to GameObject
             slave.Transform.Local.SetPosition(rigidBody.Position.X, rigidBody.Position.Z, rigidBody.Position.Y);
             var jRot = JQuaternion.CreateFromMatrix(rigidBody.Orientation);
