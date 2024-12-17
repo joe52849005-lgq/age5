@@ -24,6 +24,7 @@ using InstanceWorld = AAEmu.Game.Models.Game.World.World;
 
 namespace AAEmu.Game.Core.Managers.World
 {
+    // ReSharper disable HollowTypeName
     public class BoatPhysicsManager
     {
         private float TargetPhysicsTps { get; set; } = 100f;
@@ -106,10 +107,24 @@ namespace AAEmu.Game.Core.Managers.World
 
                         foreach (var slave in slaveList)
                         {
-                            if (slave.Transform.WorldId != SimulationWorld.Id ||
-                                slave.SpawnTime.AddSeconds(slave.Template.PortalTime) > DateTime.UtcNow ||
-                                slave.RigidBody == null)
+                            if (slave.Transform.WorldId != SimulationWorld.Id)
                             {
+                                Logger.Debug($"Skip {slave.Name}");
+                                continue;
+                            }
+
+                            //// Skip simulation if still summoning
+                            //if (slave.SpawnTime.AddSeconds(slave.Template.PortalTime) > DateTime.UtcNow)
+                            //{
+                            //    Logger.Debug($"Skip {slave.Name}");
+                            //    continue;
+                            //}
+
+                            // Skip simulation if no rigidbody applied to slave
+                            var slaveRigidBody = slave.RigidBody;
+                            if (slaveRigidBody == null)
+                            {
+                                Logger.Debug($"Skip {slave.Name}");
                                 continue;
                             }
 
