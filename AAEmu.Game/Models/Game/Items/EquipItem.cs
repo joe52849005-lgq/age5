@@ -36,12 +36,12 @@ public class EquipItem : Item
 
     public EquipItem()
     {
-        GemIds = new uint[18]; // 18 in 5.0.7.0, 16 in 3.0.3.0, 7 in 1.2
+        //GemIds = new uint[22]; // 18 in 5.0.7.0, 16 in 3.0.3.0, 7 in 1.2
     }
 
     public EquipItem(ulong id, ItemTemplate template, int count) : base(id, template, count)
     {
-        GemIds = new uint[18]; // 18 in 5.0.7.0, 16 in 3.0.3.0, 7 in 1.2
+        //GemIds = new uint[22]; // 18 in 5.0.7.0, 16 in 3.0.3.0, 7 in 1.2
     }
 
     public override void ReadDetails(PacketStream stream)
@@ -56,35 +56,38 @@ public class EquipItem : Item
         ChargeProcTime = stream.ReadDateTime(); // chargeProcTime
         MappingFailBonus = stream.ReadByte();   // mappingFailBonus - Compensation for awakening failure, нет в 4.5.2.6, есть в 4.5.1.0 и 5.7
 
-        var mGems = stream.ReadPiscW(GemIds.Length);
-        GemIds = mGems.Select(id => (uint)id).ToArray();
+        //var mGems = new long[22]; // 18 ячеек + 4 дополнительных
+        //var mGems = stream.ReadPiscW(18);
+        //GemIds = mGems.Select(id => (uint)id).ToArray();
 
-        //var mGems = stream.ReadPisc(4);
-        //GemIds[0] = (uint)mGems[0];  // Can modify the appearance, TemplateId предмета для внешнего вида
-        //GemIds[1] = (uint)mGems[1];  // Luna Stone
-        //GemIds[2] = (uint)mGems[2];
-        //GemIds[3] = (uint)mGems[3];  // Synthesis experience
+        var mGems = stream.ReadPisc(4);
+        GemIds[0] = (uint)mGems[0];  // Can modify the appearance, TemplateId предмета для внешнего вида
+        GemIds[1] = (uint)mGems[1];  // Luna Stone
+        GemIds[2] = (uint)mGems[2];
+        GemIds[3] = (uint)mGems[3];  // Synthesis experience
 
-        //mGems = stream.ReadPisc(4);
-        //GemIds[4] = (uint)mGems[0];  // 1 crescent stone
-        //GemIds[5] = (uint)mGems[1];  // 2 crescent stone
-        //GemIds[6] = (uint)mGems[2];  // 3 crescent stone
-        //GemIds[7] = (uint)mGems[3];  // 4 crescent stone
+        mGems = stream.ReadPisc(4);
+        GemIds[4] = (uint)mGems[0];  // 1 crescent stone
+        GemIds[5] = (uint)mGems[1];  // 2 crescent stone
+        GemIds[6] = (uint)mGems[2];  // 3 crescent stone
+        GemIds[7] = (uint)mGems[3];  // 4 crescent stone
 
-        //mGems = stream.ReadPisc(4);
-        //GemIds[8] = (uint)mGems[0];  // 5 crescent stone
-        //GemIds[9] = (uint)mGems[1];  // 6 crescent stone
-        //GemIds[10] = (uint)mGems[2]; // 7 crescent stone
-        //GemIds[11] = (uint)mGems[3]; // 8 crescent stone
+        mGems = stream.ReadPisc(4);
+        GemIds[8] = (uint)mGems[0];  // 5 crescent stone
+        GemIds[9] = (uint)mGems[1];  // 6 crescent stone
+        GemIds[10] = (uint)mGems[2]; // 7 crescent stone
+        GemIds[11] = (uint)mGems[3]; // 8 crescent stone
 
-        //mGems = stream.ReadPisc(4);
-        //GemIds[12] = (uint)mGems[0]; // 9 crescent stone
-        //GemIds[13] = (uint)mGems[1]; // 0 attribute Str
-        //GemIds[14] = (uint)mGems[2]; // 1 attribute Dex
-        //GemIds[15] = (uint)mGems[3]; // 2 attribute Sta
-        //mGems = stream.ReadPisc(2);
-        //GemIds[16] = (uint)mGems[0]; // 3 attribute Int
-        //GemIds[17] = (uint)mGems[1]; // 4 attribute Spi
+        mGems = stream.ReadPisc(4);
+        GemIds[12] = (uint)mGems[0]; // 9 crescent stone
+        GemIds[13] = (uint)mGems[1]; // 0 attribute Str
+        GemIds[14] = (uint)mGems[2]; // 1 attribute Dex
+        GemIds[15] = (uint)mGems[3]; // 2 attribute Sta
+        mGems = stream.ReadPisc(2);
+        GemIds[16] = (uint)mGems[0]; // 3 attribute Int
+        GemIds[17] = (uint)mGems[1]; // 4 attribute Spi
+
+        GemIds[21] = TemperPhysical;
     }
 
     public override void WriteDetails(PacketStream stream)
@@ -98,7 +101,7 @@ public class EquipItem : Item
         stream.Write(MappingFailBonus); // mappingFailBonus - Compensation for awakening failure, нет в 4.5.2.6, есть в 4.5.1.0 и 5.7
 
         var gemIds = GemIds.Select(id => (long)id).ToArray();
-        stream.WritePiscW(gemIds.Length, gemIds);
+        stream.WritePiscW(18, gemIds); // 18 ячеек + 4 дополнительных
         //stream.WritePisc(GemIds[0], GemIds[1], GemIds[2], GemIds[3]);
         //stream.WritePisc(GemIds[4], GemIds[5], GemIds[6], GemIds[7]);
         //stream.WritePisc(GemIds[8], GemIds[9], GemIds[10], GemIds[11]);
@@ -109,15 +112,20 @@ public class EquipItem : Item
     public override void ReadAdditionalDetails(PacketStream stream)
     {
         GemIds[0] = stream.ReadUInt32();  // added for normal operation of repairing objects and for transformation
+        ImageItemTemplateId = GemIds[0];
 
-        Durability = stream.ReadByte(); // durability
-        stream.ReadUInt16(); // unk
+        Durability = stream.ReadByte();   // durability
+        GemIds[18] = stream.ReadUInt16(); // unk
 
         GemIds[1] = stream.ReadUInt32();  // Luna Gem, TemplateId EnchantingGem - Позволяет зачаровать предмет снаряжения.
-        GemIds[2] = stream.ReadUInt32();  // Tempering
+        RuneId = (ushort)GemIds[1];
 
-        stream.ReadUInt32(); // unk
-        stream.ReadUInt32(); // unk
+        GemIds[2] = stream.ReadUInt32();  // unk
+
+        // Чтение времени
+        ChargeStartTime = stream.ReadDateTime();
+        //GemIds[19] = stream.ReadUInt32(); // unk
+        //GemIds[20] = stream.ReadUInt32(); // unk
 
         GemIds[4] = stream.ReadUInt32();  // 1 crescent stone, TemplateId Socket - Позволяет придать предмету снаряжения дополнительные свойства.
         GemIds[5] = stream.ReadUInt32();  // 2 crescent stone
@@ -129,7 +137,9 @@ public class EquipItem : Item
         GemIds[11] = stream.ReadUInt32(); // 8 crescent stone
         GemIds[12] = stream.ReadUInt32(); // 9 crescent stone
 
-        stream.ReadUInt32(); // unk
+        TemperPhysical = stream.ReadUInt16(); // TemperPhysical
+        TemperMagical = stream.ReadUInt16(); // TemperMagical
+        GemIds[21] = (uint)((TemperMagical << 16) | TemperPhysical);
 
         GemIds[3] = stream.ReadUInt32();  // RemainingExperience
 
@@ -145,13 +155,25 @@ public class EquipItem : Item
         stream.Write(GemIds[0]);  // added for normal operation of repairing objects and for transformation
 
         stream.Write(Durability); // durability
-        stream.Write((short)0);         // unk
+        stream.Write((short)GemIds[18]); // unk
 
         stream.Write(GemIds[1]);  // Luna Gem, TemplateId EnchantingGem - Позволяет зачаровать предмет снаряжения.
-        stream.Write(GemIds[2]);  // Tempering
+        RuneId = (ushort)GemIds[1];
 
-        stream.Write(0);  //
-        stream.Write(0);  //
+        stream.Write(GemIds[2]);  // 
+
+        stream.Write(ChargeStartTime);  // ChargeStartTime
+        //// Преобразуем DateTime в long (Ticks)
+        //var ticks = ChargeStartTime.Ticks;
+        //// Разделяем на младшие и старшие 32 бита
+        //var low = (uint)(ticks & 0xFFFFFFFF);       // Младшие 32 бита
+        //var hi = (uint)(ticks >> 32);               // Старшие 32 бита
+        //// Записываем в массив GemIds
+        //GemIds[19] = low;
+        //GemIds[20] = hi;
+        //// Записываем в поток
+        //stream.Write(low);  // ChargeStartTime, low
+        //stream.Write(hi);   // ChargeStartTime, hi
 
         stream.Write(GemIds[4]);  // 1 crescent stone, TemplateId Socket - Позволяет придать предмету снаряжения дополнительные свойства.
         stream.Write(GemIds[5]);  // 2 crescent stone
@@ -163,7 +185,10 @@ public class EquipItem : Item
         stream.Write(GemIds[11]); // 8 crescent stone
         stream.Write(GemIds[12]); // 9 crescent stone
 
-        stream.Write(0);  //
+        TemperPhysical = (ushort)(GemIds[21] & 0xFFFF);  // Младшие 16 бит
+        TemperMagical = (ushort)(GemIds[21] >> 16);      // Старшие 16 бит
+        stream.Write(TemperPhysical);  // Записываем TemperPhysical
+        stream.Write(TemperMagical);   // Записываем TemperMagical
 
         stream.Write(GemIds[3]);  // RemainingExperience
 

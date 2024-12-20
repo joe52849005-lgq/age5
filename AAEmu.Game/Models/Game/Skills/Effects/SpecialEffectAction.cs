@@ -12,5 +12,6 @@ public abstract class SpecialEffectAction
     protected virtual SpecialType SpecialEffectActionType { get; set; }
 
     public abstract void Execute(BaseUnit caster, SkillCaster casterObj, BaseUnit target, SkillCastTarget targetObj,
-        CastAction castObj, Skill skill, SkillObject skillObject, DateTime time, int value1, int value2, int value3, int value4);
+        CastAction castObj, Skill skill, SkillObject skillObject, DateTime time, int value1, int value2, int value3,
+        int value4, int value5, int value6, int value7);
 }

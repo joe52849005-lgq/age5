@@ -113,7 +113,7 @@ public class Item : PacketMarshaler, IComparable<Item>
     public byte MappingFailBonus { get; set; }
 
     private uint[] _gemIds;
-    public uint[] GemIds // 18 in 5.0.7.0, 16 in 3.0.3.0, 7 in 1.2
+    public uint[] GemIds // 18 + 4 = 22 in 5.0.7.0, 16 in 3.0.3.0, 7 in 1.2
     {
         get => _gemIds; 
         set { _gemIds = value; _isDirty = true; }
@@ -154,7 +154,7 @@ public class Item : PacketMarshaler, IComparable<Item>
         Slot = -1;
         HoldingContainer = null;
         _isDirty = true;
-        GemIds = new uint[18];
+        GemIds = new uint[22]; // 18 ячеек + 4 дополнительных
         //AdditionalDetails = new uint[19];
     }
 
@@ -165,7 +165,7 @@ public class Item : PacketMarshaler, IComparable<Item>
         Slot = -1;
         HoldingContainer = null;
         _isDirty = true;
-        GemIds = new uint[18];
+        GemIds = new uint[22]; // 18 ячеек + 4 дополнительных
         //AdditionalDetails = new uint[19];
     }
 
@@ -180,7 +180,7 @@ public class Item : PacketMarshaler, IComparable<Item>
         Slot = -1;
         HoldingContainer = null;
         _isDirty = true;
-        GemIds = new uint[18];
+        GemIds = new uint[22]; // 18 ячеек + 4 дополнительных
         //AdditionalDetails = new uint[19];
     }
 
@@ -195,7 +195,7 @@ public class Item : PacketMarshaler, IComparable<Item>
         Slot = -1;
         HoldingContainer = null;
         _isDirty = true;
-        GemIds = new uint[18];
+        GemIds = new uint[22]; // 18 ячеек + 4 дополнительных
         //AdditionalDetails = new uint[19];
     }
 
@@ -262,7 +262,8 @@ public class Item : PacketMarshaler, IComparable<Item>
                 ChargeProcTime = stream.ReadDateTime(); // chargeProcTime
                 MappingFailBonus = stream.ReadByte();   // mappingFailBonus - Compensation for awakening failure. нет в 4.5.2.6, есть в 4.5.1.0 и 5.7
 
-                var mGems = stream.ReadPiscW(GemIds.Length);
+                var mGems = new long[22]; // 18 ячеек + 4 дополнительных
+                mGems = stream.ReadPiscW(18);
                 GemIds = mGems.Select(id => (uint)id).ToArray();
                 //var mGems = stream.ReadPisc(4);
                 //GemIds[0] = (uint)mGems[0]; // Can modify the appearance, TemplateId предмета для внешнего вида
@@ -351,8 +352,9 @@ public class Item : PacketMarshaler, IComparable<Item>
                 stream.Write(ChargeProcTime);   // chargeProcTime
                 stream.Write(MappingFailBonus); // mappingFailBonus - нет в 4.5.2.6, есть в 4.5.1.0 и 5.7
 
-                var gemIds = GemIds.Select(id => (long)id).ToArray();
-                stream.WritePiscW(gemIds.Length, gemIds);
+                var gemIds = new long[22]; // 18 ячеек + 4 дополнительных
+                gemIds = GemIds.Select(id => (long)id).ToArray();
+                stream.WritePiscW(18, gemIds); // 18 ячеек + 4 дополнительных
                 //stream.WritePisc(GemIds[0], GemIds[1], GemIds[2], GemIds[3]);
                 //stream.WritePisc(GemIds[4], GemIds[5], GemIds[6], GemIds[7]);
                 //stream.WritePisc(GemIds[8], GemIds[9], GemIds[10], GemIds[11]);

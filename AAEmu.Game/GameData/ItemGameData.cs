@@ -7,16 +7,26 @@ using System.Linq;
 using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.GameData.Framework;
+using AAEmu.Game.Models.Game.Char;
+using AAEmu.Game.Models.Game.Formulas;
 using AAEmu.Game.Models.Game.Items;
+using AAEmu.Game.Models.Game.Items.Actions;
+using AAEmu.Game.Models.Game.Items.ItemEnchants;
 using AAEmu.Game.Models.Game.Items.ItemRndAttr;
+using AAEmu.Game.Models.Game.Items.ItemRndAttrs;
 using AAEmu.Game.Models.Game.Items.ItemSockets;
+using AAEmu.Game.Models.Game.Items.Mappings;
 using AAEmu.Game.Models.Game.Items.Templates;
+using AAEmu.Game.Models.Game.Skills.Effects.Enums;
 using AAEmu.Game.Models.Game.Skills.Templates;
+using AAEmu.Game.Models.StaticValues;
 using AAEmu.Game.Utils.DB;
 
 using Microsoft.Data.Sqlite;
 
 using NLog;
+
+using ItemGradeEnchantingSupport = AAEmu.Game.Models.Game.Items.ItemEnchants.ItemGradeEnchantingSupport;
 
 namespace AAEmu.Game.GameData
 {
@@ -42,6 +52,19 @@ namespace AAEmu.Game.GameData
         private ConcurrentDictionary<int, int> _itemSocketLevelLimits;
         private ConcurrentDictionary<int, (bool, int)> _itemSocketChances;
 
+        // Mapping
+        private ConcurrentDictionary<int, ItemChangeMappingGroup> _itemChangeMappingGroups;
+        private ConcurrentDictionary<int, ItemChangeMapping> _itemChangeMappings;
+
+        // GradeEnchant
+        private ConcurrentDictionary<int, EnchantScaleRatio> _enchantScaleRatios;
+        private ConcurrentDictionary<int, ConcurrentDictionary<int, ItemEnchantRatio>> _itemEnchantRatios;
+        private ConcurrentDictionary<int, ItemEnchantRatioGroup> _itemEnchantRatioGroups;
+        private ConcurrentDictionary<int, int> _itemEnchantRatioItems;
+        private ConcurrentDictionary<int, ItemEnchantingGem> _itemEnchantingGems;
+        private ConcurrentDictionary<int, ItemGradeEnchantingSupport> _itemGradeEnchantingSupports;
+
+        #region Synthesis
         public BuffTemplate GetItemBuff(uint itemId, byte gradeId)
         {
             if (_itemGradeBuffs.TryGetValue(itemId, out var itemGradeBuffs))
@@ -250,7 +273,9 @@ namespace AAEmu.Game.GameData
                 modifiers.TryGetValue(modifierId, out modifier);
             return modifier;
         }
+        #endregion Synthesis
 
+        #region ItemSocketing
         public int GetSocketChance(Item item)
         {
             _itemSockets.TryGetValue((int)item.TemplateId, out var itemSocket);
@@ -283,9 +308,403 @@ namespace AAEmu.Game.GameData
             return 0;
         }
 
+        private const int ItemSocketingMaximumSlots = 9;
+        private const int ItemSocketingOffset = 4;
+
+        public static void GetGem(EquipItem equipItem, int i, Character owner)
+        {
+            var extractedGemId = equipItem.GemIds[i + ItemSocketingOffset];
+            equipItem.GemIds[i + ItemSocketingOffset] = 0;
+            owner.Inventory.Bag.AcquireDefaultItem(ItemTaskType.SkillEffectGainItem, extractedGemId, 1, equipItem.Grade);
+        }
+
+        public static void PutGem(Item gemItem, EquipItem equipItem)
+        {
+            var gemRoll = Rand.Next(0, 101);
+            var gemChance = ItemGameData.Instance.GetSocketChance(gemItem);
+            if (gemRoll < gemChance)
+            {
+                for (var i = 0; i < ItemSocketingMaximumSlots; i++)
+                {
+                    if (equipItem.GemIds[i + ItemSocketingOffset] != 0)
+                        continue;
+
+                    equipItem.GemIds[i + ItemSocketingOffset] = gemItem.TemplateId;
+                    break;
+                }
+            }
+        }
+
+        public static void UpdateCells(EquipItem equipItem, int writeIndex)
+        {
+            // Move filled cells to the beginning, starting with the first empty cell
+            for (var readIndex = writeIndex + 1; readIndex < ItemSocketingMaximumSlots; readIndex++)
+            {
+                if (equipItem.GemIds[readIndex + ItemSocketingOffset] == 0)
+                    continue;
+
+                // If the current cell is not empty, move its value to the cell with index writeIndex
+                equipItem.GemIds[writeIndex + ItemSocketingOffset] = equipItem.GemIds[readIndex + ItemSocketingOffset];
+                equipItem.GemIds[readIndex + ItemSocketingOffset] = 0;
+                writeIndex++;
+            }
+        }
+
+        public static int GemCount(EquipItem equipItem)
+        {
+            var gemCount = 0;
+            for (var index = 0; index < ItemSocketingMaximumSlots; index++)
+            {
+                var gem = equipItem.GemIds[index + ItemSocketingOffset];
+                if (gem != 0)
+                {
+                    gemCount++;
+                }
+            }
+
+            return gemCount;
+        }
+        #endregion ItemSocketing
+
+        #region ItemEvolving
+        private const int ItemEvolvingOffset = 13;
+        private const int ItemEvolvingOffsetMax = ItemEvolvingOffset + 5;
+
+        public static int CalculateAddExperience(EquipItemTemplate equipItem1, Item item1, EquipItemTemplate equipItem2, Item item2)
+        {
+            var addExperience = 0;
+            var e1 = ItemGameData.Instance.GetGainExp(equipItem1.ItemRndAttrCategoryId, item1.Grade);
+            Logger.Debug($"ItemEvolving: equipItem1 ItemRndAttrCategoryId={equipItem1.ItemRndAttrCategoryId}, Grade={item1.Grade}, addExperience={e1}");
+            addExperience += e1;
+
+            var e2 = ItemGameData.Instance.GetGainExp(equipItem2.ItemRndAttrCategoryId, item2.Grade);
+            Logger.Debug($"ItemEvolving: equipItem2 ItemRndAttrCategoryId={equipItem2.ItemRndAttrCategoryId}, Grade={item2.Grade}, addExperience={e2}");
+            addExperience += e2;
+
+            return addExperience;
+        }
+
+        public static (byte grade, int exp) CalculateGradeAndExp(int exp, int categoryId, byte beforeItemGrade = 0)
+        {
+            Logger.Debug($"ItemEvolving: CalculateGradeAndExp: exp={exp}, categoryId={categoryId}");
+            var grades = new List<byte>
+            {
+                0,  // Grade 0 Обычный предмет - Basic
+                2,  // Grade 2 Необычный предмет - Grand
+                3,  // Grade 3 Редкий предмет - Rare
+                4,  // Grade 4 Уникальный предмет - Arcane
+                5,  // Grade 5 Эпический предмет - Heroic
+                6,  // Grade 6 Легендарный предмет - Unique
+                7,  // Grade 7 Реликвия - Celestial
+                8,  // Grade 8 предмет эпохи Чудес - Divine
+                9,  // Grade 9 предмет эпохи Сказаний - Epic
+                10, // Grade 10 предмет эпохи Легенд - Legendary
+                11, // Grade 11 предмет эпохи Мифов - Mythic
+                12  // Grade 12 предмет эпохи Двенадцати - Ethernal
+            };
+
+            byte res = 0;
+
+            foreach (var grade in grades)
+            {
+                if (grade < beforeItemGrade)
+                    continue;
+
+                var gradeExp = ItemGameData.Instance.GetGradeExp(categoryId, grade);
+                if (gradeExp == 0)
+                    gradeExp = ItemGameData.Instance.GetGradeExp(4, grade); // как подстраховка
+
+                if (exp <= gradeExp)
+                {
+                    Logger.Debug($"ItemEvolving: CalculateGradeAndExp: exp={exp}, grade={grade}, gradeExp={gradeExp}");
+                    return (grade, exp);
+                }
+
+                res = grade;
+                exp -= gradeExp;
+                Logger.Debug($"ItemEvolving: CalculateGradeAndExp: exp={exp}, grade={res}, gradeExp={gradeExp}");
+            }
+
+            Logger.Debug($"ItemEvolving: CalculateGradeAndExp: exp={exp}, grade={res}");
+            return (res, exp);
+        }
+
+        public static List<int> GetCurrentAttributes(Item item)
+        {
+            var res = new List<int>();
+
+            for (var index = ItemEvolvingOffset; index < ItemEvolvingOffsetMax; index++)
+            {
+                var attribute = item.GemIds[index];
+                if (attribute <= 0)
+                    break;
+
+                res.Add((int)attribute);
+            }
+
+            return res;
+        }
+
+        public static void CopyAllAttributes(Item sourceItem, Item targetItem)
+        {
+            for (var index = 0; index < 22; index++)
+            {
+                targetItem.GemIds[index] = sourceItem.GemIds[index];
+            }
+        }
+        #endregion ItemEvolving
+
+        #region Mapping
+        public int GetMappingItem(int mappingGroupId, byte grade, int sourceItemId)
+        {
+            return (from itemChangeMapping in _itemChangeMappings.Values
+                    where itemChangeMapping.MappingGroupId == mappingGroupId &&
+                          itemChangeMapping.SourceGradeId == grade &&
+                          itemChangeMapping.SourceItemId == sourceItemId
+                    select itemChangeMapping.TargetItemId).FirstOrDefault();
+        }
+        #endregion Mapping
+
+        #region GradeEnchant
+        
+        public int GetItemEnchantRatioGroupByItemId(int itemId)
+        {
+            _itemEnchantRatioItems.TryGetValue(itemId, out var value);
+            if (value == 0)
+            {
+                value = 9000001;
+            }
+            return value;
+        }
+
+        // kindid (itemType) 1 - WeaponTemplate, 2 - armorTemplate, 3 - accessoryTemplate
+        public int GetItemEnchantRatioGroup(Item item)
+        {
+            var kindId = 0;
+            var value = 0;
+            if (item.Template.ImplId > ItemImplEnum.Armor)
+            {
+                kindId = 3;
+            }
+            else if (item.Template.ImplId == ItemImplEnum.Armor)
+            {
+                kindId = 2;
+            }
+            else if (item.Template.ImplId == ItemImplEnum.Weapon)
+            {
+                kindId = 1;
+            }
+
+            foreach (var itemEnchantRatioGroup in _itemEnchantRatioGroups.Values)
+            {
+                if (itemEnchantRatioGroup.ItemEnchantRatioKindId == kindId)
+                {
+                    value = itemEnchantRatioGroup.Id;
+                }
+            }
+            return value;
+        }
+
+        public ItemGradeEnchantingSupport GetItemGradEnchantingSupportByItemId(int itemId)
+        {
+            _itemGradeEnchantingSupports.TryGetValue(itemId, out var itemGradeEnchantingSupport);
+            return itemGradeEnchantingSupport;
+        }
+
+        public int GetGradeEnchantCost(int ratioGroupId, int grade)
+        {
+            if (_itemEnchantRatios.TryGetValue(ratioGroupId, out var itemEnchantRatios))
+            {
+                if (itemEnchantRatios.TryGetValue(grade, out var value))
+                {
+                   return value.GradeEnchantCost;
+                }
+            }
+
+            return 0;
+        }
+        public ItemEnchantRatio GetItemEnchantRatio(int ratioGroupId, int grade)
+        {
+            if (_itemEnchantRatios.TryGetValue(ratioGroupId, out var itemEnchantRatios))
+            {
+                if (itemEnchantRatios.TryGetValue(grade, out var value))
+                {
+                    return value;
+                }
+            }
+
+            return new ItemEnchantRatio();
+        }
+
+        //public ItemEnchantRatio GetItemEnchantRatio(int ItemTemplateId, int grade)
+        //{
+        //    if (_itemEnchantRatioItems.TryGetValue(ItemTemplateId, out var ItemEnchantRatioGroupId))
+        //    {
+        //        if (_itemEnchantRatios.TryGetValue(ItemEnchantRatioGroupId, out var enchantScaleRatioTemplates))
+        //        {
+        //            if (enchantScaleRatioTemplates.TryGetValue(grade, out var value))
+        //            {
+        //                return value;
+        //            }
+        //        }
+        //    }
+
+        //    return new ItemEnchantRatio();
+        //}
+        public EnchantScaleRatio GetEnchantScaleRatio(int temperingLevel)
+        {
+            if (_enchantScaleRatios.TryGetValue(temperingLevel, out var enchantScaleRatio))
+            {
+                return enchantScaleRatio;
+            }
+
+            return new EnchantScaleRatio();
+        }
+        public ItemChangeMappingGroup GetItemChangeMappingGroup(int mappingGroupId)
+        {
+            if (_itemChangeMappingGroups.TryGetValue(mappingGroupId, out var itemChangeMappingGroup))
+            {
+                return itemChangeMappingGroup;
+            }
+
+            return new ItemChangeMappingGroup();
+        }
+
+        public static GradeEnchantResult RollRegrade(ItemEnchantRatio itemEnchantRatio, Item item, bool isLucky, bool useCharm, ItemGradeEnchantingSupport charmInfo)
+        {
+            var successRoll = Rand.Next(0, 10000);
+            var breakRoll = Rand.Next(0, 10000);
+            var downgradeRoll = Rand.Next(0, 10000);
+            var greatSuccessRoll = Rand.Next(0, 10000);
+
+            // TODO : Refactor
+            var successChance = useCharm
+                ? GetCharmChance(itemEnchantRatio.GradeEnchantSuccessRatio, charmInfo.AddSuccessRatio, charmInfo.AddSuccessMul)
+                : itemEnchantRatio.GradeEnchantSuccessRatio;
+            var greatSuccessChance = useCharm
+                ? GetCharmChance(itemEnchantRatio.GradeEnchantGreatSuccessRatio, charmInfo.AddGreatSuccessRatio,
+                    charmInfo.AddGreatSuccessMul)
+                : itemEnchantRatio.GradeEnchantGreatSuccessRatio;
+            var breakChance = useCharm
+                ? GetCharmChance(itemEnchantRatio.GradeEnchantBreakRatio, charmInfo.AddBreakRatio, charmInfo.AddBreakMul)
+                : itemEnchantRatio.GradeEnchantBreakRatio;
+            var downgradeChance = useCharm
+                ? GetCharmChance(itemEnchantRatio.GradeEnchantDowngradeRatio, charmInfo.AddDowngradeRatio,
+                    charmInfo.AddDowngradeMul)
+                : itemEnchantRatio.GradeEnchantDowngradeRatio;
+
+            if (successRoll < successChance)
+            {
+                if (isLucky && greatSuccessRoll < greatSuccessChance)
+                {
+                    // TODO : Refactor
+                    var increase = useCharm ? 2 + charmInfo.AddGreatSuccessGrade : 2;
+                    item.Grade = (byte)GetNextGrade(item.Grade, increase);
+                    return GradeEnchantResult.GreatSuccess;
+                }
+
+                item.Grade = (byte)GetNextGrade(item.Grade, 1);
+                return GradeEnchantResult.Success;
+            }
+
+            if (breakRoll < breakChance)
+            {
+                return GradeEnchantResult.Break;
+            }
+
+            if (downgradeRoll < downgradeChance)
+            {
+                var newGrade = (byte)Rand.Next(itemEnchantRatio.GradeEnchantDowngradeMin, itemEnchantRatio.GradeEnchantDowngradeMax);
+                if (newGrade < 0)
+                {
+                    return GradeEnchantResult.Fail;
+                }
+
+                item.Grade = newGrade;
+                return GradeEnchantResult.Downgrade;
+            }
+
+            return GradeEnchantResult.Fail2;
+        }
+
+        public static int GoldCost(Item item, int itemType, int scaleCost = 0, FormulaKind formulaKind = FormulaKind.GradeEnchantCost)
+        {
+            uint slotTypeId = 0;
+            switch (itemType)
+            {
+                case 1:
+                    var weaponTemplate = (WeaponTemplate)item.Template;
+                    slotTypeId = weaponTemplate.HoldableTemplate.SlotTypeId;
+                    break;
+                case 2:
+                    var armorTemplate = (ArmorTemplate)item.Template;
+                    slotTypeId = armorTemplate.SlotTemplate.SlotTypeId;
+                    break;
+                case 24:
+                    var accessoryTemplate = (AccessoryTemplate)item.Template;
+                    slotTypeId = accessoryTemplate.SlotTemplate.SlotTypeId;
+                    break;
+            }
+
+            if (slotTypeId == 0)
+            {
+                return -1;
+            }
+
+            var enchantingCost = ItemManager.Instance.GetEquipSlotEnchantingCost(slotTypeId);
+            var equipSlotEnchantCost = enchantingCost.Cost;
+
+            var ratioGroupId = Instance.GetItemEnchantRatioGroupByItemId((int)item.TemplateId);
+            var itemGrade = Instance.GetGradeEnchantCost(ratioGroupId, item.Grade);
+            var itemLevel = item.Template.Level;
+
+            var parameters = new Dictionary<string, double>();
+            parameters.Add("scale_cost", scaleCost);
+            parameters.Add("item_grade", itemGrade);
+            parameters.Add("item_level", itemLevel);
+            parameters.Add("equip_slot_enchant_cost", equipSlotEnchantCost);
+            var formula = FormulaManager.Instance.GetFormula((uint)formulaKind);
+
+            var cost = (int)formula.Evaluate(parameters);
+
+            return cost;
+        }
+
+        private static int GetNextGrade(int currentGrade, int gradeChange)
+        {
+            currentGrade = currentGrade switch
+            {
+                0 => 1,
+                1 => 0,
+                _ => currentGrade
+            };
+
+            // Calculate the next grade
+            var nextGrade = currentGrade + gradeChange;
+
+            nextGrade = nextGrade switch
+            {
+                // Ensure nextGrade is within the valid range
+                0 => 1,
+                1 => 0,
+                > 12 => 12,
+                _ => nextGrade
+            };
+
+            // Return the clamped nextGrade
+            return nextGrade;
+        }
+
+        private static int GetCharmChance(int baseChance, int charmRatio, int charmMul)
+        {
+            return baseChance + charmRatio + (int)(baseChance * (charmMul / 100.0));
+        }
+        #endregion GradeEnchant
+
+        #region Sqlite
         public void Load(SqliteConnection connection, SqliteConnection connection2)
         {
-            // Synthesis
+            #region Synthesis
             InitializeDictionaries();
             LoadItemGradeBuffs(connection);
             LoadItemRndAttrCategories(connection);
@@ -294,17 +713,33 @@ namespace AAEmu.Game.GameData
             LoadItemRndAttrUnitModifierGroupSets(connection);
             LoadItemRndAttrUnitModifierGroups(connection);
             LoadItemRndAttrUnitModifiers(connection);
+            #endregion Synthesis
 
-            // Socketing
+            #region Socketing
             LoadItemSockets(connection);
             LoadItemSocketNumLimits(connection);
             LoadItemSocketLevelLimits(connection);
             LoadItemSocketChances(connection);
+            #endregion Socketing
+
+            #region Mapping
+            LoadItemChangeMappingGroups(connection);
+            LoadItemChangeMappings(connection);
+            #endregion Mapping
+
+            #region GradeEnchant
+            LoadEnchantScaleRatios(connection);
+            LoadItemEnchantRatios(connection);
+            LoadItemEnchantRatioGroups(connection);
+            LoadItemEnchantRatioItems(connection);
+            LoadItemEnchantingGems(connection);
+            LoadItemGradeEnchantingSupports(connection);
+            #endregion GradeEnchant
         }
 
         private void InitializeDictionaries()
         {
-            // Synthesis
+            #region Synthesis
             _itemGradeBuffs = new ConcurrentDictionary<uint, ConcurrentDictionary<byte, uint>>();
             _itemRndAttrCategories = new ConcurrentDictionary<int, ItemRndAttrCategory>();
             _itemRndAttrCategoryMaterials = new ConcurrentDictionary<int, ConcurrentDictionary<int, ItemRndAttrCategoryMaterial>>();
@@ -313,14 +748,31 @@ namespace AAEmu.Game.GameData
             _itemRndAttrUnitModifierGroups = new ConcurrentDictionary<int, ConcurrentDictionary<int, ItemRndAttrUnitModifierGroup>>();
             _itemRndAttributUnitModifierGroups = new ConcurrentDictionary<int, ItemRndAttrUnitModifierGroup>();
             _itemRndAttrUnitModifiers = new ConcurrentDictionary<int, ConcurrentDictionary<int, ItemRndAttrUnitModifier>>();
+            #endregion Synthesis
 
-            // Socketing
+            #region Socketing
             _itemSockets = new ConcurrentDictionary<int, ItemSocket>();
             _itemSocketNumLimits = new ConcurrentDictionary<int, ConcurrentDictionary<int, ItemSocketNumLimit>>();
             _itemSocketLevelLimits = new ConcurrentDictionary<int, int>();
             _itemSocketChances = new ConcurrentDictionary<int, (bool, int)>();
+            #endregion Socketing
+
+            #region Mapping
+            _itemChangeMappingGroups = new ConcurrentDictionary<int, ItemChangeMappingGroup>();
+            _itemChangeMappings = new ConcurrentDictionary<int, ItemChangeMapping>();
+            #endregion Mapping
+
+            #region GradeEnchant
+            _enchantScaleRatios = new ConcurrentDictionary<int, EnchantScaleRatio>();
+            _itemEnchantRatios = new ConcurrentDictionary<int, ConcurrentDictionary<int, ItemEnchantRatio>>();
+            _itemEnchantRatioGroups = new ConcurrentDictionary<int, ItemEnchantRatioGroup>();
+            _itemEnchantRatioItems = new ConcurrentDictionary<int, int>();
+            _itemEnchantingGems = new ConcurrentDictionary<int, ItemEnchantingGem>();
+            _itemGradeEnchantingSupports = new ConcurrentDictionary<int, ItemGradeEnchantingSupport>();
+            #endregion GradeEnchant
         }
 
+        #region Synthesis
         private void LoadItemGradeBuffs(SqliteConnection connection)
         {
             using var command = connection.CreateCommand();
@@ -564,9 +1016,205 @@ namespace AAEmu.Game.GameData
             }
         }
 
+        private void LoadItemChangeMappingGroups(SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM item_change_mapping_groups";
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                var itemChangeMappingGroup = new ItemChangeMappingGroup();
+                itemChangeMappingGroup.Id = reader.GetInt32("id");
+                itemChangeMappingGroup.Disable = reader.GetInt32("disable");
+                itemChangeMappingGroup.EvolvingExpInherit = reader.GetBoolean("evolving_exp_inherit");
+                itemChangeMappingGroup.FailBonus = reader.GetInt32("fail_bonus");
+                itemChangeMappingGroup.Name = reader.GetString("name");
+                itemChangeMappingGroup.Selectable = reader.GetBoolean("selectable");
+                itemChangeMappingGroup.Success = reader.GetInt32("success");
+
+
+                if (!_itemChangeMappingGroups.ContainsKey(itemChangeMappingGroup.Id))
+                    _itemChangeMappingGroups[itemChangeMappingGroup.Id] = new ItemChangeMappingGroup();
+                _itemChangeMappingGroups[itemChangeMappingGroup.Id] = itemChangeMappingGroup;
+            }
+        }
+
+        private void LoadItemChangeMappings(SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM item_change_mappings";
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                var itemChangeMapping = new ItemChangeMapping();
+                itemChangeMapping.Id = reader.GetInt32("id");
+                itemChangeMapping.MappingGroupId = reader.GetInt32("mapping_group_id");
+                itemChangeMapping.SourceGradeId = reader.GetInt32("source_grade_id");
+                itemChangeMapping.SourceItemId = reader.GetInt32("source_item_id");
+                itemChangeMapping.TargetItemId = reader.GetInt32("target_item_id");
+
+                if (!_itemChangeMappings.ContainsKey(itemChangeMapping.Id))
+                    _itemChangeMappings[itemChangeMapping.Id] = new ItemChangeMapping();
+                _itemChangeMappings[itemChangeMapping.Id] = itemChangeMapping;
+            }
+        }
+        #endregion
+
+        #region GradeEnchant
+        private void LoadEnchantScaleRatios(SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM enchant_scale_ratios";
+            command.Prepare();
+            using var sqliteReader = command.ExecuteReader();
+            using var reader = new SQLiteWrapperReader(sqliteReader);
+            while (reader.Read())
+            {
+                var template = new EnchantScaleRatio();
+                template.Id = reader.GetInt32("id");
+                template.BreakRatio = reader.GetInt32("break_ratio");
+                template.Cost = reader.GetInt32("cost");
+                template.CurrencyId = reader.GetInt32("currency_id");
+                template.DisableRatio = reader.GetInt32("disable_ratio");
+                template.DownMax = reader.GetInt32("down_max");
+                template.DownRatio = reader.GetInt32("down_ratio");
+                template.GrateSuccessRatio = reader.GetInt32("grate_success_ratio");
+                template.Name = reader.GetString("name");
+                template.Scale = reader.GetInt32("scale");
+                template.SuccessRatio = reader.GetInt32("success_ratio");
+
+                _enchantScaleRatios.TryAdd(template.Id, template);
+            }
+        }
+
+        private void LoadItemEnchantRatios(SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM item_enchant_ratios";
+            command.Prepare();
+            using var sqliteReader = command.ExecuteReader();
+            using var reader = new SQLiteWrapperReader(sqliteReader);
+            while (reader.Read())
+            {
+                var template = new ItemEnchantRatio();
+                template.ItemEnchantRatioGroupId = reader.GetInt32("item_enchant_ratio_group_id");
+                template.Grade = reader.GetInt32("grade");
+                template.GradeEnchantSuccessRatio = reader.GetInt32("grade_enchant_success_ratio");
+                template.GradeEnchantGreatSuccessRatio = reader.GetInt32("grade_enchant_great_success_ratio");
+                template.GradeEnchantBreakRatio = reader.GetInt32("grade_enchant_break_ratio");
+                template.GradeEnchantDowngradeRatio = reader.GetInt32("grade_enchant_downgrade_ratio");
+                template.GradeEnchantCost = reader.GetInt32("grade_enchant_cost");
+                template.GradeEnchantDowngradeMin = reader.GetInt32("grade_enchant_downgrade_min");
+                template.GradeEnchantDowngradeMax = reader.GetInt32("grade_enchant_downgrade_max");
+                template.CurrencyId = reader.GetInt32("currency_id");
+                template.GradeEnchantDisableRatio = reader.GetInt32("grade_enchant_disable_ratio");
+
+                if (!_itemEnchantRatios.ContainsKey(template.ItemEnchantRatioGroupId))
+                    _itemEnchantRatios[template.ItemEnchantRatioGroupId] = new ConcurrentDictionary<int, ItemEnchantRatio>();
+                _itemEnchantRatios[template.ItemEnchantRatioGroupId][template.Grade] = template;
+            }
+        }
+
+        private void LoadItemEnchantRatioGroups(SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM item_enchant_ratio_groups";
+            command.Prepare();
+            using var sqliteReader = command.ExecuteReader();
+            using var reader = new SQLiteWrapperReader(sqliteReader);
+            while (reader.Read())
+            {
+                var group = new ItemEnchantRatioGroup();
+                group.Id = reader.GetInt32("id");
+                group.ItemImplId = reader.GetInt32("item_impl_id");
+                group.ItemEnchantRatioKindId = reader.GetInt32("item_enchant_ratio_kind_id");
+
+                _itemEnchantRatioGroups.TryAdd(group.Id, group);
+            }
+        }
+
+        private void LoadItemEnchantRatioItems(SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM item_enchant_ratio_items";
+            command.Prepare();
+            using var sqliteReader = command.ExecuteReader();
+            using var reader = new SQLiteWrapperReader(sqliteReader);
+            while (reader.Read())
+            {
+                var item = new ItemEnchantRatioItem();
+                item.ItemEnchantRatioGroupId = reader.GetInt32("item_enchant_ratio_group_id");
+                item.ItemId = reader.GetInt32("item_id");
+
+                _itemEnchantRatioItems.TryAdd(item.ItemId, item.ItemEnchantRatioGroupId);
+            }
+        }
+
+        private void LoadItemEnchantingGems(SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM item_enchanting_gems";
+            command.Prepare();
+            using var sqliteReader = command.ExecuteReader();
+            using var reader = new SQLiteWrapperReader(sqliteReader);
+            while (reader.Read())
+            {
+                var gem = new ItemEnchantingGem();
+                gem.Id = reader.GetInt32("id");
+                gem.ItemId = reader.GetInt32("item_id");
+                gem.BuffModifierTooltip = reader.IsDBNull("buff_modifier_tooltip") ? null : reader.GetString("buff_modifier_tooltip");
+                gem.EisetId = reader.GetInt32("eiset_id");
+                gem.EquipItemTagId = reader.GetInt32("equip_item_tag_id");
+                gem.EquipItemId = reader.GetInt32("equip_item_id");
+                gem.EquipLevel = reader.GetInt32("equip_level");
+                gem.EquipSlotGroupId = reader.GetInt32("equip_slot_group_id");
+                gem.GemVisualEffectId = reader.GetInt32("gem_visual_effect_id");
+                gem.IgnoreEquipItemTag = reader.GetBoolean("ignore_equip_item_tag");
+                gem.ItemGradeId = reader.GetInt32("item_grade_id");
+                gem.SkillModifierTooltip = reader.IsDBNull("skill_modifier_tooltip") ? null : reader.GetString("skill_modifier_tooltip");
+
+                _itemEnchantingGems.TryAdd(gem.Id, gem);
+            }
+        }
+
+        private void LoadItemGradeEnchantingSupports(SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM item_grade_enchanting_supports";
+            command.Prepare();
+            using var sqliteReader = command.ExecuteReader();
+            using var reader = new SQLiteWrapperReader(sqliteReader);
+            while (reader.Read())
+            {
+                var support = new ItemGradeEnchantingSupport();
+                support.ItemId = reader.GetInt32("item_id");
+                support.AddBreakMul = reader.GetInt32("add_break_mul");
+                support.AddBreakRatio = reader.GetInt32("add_break_ratio");
+                support.AddDisableMul = reader.GetInt32("add_disable_mul");
+                support.AddDisableRatio = reader.GetInt32("add_disable_ratio");
+                support.AddDowngradeMul = reader.GetInt32("add_downgrade_mul");
+                support.AddDowngradeRatio = reader.GetInt32("add_downgrade_ratio");
+                support.AddGreatSuccessGrade = reader.GetInt32("add_great_success_grade");
+                support.AddGreatSuccessMul = reader.GetInt32("add_great_success_mul");
+                support.AddGreatSuccessRatio = reader.GetInt32("add_great_success_ratio");
+                support.AddSuccessMul = reader.GetInt32("add_success_mul");
+                support.AddSuccessRatio = reader.GetInt32("add_success_ratio");
+                support.Icons = reader.GetInt32("icons");
+                support.ImplFlags = reader.GetInt32("impl_flags");
+                support.ReqScaleMaxId = reader.GetInt32("req_scale_max_id");
+                support.ReqScaleMinId = reader.GetInt32("req_scale_min_id");
+                support.RequireGradeMax = reader.GetInt32("require_grade_max");
+                support.RequireGradeMin = reader.GetInt32("require_grade_min");
+
+                _itemGradeEnchantingSupports.TryAdd(support.ItemId, support);
+            }
+        }
+        #endregion GradeEnchant
+
         public void PostLoad()
         {
             // Handle any post-loading logic here
         }
+        #endregion Sqlite
     }
 }

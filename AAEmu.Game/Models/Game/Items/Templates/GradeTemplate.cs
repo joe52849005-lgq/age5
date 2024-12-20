@@ -1,4 +1,4 @@
-namespace AAEmu.Game.Models.Game.Items.Templates;
+﻿namespace AAEmu.Game.Models.Game.Items.Templates;
 
 public class GradeTemplate
 {
@@ -14,12 +14,5 @@ public class GradeTemplate
     public int UpgradeRatio { get; set; }
     public int StatMultiplier { get; set; }
     public int RefundMultiplier { get; set; }
-    public int EnchantSuccessRatio { get; set; }
-    public int EnchantGreatSuccessRatio { get; set; }
-    public int EnchantBreakRatio { get; set; }
-    public int EnchantDowngradeRatio { get; set; }
-    public int EnchantDowngradeMin { get; set; }
-    public int EnchantDowngradeMax { get; set; }
-    public int EnchantCost { get; set; }
-    public int CurrencyId { get; set; }
+    public float HoldableMagicResist { get; set; }
 }

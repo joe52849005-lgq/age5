@@ -14,6 +14,9 @@ public class SpecialEffect : EffectTemplate
     public int Value2 { get; set; }
     public int Value3 { get; set; }
     public int Value4 { get; set; }
+    public int Value5 { get; set; }
+    public int Value6 { get; set; }
+    public int Value7 { get; set; }
 
     public override bool OnActionTime => false;
 
@@ -40,13 +43,13 @@ public class SpecialEffect : EffectTemplate
         {
             for (var i = 0; i < source.Skill.Template.EffectRepeatCount; i++)
             {
-                action?.Execute(caster, casterObj, target, targetObj, castObj, source.Skill, skillObject, time, Value1, Value2, Value3, Value4);
+                action?.Execute(caster, casterObj, target, targetObj, castObj, source.Skill, skillObject, time, Value1, Value2, Value3, Value4, Value5, Value6, Value7);
                 Thread.Sleep(TimeSpan.FromMilliseconds(source.Skill.Template.EffectRepeatTick));
             }
         }
         else
         {
-            action?.Execute(caster, casterObj, target, targetObj, castObj, source.Skill, skillObject, time, Value1, Value2, Value3, Value4);
+            action?.Execute(caster, casterObj, target, targetObj, castObj, source.Skill, skillObject, time, Value1, Value2, Value3, Value4, Value5, Value6, Value7);
         }
     }
 }

@@ -6,13 +6,13 @@ namespace AAEmu.Game.Core.Packets.G2C;
 
 public class SCItemTemperingResultPacket : GamePacket
 {
-    private readonly bool _result;
+    private readonly byte _result;
     private readonly Item _item;
     private readonly uint _type1;
     private readonly ushort _type2;
     private readonly ushort _type3;
 
-    public SCItemTemperingResultPacket(bool result, Item item, uint type1, ushort type2, ushort type3)
+    public SCItemTemperingResultPacket(byte result, Item item, uint type1, ushort type2, ushort type3)
         : base(SCOffsets.SCItemTemperingResultPacket, 5)
     {
         _result = result;

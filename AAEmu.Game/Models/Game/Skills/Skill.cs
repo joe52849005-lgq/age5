@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using AAEmu.Commons.Utils;
@@ -855,8 +856,9 @@ public class Skill
         }
         else
         {
-            ApplyEffects(caster, casterCaster, target, targetCaster, skillObject);
+            // скилл завершается до создания эффектов
             EndSkill(caster);
+            ApplyEffects(caster, casterCaster, target, targetCaster, skillObject);
         }
     }
 
@@ -1228,15 +1230,17 @@ public class Skill
                 // Actually consume the to be consumed items
                 // Specific Items
                 foreach (var (item, amount) in consumedItems)
-                    if (item.HoldingContainer != null)
-                    {
-                        item.HoldingContainer.ConsumeItem(ItemTaskType.SkillReagents, item.TemplateId, amount, item);
-                    }
+                {
+                    item.HoldingContainer?.ConsumeItem(ItemTaskType.SkillEffectConsumption, item.TemplateId, amount, item);
+                    //item.HoldingContainer?.ConsumeItem(ItemTaskType.SkillReagents, item.TemplateId, amount, item);
+                }
 
                 // Doesn't matter, but by Template
                 foreach (var (templateId, amount) in consumedItemTemplates)
+                {
                     player.Inventory.ConsumeItem(null, ItemTaskType.SkillEffectGainItem, templateId, amount, null);
                     //player.Inventory.ConsumeItem(null, ItemTaskType.SkillEffectConsumption, templateId, amount, null);
+                }
             }
         }
     }

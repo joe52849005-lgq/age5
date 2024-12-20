@@ -21,7 +21,7 @@ public class Cooldown : SpecialEffectAction
         int cooldownTime,
         int value2,
         int value3,
-        int value4)
+        int value4, int value5, int value6, int value7)
     {
         // TODO only for server
         if (caster is Character) { Logger.Debug("Special effects: Cooldown cooldownTime {0}, value2 {1}, value3 {2}, value4 {3}", cooldownTime, value2, value3, value4); }

@@ -28,6 +28,9 @@ public class SpawnDoodad : SpecialEffectAction
     /// <param name="delay">Delay before the doodad becomes "active"?</param>
     /// <param name="createTradePack">Set to one for trade packs created for quests</param>
     /// <param name="value4">Unused</param>
+    /// <param name="value5"></param>
+    /// <param name="value6"></param>
+    /// <param name="value7"></param>
     public override void Execute(BaseUnit caster,
         SkillCaster casterObj,
         BaseUnit target,
@@ -38,9 +41,8 @@ public class SpawnDoodad : SpecialEffectAction
         DateTime time,
         int doodadId,
         int delay,
-        int createTradePack, 
-        int value4 
-    )
+        int createTradePack,
+        int value4, int value5, int value6, int value7)
     {
         if (caster is null)
         {

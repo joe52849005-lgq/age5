@@ -24,7 +24,7 @@ public class TeleportToUnit : SpecialEffectAction
         int value1,
         int value2,
         int value3,
-        int value4)
+        int value4, int value5, int value6, int value7)
     {
         // TODO ...
         if (caster is Character) { Logger.Debug("Special effects: TeleportToUnit value1 {0}, value2 {1}, value3 {2}, value4 {3}", value1, value2, value3, value4); }

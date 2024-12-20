@@ -16,7 +16,8 @@ public class Charge : SpecialEffectAction
 
     public override void Execute(BaseUnit caster, SkillCaster casterObj, BaseUnit target, SkillCastTarget targetObj,
         CastAction castObj,
-        Skill skill, SkillObject skillObject, DateTime time, int buffId, int minCharge, int maxCharge, int unused)
+        Skill skill, SkillObject skillObject, DateTime time, int buffId, int minCharge, int maxCharge, int unused,
+        int value5, int value6, int value7)
     {
         if (caster is Character) { Logger.Debug("Special effects: Charge buffId {0}, minCharge {1}, maxCharge {2}, unused {3}", buffId, minCharge, maxCharge, unused); }
 

@@ -1560,6 +1560,9 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         template.Value2 = reader.GetInt32("value2");
                         template.Value3 = reader.GetInt32("value3");
                         template.Value4 = reader.GetInt32("value4");
+                        template.Value5 = reader.GetInt32("value5");
+                        template.Value6 = reader.GetInt32("value6");
+                        template.Value7 = reader.GetInt32("value7");
                         _effects["SpecialEffect"].Add(template.Id, template);
                     }
                 }

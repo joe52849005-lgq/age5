@@ -1,4 +1,4 @@
-namespace AAEmu.Game.Models.Game.Formulas;
+﻿namespace AAEmu.Game.Models.Game.Formulas;
 
 public enum FormulaKind
 {
@@ -47,4 +47,5 @@ public enum FormulaKind
     EloRatingCalculation = 43,
     BlessUthstinConsumeItemNum = 44,
     BlessUthstinExtendMaxStat = 45,
+    GradeTemperingCost = 59
 };

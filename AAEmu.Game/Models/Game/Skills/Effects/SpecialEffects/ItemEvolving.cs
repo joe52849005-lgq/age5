@@ -29,12 +29,16 @@ public class ItemEvolving : SpecialEffectAction
         int value1,
         int value2,
         int value3,
-        int value4)
+        int value4, int value5, int value6, int value7)
     {
+        // Get Player
         if (caster is not Character character)
+        {
+            Logger.Debug("Invalid caster type. Expected Character.");
             return;
+        }
 
-        Logger.Debug($"Special effects: ItemEvolving value1 {value1}, value2 {value2}, value3 {value3}, value4 {value4}");
+        Logger.Debug($"Special effects: ItemEvolving value1 {value1}, value2 {value2}, value3 {value3}, value4 {value4}, value5 {value5}, value6 {value6}, value7 {value7}");
 
         var itemId = ((SkillCastItemTarget)targetObj).Id;
         var item = ItemManager.Instance.GetItemByItemId(itemId);
@@ -73,11 +77,10 @@ public class ItemEvolving : SpecialEffectAction
         var beforeItemGrade = item.Grade;
         Logger.Debug($"ItemEvolving: beforeItemGrade={beforeItemGrade}");
 
-        var addExperience = CalculateAddExperience(equipItem1, item1, equipItem2, item2);
+        var addExperience = ItemGameData.CalculateAddExperience(equipItem1, item1, equipItem2, item2);
         Logger.Debug($"ItemEvolving: addExperience={addExperience}");
         var currentExperience = (int)item.GemIds[3]; //RemainingExperience; // взять текущий опыт
         Logger.Debug($"ItemEvolving: currentExperience={currentExperience}");
-        //var currentExperience = (int)item.AdditionalDetails[3]; //RemainingExperience; // взять текущий опыт
         currentExperience += addExperience;
         Logger.Debug($"ItemEvolving: currentExperience + addExperience={currentExperience}");
 
@@ -99,13 +102,11 @@ public class ItemEvolving : SpecialEffectAction
             currentExperience = gradeExp;
             addExperience = gradeExp;
             item.GemIds[3] = 0;
-            //item.AdditionalDetails[3] = 0;
             Logger.Warn($"ItemEvolving: Reached grade limit! beforeItemGrade:maxEvolvingGrade={beforeItemGrade}:{maxEvolvingGrade}, currentExperience={currentExperience}");
         }
 
-        var (afterItemGrade, remainingExperience) = CalculateGradeAndExp(currentExperience, equipItem.ItemRndAttrCategoryId, beforeItemGrade);
+        var (afterItemGrade, remainingExperience) = ItemGameData.CalculateGradeAndExp(currentExperience, equipItem.ItemRndAttrCategoryId, beforeItemGrade);
         item.GemIds[3] = (uint)remainingExperience; // сохраним оставшийся опыт
-        //item.AdditionalDetails[3] = (uint)remainingExperience; // сохраним оставшийся опыт
         Logger.Debug($"ItemEvolving: remainingExperience={remainingExperience}");
         item.Grade = afterItemGrade;
         Logger.Debug($"ItemEvolving: afterItemGrade={afterItemGrade}");
@@ -116,21 +117,19 @@ public class ItemEvolving : SpecialEffectAction
         var beforeAttribute = new ItemEvolvingAttribute();
         var afterAttribute = new ItemEvolvingAttribute();
         var addAttributes = new List<ItemEvolvingAttribute>();
-        var currentAttributes = GetCurrentAttributes(item);
+        var currentAttributes = ItemGameData.GetCurrentAttributes(item);
 
         if (needChangeAttribute)
         {
             if (afterItemGrade > beforeItemGrade)
             {
                 var selectAttribute = ItemGameData.Instance.GetUnitAttributeFromModifierGroup((int)item.GemIds[changeIndex + Offset]);
-                //var selectAttribute = ItemGameData.Instance.GetUnitAttributeFromModifierGroup((int)item.AdditionalDetails[changeIndex + Offset]);
                 beforeAttribute.Attribute = (ushort)selectAttribute;
                 beforeAttribute.AttributeType = 0;
                 beforeAttribute.AttributeValue = 0;
 
                 var newAttribute = ItemGameData.Instance.ReplaceSelectAttribute(equipItem.ItemRndAttrCategoryId, item.Grade, currentAttributes, selectAttribute);
                 item.GemIds[changeIndex + Offset] = (uint)newAttribute.id;
-                //item.AdditionalDetails[changeIndex + Offset] = (uint)newAttribute.id;
                 afterAttribute.Attribute = (ushort)newAttribute.attribute;
                 afterAttribute.AttributeType = 0;
                 afterAttribute.AttributeValue = newAttribute.value;
@@ -151,32 +150,38 @@ public class ItemEvolving : SpecialEffectAction
 
                 addAttributes.Add(newAttribute);
                 item.GemIds[index + Offset] = (uint)randomAttributes[index - currentAttributes.Count].id;
-                //item.AdditionalDetails[index + Offset] = (uint)randomAttributes[index - currentAttributes.Count].id;
                 Logger.Debug($"ItemEvolving: addAttribute id={randomAttributes[index - currentAttributes.Count].id}, Attribute={randomAttributes[index - currentAttributes.Count].attribute}, value={randomAttributes[index - currentAttributes.Count].value}");
             }
         }
 
-        // израсходуем материал
+        // we'll use up the material
         character.Inventory.Bag.ConsumeItem(ItemTaskType.Evolving, item1.TemplateId, item1.Count, item1);
         character.Inventory.Bag.ConsumeItem(ItemTaskType.Evolving, item2.TemplateId, item2.Count, item2);
 
-        // израсходуем деньги
-        var money = ItemGameData.Instance.GetGoldMul(equipItem.ItemRndAttrCategoryId, item.Grade);
-        //var money1 = ItemGameData.Instance.GetGoldMul(equipItem1.ItemRndAttrCategoryId, item1.Grade);
-        //var money2 = ItemGameData.Instance.GetGoldMul(equipItem2.ItemRndAttrCategoryId, item2.Grade);
-        //var money = money1 + money2;
+        // израсходуем деньги (не нашел, как правильно найти стоимость)
+        // we will spend the money (I haven’t found how to find the cost correctly)
+        var grade = item1.Grade == 0 ? 1 : item1.Grade;
+        var cost = ItemGameData.Instance.GetGoldMul(equipItem.ItemRndAttrCategoryId, item1.Grade) * grade;
+        grade = item2.Grade == 0 ? 1 : item2.Grade;
+        cost += ItemGameData.Instance.GetGoldMul(equipItem.ItemRndAttrCategoryId, item2.Grade) * grade;
+        var money = (int)Math.Round(cost / 10.0);
+        if (money == -1)
+        {
+            // No gold on template, invalid ?
+            return;
+        }
+
+        if (character.Money < money)
+        {
+            character.SendErrorMessage(ErrorMessageType.NotEnoughMoney);
+            return;
+        }
+
         character.ChangeMoney(SlotType.Bag, -money);
 
         character.SendPacket(new SCItemTaskSuccessPacket(
             ItemTaskType.Evolving,
             [
-                //item1.Count > 1
-                //    ? new ItemCountUpdate(item1, -1)
-                //    : new ItemRemove(item1),
-                //item2.Count > 1
-                //    ? new ItemCountUpdate(item2, -1)
-                //    : new ItemRemove(item2),
-                //new MoneyChange(-money),
                 new ItemGradeChange(item),
                 new ItemUpdate(item)
             ],
@@ -185,94 +190,21 @@ public class ItemEvolving : SpecialEffectAction
 
         Logger.Debug($"ItemEvolving: isEvolving={true}, itemId={itemId}, changeAttr={needChangeAttribute}, afterItemGrade={afterItemGrade}, addExperience={addExperience}, bonusExp={bonusExp}, beforeItemGrade={beforeItemGrade}");
         character.SendPacket(new SCItemEvolvingPacket(
-                true, // bool isEvolving,
-                itemId, // ulong itemId,
-                needChangeAttribute, //bool changeAttr,
-                afterItemGrade, // byte afterItemGrade,
-                beforeAttribute, // ItemEvolvingAttribute beforeAttribute,
-                afterAttribute, // ItemEvolvingAttribute afterAttribute,
-                addAttributes, // List<ItemEvolvingAttribute> addAttributes,
+                true,                      // bool isEvolving,
+                itemId,                    // ulong itemId,
+                needChangeAttribute,       //bool changeAttr,
+                afterItemGrade,            // byte afterItemGrade,
+                beforeAttribute,           // ItemEvolvingAttribute beforeAttribute,
+                afterAttribute,            // ItemEvolvingAttribute afterAttribute,
+                addAttributes,             // List<ItemEvolvingAttribute> addAttributes,
                 (byte)addAttributes.Count, // addAttrCount,
                 addExperience,
                 bonusExp,
                 beforeItemGrade
             )
         );
-    }
 
-    private int CalculateAddExperience(EquipItemTemplate equipItem1, Item item1, EquipItemTemplate equipItem2, Item item2)
-    {
-        var addExperience = 0;
-        var e1 = ItemGameData.Instance.GetGainExp(equipItem1.ItemRndAttrCategoryId, item1.Grade);
-        Logger.Debug($"ItemEvolving: equipItem1 ItemRndAttrCategoryId={equipItem1.ItemRndAttrCategoryId}, Grade={item1.Grade}, addExperience={e1}");
-        addExperience += e1;
-
-        var e2 = ItemGameData.Instance.GetGainExp(equipItem2.ItemRndAttrCategoryId, item2.Grade);
-        Logger.Debug($"ItemEvolving: equipItem2 ItemRndAttrCategoryId={equipItem2.ItemRndAttrCategoryId}, Grade={item2.Grade}, addExperience={e2}");
-        addExperience += e2;
-
-        return addExperience;
-    }
-
-    private (byte grade, int exp) CalculateGradeAndExp(int exp, int categoryId, byte beforeItemGrade = 0)
-    {
-        Logger.Debug($"ItemEvolving: CalculateGradeAndExp: exp={exp}, categoryId={categoryId}");
-        var grades = new List<byte>
-            {
-                0,  // Grade 0 Обычный предмет - Basic
-                2,  // Grade 2 Необычный предмет - Grand
-                3,  // Grade 3 Редкий предмет - Rare
-                4,  // Grade 4 Уникальный предмет - Arcane
-                5,  // Grade 5 Эпический предмет - Heroic
-                6,  // Grade 6 Легендарный предмет - Unique
-                7,  // Grade 7 Реликвия - Celestial
-                8,  // Grade 8 предмет эпохи Чудес - Divine
-                9,  // Grade 9 предмет эпохи Сказаний - Epic
-                10, // Grade 10 предмет эпохи Легенд - Legendary
-                11, // Grade 11 предмет эпохи Мифов - Mythic
-                12  // Grade 12 предмет эпохи Двенадцати - Ethernal
-            };
-
-        byte res = 0;
-
-        foreach (var grade in grades)
-        {
-            if (grade < beforeItemGrade)
-                continue;
-
-            var gradeExp = ItemGameData.Instance.GetGradeExp(categoryId, grade);
-            if (gradeExp == 0)
-                gradeExp = ItemGameData.Instance.GetGradeExp(4, grade); // как подстраховка
-
-            if (exp <= gradeExp)
-            {
-                Logger.Debug($"ItemEvolving: CalculateGradeAndExp: exp={exp}, grade={grade}, gradeExp={gradeExp}");
-                return (grade, exp);
-            }
-
-            res = grade;
-            exp -= gradeExp;
-            Logger.Debug($"ItemEvolving: CalculateGradeAndExp: exp={exp}, grade={res}, gradeExp={gradeExp}");
-        }
-
-        Logger.Debug($"ItemEvolving: CalculateGradeAndExp: exp={exp}, grade={res}");
-        return (res, exp);
-    }
-
-    private static List<int> GetCurrentAttributes(Item item)
-    {
-        var res = new List<int>();
-
-        for (var index = Offset; index < OffsetMax; index++)
-        {
-            var attribute = item.GemIds[index];
-            //var attribute = item.AdditionalDetails[index];
-            if (attribute <= 0)
-                break;
-
-            res.Add((int)attribute);
-        }
-
-        return res;
+        // Log the action
+        Logger.Debug($"MagicalEnchant executed by {character.Name} on item {item.Id} with skill item {item.TemplateId}");
     }
 }

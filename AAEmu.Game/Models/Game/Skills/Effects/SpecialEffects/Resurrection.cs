@@ -21,7 +21,7 @@ public class Resurrection : SpecialEffectAction
         int value1,
         int value2,
         int value3,
-        int value4)
+        int value4, int value5, int value6, int value7)
     {
         if (target is Character character && character.Hp <= 0)
         {

@@ -47,7 +47,7 @@ public enum ItemTaskType : byte
     QuestComplete = 38,             // 402-quest-complete
     QuestSupplyItems,               // 405-quest-supply-items
     QuestRemoveSupplies,            // 402-403-404-405-quest-remove-supplies
-    SkillReagents,                  // skill-reagents
+    SkillReagents = 41,             // skill-reagents
     SkillEffectConsumption = 42,    // skill-effect-consumption
     SkillEffectGainItem = 43,       // skill-effect-gain-item
     SkillEffectGainItemWithPos = 44,// skill-effect-gain-item-with-pos
@@ -136,7 +136,7 @@ public enum ItemTaskType : byte
     BuyPremiumService,              // buy-premium-service-ingameshop
     BuyAaPoint,                     // buy-aa-point-ingameshop
     TakeScheduleItem,               // take-schedule-item
-    ScaleCap,                       // scale-cap
+    ScaleCap = 131,                 // scale-cap
     HousePayTax,                    // house-pay-tax
     BuyItemIngameshop = 134,        // buy-item-ingameshop
     ExchangeCashFromItem,           // exchange-cash-from-item
@@ -181,5 +181,6 @@ public enum ItemTaskType : byte
     RestoreDisableEnchant,          // restore-disable-enchant
     ConsumeEquipSlotReinforceLevelUp,// consume-equip-slot-reinforce-level-up
     ConsumeEquipSlotReinforceAddExp, // consume-equip-slot-reinforce-add-exp
-    ItemTypeChange                  // item_type_change
+    ItemTypeChange,                  // item_type_change
+    EquipmentAwakening = 182         // EquipmentAwakening - Change Mapping Result
 }

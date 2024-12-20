@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.GameData;
 using AAEmu.Game.Models.Game.Char;
@@ -30,15 +29,16 @@ public class ItemSocketing : SpecialEffectAction
         int value1,
         int value2,
         int value3,
-        int value4)
+        int value4, int value5, int value6, int value7)
     {
+        // Get Player
         if (caster is not Character character)
         {
             Logger.Debug("Invalid caster type. Expected Character.");
             return;
         }
 
-        Logger.Debug($"Special effects: ItemSocketing value1 {value1}, value2 {value2}, value3 {value3}, value4 {value4}");
+        Logger.Debug($"Special effects: ItemSocketing value1 {value1}, value2 {value2}, value3 {value3}, value4 {value4}, value5 {value5}, value6 {value6}, value7 {value7}");
 
         // value1 = 0 - Destroy, 1 - Add, 2 - Extract
 
@@ -82,7 +82,7 @@ public class ItemSocketing : SpecialEffectAction
         }
 
         var tasksSocketing = new List<ItemTask>();
-        var gemCount = GemCount(equipItem);
+        var gemCount = ItemGameData.GemCount(equipItem);
         var socketNumLimit = ItemGameData.Instance.GetSocketNumLimit((int)equipItemTemplate.SlotTypeId, equipItem.Grade);
 
         switch (skillObject)
@@ -98,47 +98,28 @@ public class ItemSocketing : SpecialEffectAction
                     while (gemItem is not null && gemCount < socketNumLimit)
                     {
                         // Inserting a stone
-                        PutGem(gemItem, equipItem);
+                        ItemGameData.PutGem(gemItem, equipItem);
 
                         // Update the number of stones and check for the availability of the next stone
-                        gemCount = GemCount(equipItem);
+                        gemCount = ItemGameData.GemCount(equipItem);
                         gemItem = character.Inventory.GetItemById(gemSkillItem.ItemId);
                     }
                     tasksSocketing.Add(new ItemUpdate(equipItem));
                     character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Socketing, tasksSocketing, []));
                     character.SendPacket(new SCSocketingResultPacket((int)SocketingKind.Add, skillTargetItem.Id, gemItem.TemplateId, (byte)SocketingKind.Add, true));
                     character.Inventory.Bag.ConsumeItem(ItemTaskType.SkillEffectGainItem, gemItem.TemplateId, gemCount - preCount, gemItem);
-
-                    //character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Socketing,
-                    //[
-                    //    new ItemUpdate(equipItem),
-                    //    new MoneyChange(-(83579 * gemCount)),
-                    //    gemItem.Count > gemCount
-                    //        ? new ItemCountUpdate(gemItem, -(gemCount - preCount))
-                    //        : new ItemRemove(gemItem)
-                    //], [], 0));
-                    //character.SendPacket(new SCSocketingResultPacket((int)SocketingKind.Add, skillTargetItem.Id, gemItem.TemplateId, (byte)SocketingKind.Add, true));
                 }
                 else
                 {
                     // Inserting a stone
-                    PutGem(gemItem, equipItem);
+                    ItemGameData.PutGem(gemItem, equipItem);
 
                     tasksSocketing.Add(new ItemUpdate(equipItem));
                     character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Socketing, tasksSocketing, []));
                     character.SendPacket(new SCSocketingResultPacket((int)SocketingKind.Add, skillTargetItem.Id, gemItem.TemplateId, (byte)SocketingKind.Add, true));
                     // тратится во время работы скилла
+                    // is spent during the skill's operation
                     //character.Inventory.Bag.ConsumeItem(ItemTaskType.SkillEffectGainItem, gemItem.TemplateId, 1, gemItem);
-
-                    //character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Socketing,
-                    //[
-                    //    new ItemUpdate(equipItem),
-                    //    new MoneyChange(-(83579 * gemCount)),
-                    //    gemItem.Count > 1
-                    //        ? new ItemCountUpdate(gemItem, -1)
-                    //        : new ItemRemove(gemItem)
-                    //], [], 0));
-                    //character.SendPacket(new SCSocketingResultPacket((int)SocketingKind.Add, skillTargetItem.Id, gemItem.TemplateId, (byte)SocketingKind.Add, true));
                 }
 
                 break;
@@ -151,42 +132,24 @@ public class ItemSocketing : SpecialEffectAction
                         if (equipItem.GemIds[i + Offset] == 0)
                             continue;
 
-                        GetGem(equipItem, i, character);
+                        ItemGameData.GetGem(equipItem, i, character);
                     }
 
                     tasksSocketing.Add(new ItemUpdate(equipItem));
                     character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Socketing, tasksSocketing, []));
                     character.SendPacket(new SCSocketingResultPacket((int)SocketingKind.Extract, skillTargetItem.Id, gemItem.TemplateId, (byte)SocketingKind.Extract, true));
                     character.Inventory.Bag.ConsumeItem(ItemTaskType.SkillEffectGainItem, gemItem.TemplateId, gemCount, gemItem);
-
-                    //character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Socketing,
-                    //[
-                    //    new ItemUpdate(equipItem),
-                    //    gemItem.Count > gemCount
-                    //        ? new ItemCountUpdate(gemItem, -gemCount)
-                    //        : new ItemRemove(gemItem)
-                    //], [], 0));
-                    //character.SendPacket(new SCSocketingResultPacket((int)SocketingKind.Extract, skillTargetItem.Id, gemItem.TemplateId, (byte)SocketingKind.Extract, true));
                 }
                 else if (equipItem.GemIds[support.Index + Offset] != 0)
                 {
-                    GetGem(equipItem, support.Index, character);
+                    ItemGameData.GetGem(equipItem, support.Index, character);
 
-                    UpdateCells(equipItem, support.Index);
+                    ItemGameData.UpdateCells(equipItem, support.Index);
 
                     tasksSocketing.Add(new ItemUpdate(equipItem));
                     character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Socketing, tasksSocketing, []));
                     character.SendPacket(new SCSocketingResultPacket((int)SocketingKind.Extract, skillTargetItem.Id, gemItem.TemplateId, (byte)SocketingKind.Extract, true));
                     character.Inventory.Bag.ConsumeItem(ItemTaskType.SkillEffectGainItem, gemItem.TemplateId, 1, gemItem);
-
-                    //character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Socketing,
-                    //[
-                    //    new ItemUpdate(equipItem),
-                    //    gemItem.Count > 1
-                    //        ? new ItemCountUpdate(gemItem, -1)
-                    //        : new ItemRemove(gemItem)
-                    //], [], 0));
-                    //character.SendPacket(new SCSocketingResultPacket((int)SocketingKind.Extract, skillTargetItem.Id, gemItem.TemplateId, (byte)SocketingKind.Extract, true));
                 }
 
                 break;
@@ -200,71 +163,7 @@ public class ItemSocketing : SpecialEffectAction
                 character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Socketing, tasksSocketing, []));
                 character.SendPacket(new SCSocketingResultPacket((int)SocketingKind.Destroy, skillTargetItem.Id, gemItem.TemplateId, (byte)SocketingKind.Destroy, true));
                 character.Inventory.Bag.ConsumeItem(ItemTaskType.SkillEffectGainItem, gemItem.TemplateId, gemCount - 1, gemItem);
-
-                //character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Socketing,
-                //[
-                //    new ItemUpdate(equipItem),
-                //    gemItem.Count > gemCount - 1
-                //        ? new ItemCountUpdate(gemItem, -(gemCount - 1))
-                //        : new ItemRemove(gemItem)
-                //], [], 0));
-                //character.SendPacket(new SCSocketingResultPacket((int)SocketingKind.Destroy, skillTargetItem.Id, gemItem.TemplateId, (byte)SocketingKind.Destroy, true));
-
                 break;
         }
-    }
-
-    private static void GetGem(EquipItem equipItem, int i, Character owner)
-    {
-        var extractedGemId = equipItem.GemIds[i + Offset];
-        equipItem.GemIds[i + Offset] = 0;
-        owner.Inventory.Bag.AcquireDefaultItem(ItemTaskType.SkillEffectGainItem, extractedGemId, 1, equipItem.Grade);
-    }
-
-    private static void PutGem(Item gemItem, EquipItem equipItem)
-    {
-        var gemRoll = Rand.Next(0, 101);
-        var gemChance = ItemGameData.Instance.GetSocketChance(gemItem);
-        if (gemRoll < gemChance)
-        {
-            for (var i = 0; i < MaximumSlots; i++)
-            {
-                if (equipItem.GemIds[i + Offset] != 0)
-                    continue;
-
-                equipItem.GemIds[i + Offset] = gemItem.TemplateId;
-                break;
-            }
-        }
-    }
-
-    private static void UpdateCells(EquipItem equipItem, int writeIndex)
-    {
-        // Move filled cells to the beginning, starting with the first empty cell
-        for (var readIndex = writeIndex + 1; readIndex < MaximumSlots; readIndex++)
-        {
-            if (equipItem.GemIds[readIndex + Offset] == 0)
-                continue;
-
-            // If the current cell is not empty, move its value to the cell with index writeIndex
-            equipItem.GemIds[writeIndex + Offset] = equipItem.GemIds[readIndex + Offset];
-            equipItem.GemIds[readIndex + Offset] = 0;
-            writeIndex++;
-        }
-    }
-
-    private static int GemCount(EquipItem equipItem)
-    {
-        var gemCount = 0;
-        for (var index = 0; index < MaximumSlots; index++)
-        {
-            var gem = equipItem.GemIds[index + Offset];
-            if (gem != 0)
-            {
-                gemCount++;
-            }
-        }
-
-        return gemCount;
     }
 }

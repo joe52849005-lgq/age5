@@ -23,7 +23,7 @@ public class SkillUse : SpecialEffectAction
         int skillId,
         int delay,
         int chance,
-        int value4)
+        int value4, int value5, int value6, int value7)
     {
         // TODO ...
         if (caster is Character) { Logger.Debug("Special effects: SkillUse skillId {0}, delay {1}, value3 {2}, value4 {3}", skillId, delay, chance, value4); }

@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
-using AAEmu.Game.Core.Packets.G2C;
+﻿using AAEmu.Game.Core.Packets.G2C;
+using AAEmu.Game.GameData;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.DoodadObj.Templates;
 using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Items.Actions;
+using AAEmu.Game.Models.Game.Items.Templates;
 using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.Units;
 
@@ -15,8 +16,7 @@ public class MagicalEnchant : IWorldInteraction
 {
     private static Logger Logger { get; } = LogManager.GetCurrentClassLogger();
 
-    public void Execute(BaseUnit caster, SkillCaster casterType, BaseUnit target, SkillCastTarget targetType,
-        uint skillId, uint itemId, DoodadFuncTemplate objectFunc = null)
+    public void Execute(BaseUnit caster, SkillCaster casterType, BaseUnit target, SkillCastTarget targetType, uint skillId, uint itemId, DoodadFuncTemplate objectFunc = null)
     {
         // Validate caster
         if (caster is not Character character)
@@ -54,17 +54,36 @@ public class MagicalEnchant : IWorldInteraction
             return;
         }
 
+        if (!(equipItem is { Template: EquipItemTemplate equipItemTemplate }))
+        {
+            Logger.Debug($"Attempting to upgrade a non-equipment item. Item={equipItem.Id}");
+            return;
+        }
+
         // Set the RuneId and GemIds
-        equipItem.RuneId = skillItem.ItemTemplateId; // Set the RuneId to the skill item template ID
-        equipItem.GemIds[0] = skillItem.ItemTemplateId; // Set the first gem slot to the skill item template ID
+        //equipItem.RuneId = skillItem.ItemTemplateId; // Set the RuneId to the skill item template ID
+        equipItem.GemIds[1] = skillItem.ItemTemplateId; // Set the first gem slot to the skill item template ID
+
+        // let's spend the money
+        var money = ItemGameData.Instance.GetGoldMul(equipItemTemplate.ItemRndAttrCategoryId, equipItem.Grade);
+        if (money == -1)
+        {
+            // No gold on template, invalid ?
+            return;
+        }
+
+        if (character.Money < money)
+        {
+            character.SendErrorMessage(ErrorMessageType.NotEnoughMoney);
+            return;
+        }
+        character.ChangeMoney(SlotType.Bag, -money);
 
         // Send packets to the client
+        character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.EnchantMagical, [new ItemUpdate(equipItem)], [], 4195041312));
         character.SendPacket(new SCEnchantMagicalResultPacket(true, targetItem.Id, skillItem.ItemTemplateId));
-        character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.EnchantMagical,
-            [new ItemUpdate(equipItem)],
-            []));
 
         // Log the action
-        Logger.Debug("MagicalEnchant executed by {0} on item {1} with skill item {2}", character.Name, itemTarget.Id, skillItem.ItemTemplateId);
+        Logger.Debug($"MagicalEnchant executed by {character.Name} on item {itemTarget.Id} with skill item {skillItem.ItemTemplateId}");
     }
 }

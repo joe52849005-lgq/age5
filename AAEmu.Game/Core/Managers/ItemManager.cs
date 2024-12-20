@@ -27,8 +27,6 @@ using AAEmu.Game.Models.StaticValues;
 using AAEmu.Game.Models.Tasks.Item;
 using AAEmu.Game.Utils.DB;
 
-using Discord;
-
 using MySql.Data.MySqlClient;
 
 using NLog;
@@ -767,12 +765,13 @@ public class ItemManager : Singleton<ItemManager>
                             UpgradeRatio = reader.GetInt32("upgrade_ratio"),
                             StatMultiplier = reader.GetInt32("stat_multiplier"),
                             RefundMultiplier = reader.GetInt32("refund_multiplier"),
+                            HoldableHealDps = reader.GetFloat("var_holdable_heal_dps"),
+                            HoldableMagicResist = reader.GetFloat("var_holdable_magic_resist")
                             //template.EnchantSuccessRatio = reader.GetInt32("grade_enchant_success_ratio"); // there is no such field in the database for version 3.0.3.0
                             //template.EnchantGreatSuccessRatio = reader.GetInt32("grade_enchant_great_success_ratio"); // there is no such field in the database for version 3.0.3.0
                             //template.EnchantBreakRatio = reader.GetInt32("grade_enchant_break_ratio"); // there is no such field in the database for version 3.0.3.0
                             //template.EnchantDowngradeRatio = reader.GetInt32("grade_enchant_downgrade_ratio"); // there is no such field in the database for version 3.0.3.0
                             //template.EnchantCost = reader.GetInt32("grade_enchant_cost"); // there is no such field in the database for version 3.0.3.0
-                            //template.HoldableHealDps = reader.GetFloat("var_holdable_heal_dps"); // there is no such field in the database for version 3.0.3.0
                             //template.EnchantDowngradeMin = reader.GetInt32("grade_enchant_downgrade_min"); // there is no such field in the database for version 3.0.3.0
                             //template.EnchantDowngradeMax = reader.GetInt32("grade_enchant_downgrade_max"); // there is no such field in the database for version 3.0.3.0
                             //template.CurrencyId = reader.GetInt32("currency_id"); // there is no such field in the database for version 3.0.3.0
@@ -1472,7 +1471,8 @@ public class ItemManager : Singleton<ItemManager>
                             Weight8 = reader.GetInt32("weight_8"),
                             Weight9 = reader.GetInt32("weight_9"),
                             Weight10 = reader.GetInt32("weight_10"),
-                            Weight11 = reader.GetInt32("weight_11")
+                            Weight11 = reader.GetInt32("weight_11"),
+                            Weight12 = reader.GetInt32("weight_12")
                         };
                         _itemGradeDistributions.Add(template.Id, template);
                     }

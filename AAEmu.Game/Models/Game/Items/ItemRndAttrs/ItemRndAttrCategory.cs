@@ -1,4 +1,4 @@
-﻿namespace AAEmu.Game.Models.Game.Items.ItemRndAttr;
+﻿namespace AAEmu.Game.Models.Game.Items.ItemRndAttrs;
 
 public class ItemRndAttrCategory
 {

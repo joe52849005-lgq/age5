@@ -23,7 +23,7 @@ public class CapturePet : SpecialEffectAction
         int value1,
         int value2,
         int value3,
-        int value4)
+        int value4, int value5, int value6, int value7)
     {
         // Only players are allowed to capture pets
         if (caster is not Character player)

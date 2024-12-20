@@ -236,17 +236,18 @@ public class LootPack
         {
             distributions.Weight0, distributions.Weight1, distributions.Weight2, distributions.Weight3,
             distributions.Weight4, distributions.Weight5, distributions.Weight6, distributions.Weight7,
-            distributions.Weight8, distributions.Weight9, distributions.Weight10, distributions.Weight11
+            distributions.Weight8, distributions.Weight9, distributions.Weight10, distributions.Weight11,
+            distributions.Weight12
         };
 
         var old = 0;
         var gradeDrop = Rand.Next(0, 100);
-        for (byte i = 0; i <= 11; i++)
+        for (byte i = 0; i <= 12; i++)
         {
             if (gradeDrop <= array[i] + old)
             {
                 gradeId = i;
-                i = 11;
+                i = 12;
             }
             else
             {

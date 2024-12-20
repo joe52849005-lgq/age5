@@ -19,7 +19,7 @@ public class GainItem : SpecialEffectAction
         int value1, // Item TemplateId
         int value2, // Item Count
         int value3,
-        int value4
+        int value4, int value5, int value6, int value7
     )
     {
         // TODO ...
