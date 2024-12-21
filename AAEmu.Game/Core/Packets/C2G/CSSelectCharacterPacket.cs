@@ -108,9 +108,9 @@ public class CSSelectCharacterPacket : GamePacket
             }
 
             //FactionManager.Instance.SendFactions(Connection.ActiveChar);
-            //ExpeditionManager.Instance.SendExpeditions(Connection.ActiveChar);
-            //ExpeditionManager.SendMyExpeditionInfo(Connection.ActiveChar);
-            //FactionManager.Instance.SendRelations(Connection.ActiveChar);
+            ExpeditionManager.Instance.SendExpeditions(Connection.ActiveChar);
+            ExpeditionManager.SendMyExpeditionInfo(Connection.ActiveChar);
+            FactionManager.Instance.SendRelations(Connection.ActiveChar);
 
             Connection.ActiveChar.SendOption(4);
             Connection.ActiveChar.SendOption(5);

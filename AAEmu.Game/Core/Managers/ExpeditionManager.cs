@@ -689,12 +689,14 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
 
     public void SendExpeditions(Character character)
     {
-        if (_expeditions.Values.Count > 0)
+        if (_expeditions.Values.Count == 0)
+            character.SendPacket(new SCExpeditionListPacket());
+        else
         {
             var expeditions = _expeditions.Values.ToArray();
             var dividedArrays = Helpers.SplitArray(expeditions, 20); // Разделяем массив на массивы по 20 значений
-            foreach (SystemFaction[] expedition in dividedArrays)
-                character.SendPacket(new SCSystemFactionListPacket(expedition));
+            foreach (var expedition in dividedArrays)
+                character.SendPacket(new SCExpeditionListPacket(expedition));
         }
     }
 
