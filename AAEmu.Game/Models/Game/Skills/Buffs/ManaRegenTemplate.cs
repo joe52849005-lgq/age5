@@ -2,7 +2,7 @@
 
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Models.Game.Char;
-
+using AAEmu.Game.Models.Game.Formulas;
 using NLog;
 
 namespace AAEmu.Game.Models.Game.Skills.Buffs;
@@ -29,7 +29,7 @@ public class ManaRegenTemplate
         // Formula for Dash seems to be 13 where ab_level is the skill level
         // Dash's skill level is always the same as Character Level (up to max level)
         // TODO: Find the link between Dash buff and Formula 13 and make a proper calculator
-        var manaPerTickFormula = FormulaManager.Instance.GetFormula(13);
+        var manaPerTickFormula = FormulaManager.Instance.GetFormula((uint)UnitFormulaKind.LevelMana);
         var parameters = new Dictionary<string, double>
         {
             { "ab_level", Level }
