@@ -1,5 +1,6 @@
-﻿using System;
+﻿using System.Collections.Generic;
 
+using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Models.Game.Char;
 
 using NLog;
@@ -8,58 +9,52 @@ namespace AAEmu.Game.Models.Game.Skills.Buffs;
 
 public class ManaRegenTemplate
 {
-    private static Logger Logger { get; } = LogManager.GetCurrentClassLogger();
+    //private static Logger Logger { get; } = LogManager.GetCurrentClassLogger();
     public Character Owner { get; set; }
-    private double Tick { get; set; } // Интервал тика баффа в миллисекундах
-    private double TickLevelManaCost { get; set; } // Стоимость маны за тик на уровне 1
-    private int Level { get; set; } // Уровень персонажа
-    private double PreciseMana { get; set; } // Точное значение маны (если реализовано)
+    private double Tick { get; set; } // Buff tick interval in milliseconds
+    private double TickLevelManaCost { get; set; } // Mana cost multiplier per tick for the used formula 
+    private int Level { get; set; } // Character level
 
-    public ManaRegenTemplate(Character owner, double tick, double tickLevelManaCost, int level, double preciseMana = 0)
+    public ManaRegenTemplate(Character owner, double tick, double tickLevelManaCost, int level)
     {
         Owner = owner;
         Tick = tick;
         TickLevelManaCost = tickLevelManaCost;
         Level = level;
-        PreciseMana = preciseMana;
     }
 
-    // Расчет потребления маны за тик в зависимости от уровня
+    // Calculation of mana consumption per tick depending on level
     private double CalculateManaCostPerTick()
     {
-        // Формула для расчета потребления маны за тик
-        //var manaPerTick = TickLevelManaCost * Level;
-        var manaPerTick = 3.33 * Level + 11.67;
+        // Formula for Dash seems to be 13 where ab_level is the skill level
+        // Dash's skill level is always the same as Character Level (up to max level)
+        // TODO: Find the link between Dash buff and Formula 13 and make a proper calculator
+        var manaPerTickFormula = FormulaManager.Instance.GetFormula(13);
+        var parameters = new Dictionary<string, double>
+        {
+            { "ab_level", Level }
+        };
+        var manaPerTick = manaPerTickFormula.Evaluate(parameters) * TickLevelManaCost;
         return manaPerTick;
     }
 
-    // Расчет потребления маны в секунду
-    private double CalculateManaCostPerSecond()
-    {
-        var manaPerTick = CalculateManaCostPerTick();
-        var manaPerSecond = manaPerTick * 5; // Перевод миллисекунд в секунды
-        return manaPerSecond;
-    }
-
-    // Метод для применения баффа с учетом потребления маны
+    // Method for applying a buff based on mana consumption
     public bool ApplyBuff(Character character)
     {
         var manaPerTick = CalculateManaCostPerTick();
-        //var manaPerSecond = CalculateManaCostPerSecond();
 
-        // Проверка, может баффа уже нет
         if (!character.Buffs.CheckBuff((uint)BuffConstants.Dash))
             return false;
-        // Проверка на достаточность маны
+        // Checking for sufficient mana
         if (character.Mp >= manaPerTick)
         {
-            // Уменьшение маны за тик
+            // Mana reduction per tick
             character.ReduceCurrentMp(null, (int)manaPerTick);
             return true;
         }
 
-        // Если маны недостаточно, бафф не применяется
-        //Logger.Debug("Not enough mana to apply the buff.");
+        // If there is not enough mana, the buff will not be applied
+        // Logger.Debug("Not enough mana to apply the buff.");
         return false;
     }
 }
