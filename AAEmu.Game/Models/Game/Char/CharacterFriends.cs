@@ -22,18 +22,21 @@ public class CharacterFriends
     public void AddFriend(string name)
     {
         var friend = FriendMananger.GetFriendInfo(name);
+        if (Owner.Name == name)
+        {
+            Owner.SendErrorMessage(ErrorMessageType.CannotAddFriendSelf);
+            return;
+        }
         if (friend == null || FriendsIdList.ContainsKey(friend.CharacterId))
         {
-            // TODO - ERROR MESSAGE ALREADY ADDED
+            Owner.SendErrorMessage(ErrorMessageType.AddFriend);
             return;
         }
 
-        var template = new FriendTemplate()
-        {
-            Id = FriendIdManager.Instance.GetNextId(),
-            FriendId = friend.CharacterId,
-            Owner = Owner.Id
-        };
+        var template = new FriendTemplate();
+        template.Id = FriendIdManager.Instance.GetNextId();
+        template.FriendId = friend.CharacterId;
+        template.Owner = Owner.Id;
         FriendsIdList.Add(friend.CharacterId, template);
         FriendMananger.Instance.AddToAllFriends(template);
         Owner.SendPacket(new SCAddFriendPacket(friend, true, 0));
@@ -44,7 +47,7 @@ public class CharacterFriends
         var friend = FriendMananger.GetFriendInfo(name);
         if (friend == null || !FriendsIdList.ContainsKey(friend.CharacterId))
         {
-            // TODO - ERROR MESSAGE NOT FRIEND
+            Owner.SendErrorMessage(ErrorMessageType.DeleteFriend);
             return;
         }
 

@@ -22,6 +22,7 @@ public class ExpeditionMember : PacketMarshaler
     public DateTime LastWorldLeaveTime { get; set; }
     public string Name { get; set; }
     public byte Level { get; set; }
+    public byte HeirLevel { get; set; }
     public uint ZoneId { get; set; }
     public uint Id3 { get; set; } // TODO mb system faction.Id?
     public byte[] Abilities { get; set; } = [11, 11, 11];
@@ -39,8 +40,9 @@ public class ExpeditionMember : PacketMarshaler
         InParty = character.InParty;
         Position = character.Transform.World.Position;
         ZoneId = character.Transform.ZoneId;
-        Abilities = new[] { (byte)character.Ability1, (byte)character.Ability2, (byte)character.Ability3 };
+        Abilities = [(byte)character.Ability1, (byte)character.Ability2, (byte)character.Ability3];
         Level = character.Level;
+        HeirLevel = character.HeirLevel;
         Name = character.Name;
         LastWorldLeaveTime = DateTime.UtcNow;
     }
@@ -116,6 +118,7 @@ public class ExpeditionMember : PacketMarshaler
         stream.Write(LastWorldLeaveTime);
         stream.Write(Name);
         stream.Write(Level);
+        stream.Write(HeirLevel);
         stream.Write(ZoneId);
         stream.Write(Id3);
         foreach (var ability in Abilities)

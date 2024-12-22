@@ -30,7 +30,7 @@
         //public const ushort SCInitialConfigPacket = 0x13D;
         //public const ushort SCTrionConfigPacket = 0x0AF;
         public const ushort SCTowerConfigPacket = 0x2F9; //off_39E9A3BC
-        public const ushort SCExpeditionListPacket = 0x001;
+        public const ushort SCSystemFactionListPacket = 0x001;
         public const ushort SCNationMemberListPacket = 0x003;
         public const ushort SCExpeditionRolePolicyListPacket = 0x263;
         public const ushort SCExpeditionRolePolicyChangedPacket = 0x097;
@@ -62,7 +62,7 @@
         public const ushort SCExpeditionMemberStatusChangedPacket = 0x024;
         public const ushort SCFactionOwnerChangedPacket = 0x071;
         public const ushort SCExpeditionImmigrationListPacket = 0x1A6;
-        public const ushort SCExpeditionDescReceivedPacket = 0x109;
+        public const ushort SCExpeditionDescReceivedPacket = 0x109; // SCExpeditionListPacket
         public const ushort SCExpeditionExpAddReceivedPacket = 0x174;
         public const ushort SCNationMemberCountListPacket = 0x2C3;
         public const ushort SCNationRelationVotePacket = 0x0CA;
@@ -700,7 +700,7 @@
         public const ushort SCItemAcquisitionPacket = 0x216;
         public const ushort SCItemGradeEnchantResultPacket = 0x103;
         public const ushort SCItemTemperingResultPacket = 0x02C; // off_39E9E638
-        public const ushort SCItemAwakeningResultPacket = 0x1D9; // off_39E9E660
+        public const ushort SCLinkTextForEnchantBroadcastPacket = 0x1D9; // off_39E9E660 SCItemAwakeningResultPacket
         public const ushort off_39E9E670 = 0x279;
         public const ushort SCCvfCombatPacket = 0x076;
         public const ushort SCAddHousePacket = 0x235;
@@ -851,7 +851,7 @@
         public const ushort SCCvFCombatRelationshipPacket = 0xFFF;
         public const ushort SCRefreshInCharacterListPacket = 0x1DB; // то же самое, что SCRaceCongestionPacket
         public const ushort SCTutorialSavedPacket = 0xFFF;
-        public const ushort SCSystemFactionListPacket = 0xFFF;
+        public const ushort SCExpeditionListPacket = 0xFFF;
         //public const ushort SCSearchListPacket = 0xFFF;
         public const ushort SCOtherTradeItemTookdownPacket = 0xFFF;
         //public const ushort SCAuctionSearchedPacket = 0xFFF;

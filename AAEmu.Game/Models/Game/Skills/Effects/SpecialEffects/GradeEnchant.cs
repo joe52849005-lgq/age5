@@ -1,5 +1,5 @@
 ﻿using System;
-
+using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.GameData;
 using AAEmu.Game.Models.Game.Char;
@@ -147,12 +147,11 @@ public class GradeEnchant : SpecialEffectAction
         }
 
         character.SendPacket(new SCItemGradeEnchantResultPacket((byte)result, item, initialGrade, item.Grade, 0u, 0, false));
-        //character.BroadcastPacket(new SCSkillEndedPacket(skill.TlId), true);
 
-        //// Let the world know if we got lucky enough
-        //if (item.Grade >= 8 && (result == GradeEnchantResult.Success || result == GradeEnchantResult.GreatSuccess))
-        //{
-        //    WorldManager.Instance.BroadcastPacketToServer(new SCGradeEnchantBroadcastPacket(character.Name, (byte)result, item, initialGrade, item.Grade));
-        //}
+        // Let the world know if we got lucky enough
+        if (item.Grade >= 8 && result is GradeEnchantResult.Success or GradeEnchantResult.GreatSuccess)
+        {
+            WorldManager.Instance.BroadcastPacketToServer(new SCLinkTextForEnchantBroadcastPacket(character.Name, (byte)result, item, initialGrade, item.Grade));
+        }
     }
 }

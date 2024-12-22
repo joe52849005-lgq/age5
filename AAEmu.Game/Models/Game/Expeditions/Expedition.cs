@@ -90,11 +90,7 @@ public class Expedition : SystemFaction
 
     public ExpeditionRolePolicy GetPolicyByRole(byte role)
     {
-        foreach (var policy in Policies)
-            if (policy.Role == role)
-                return policy;
-
-        return null;
+        return Policies.FirstOrDefault(policy => policy.Role == role);
     }
 
     /// <summary>
@@ -104,10 +100,7 @@ public class Expedition : SystemFaction
     /// <returns></returns>
     public ExpeditionMember GetMember(Character character)
     {
-        foreach (var member in Members)
-            if (member.CharacterId == character.Id)
-                return member;
-        return null;
+        return Members.FirstOrDefault(member => member.CharacterId == character.Id);
     }
 
     /// <summary>
@@ -117,10 +110,7 @@ public class Expedition : SystemFaction
     /// <returns></returns>
     public ExpeditionMember GetMember(uint characterId)
     {
-        foreach (var member in Members)
-            if (member.CharacterId == characterId)
-                return member;
-        return null;
+        return Members.FirstOrDefault(member => member.CharacterId == characterId);
     }
 
     public void SendPacket(GamePacket packet)

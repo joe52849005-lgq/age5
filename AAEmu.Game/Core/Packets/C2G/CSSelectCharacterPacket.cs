@@ -107,7 +107,7 @@ public class CSSelectCharacterPacket : GamePacket
                 Connection.SendPacket(new SCConflictZoneStatePacket(conflict.ZoneGroupId, conflict.CurrentZoneState, conflict.NextStateTime));
             }
 
-            //FactionManager.Instance.SendFactions(Connection.ActiveChar);
+            FactionManager.Instance.SendFactions(Connection.ActiveChar);
             ExpeditionManager.Instance.SendExpeditions(Connection.ActiveChar);
             ExpeditionManager.SendMyExpeditionInfo(Connection.ActiveChar);
             FactionManager.Instance.SendRelations(Connection.ActiveChar);

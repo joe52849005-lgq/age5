@@ -48,7 +48,7 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
         expedition.Created = DateTime.UtcNow;
         expedition.AggroLink = false;
         expedition.DiplomacyTarget = false;
-        expedition.Members = new List<ExpeditionMember>();
+        expedition.Members = [];
         expedition.Policies = GetDefaultPolicies(expedition.Id);
         //expedition.Recruitments = new List<ExpeditionRecruitment>();
 
@@ -321,13 +321,9 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
 
         owner.Money -= AppConfiguration.Instance.Expedition.Create.Cost;
         owner.SendPacket(
-            new SCItemTaskSuccessPacket(
-                ItemTaskType.ExpeditionCreation,
-                new List<ItemTask>
-                {
-                    new MoneyChange(-AppConfiguration.Instance.Expedition.Create.Cost)
-                },
-                new List<ulong>())
+            new SCItemTaskSuccessPacket(ItemTaskType.ExpeditionCreation,
+                [new MoneyChange(-AppConfiguration.Instance.Expedition.Create.Cost)],
+                [])
         );
         // -----------------
 
@@ -346,14 +342,18 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
         var members = membersList.ToArray();
 
         //owner.SendPacket(new SCFactionCreatedPacket(expedition, owner.ObjId, new[] { (owner.ObjId, owner.Id, owner.Name) }));
+        // шлем только игроку
         owner.SendPacket(new SCExpeditionCreatedPacket(expedition, owner.ObjId, members));
+        // посылаем всем игрокам на сервере
         WorldManager.Instance.BroadcastPacketToServer(new SCSystemFactionListPacket(expedition));
-        owner.BroadcastPacket(new SCUnitExpeditionChangedPacket(owner.ObjId, owner.Id, "", owner.Name, 0, expedition.Id, false), true);
+        // ниже мы посылаем тот же самый пакет, закомментировал для устранения дублей
+        //owner.BroadcastPacket(new SCUnitExpeditionChangedPacket(owner.ObjId, owner.Id, "", owner.Name, 0, expedition.Id, false), true);
 
         foreach (var m in validMembers)
         {
             if (m.Character.Id == owner.Id)
             {
+                // шлем всем игрокам, которые рядом
                 owner.BroadcastPacket(new SCUnitExpeditionChangedPacket(owner.ObjId, owner.Id, "", owner.Name, 0, expedition.Id, false), true);
                 SendMyExpeditionInfo(owner);
                 ChatManager.Instance.GetGuildChat(expedition).JoinChannel(owner);
@@ -371,7 +371,8 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
             expedition.OnCharacterLogin(invited);
         }
 
-        SendMyExpeditionDescInfo(owner);
+        // выше мы посылаем тот же самый пакет, закомментировал для устранения дублей
+        //SendMyExpeditionDescInfo(owner);
 
         // закомментируйте, это для проверки работы "Набор игроков"
         AddRecruitment(owner, 63, 3, "Welcome!");
@@ -592,7 +593,7 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
             }
             character.SendPacket(new SCExpeditionMemberListEndPacket(total, character.Expedition.Id));
 
-            character.SendPacket(new SCExpeditionDescReceivedPacket(character.Expedition));
+            SendMyExpeditionDescInfo(character);
         }
     }
 
@@ -689,14 +690,12 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
 
     public void SendExpeditions(Character character)
     {
-        if (_expeditions.Values.Count == 0)
-            character.SendPacket(new SCExpeditionListPacket());
-        else
+        if (_expeditions.Values.Count > 0)
         {
             var expeditions = _expeditions.Values.ToArray();
             var dividedArrays = Helpers.SplitArray(expeditions, 20); // Разделяем массив на массивы по 20 значений
-            foreach (var expedition in dividedArrays)
-                character.SendPacket(new SCExpeditionListPacket(expedition));
+            foreach (SystemFaction[] expedition in dividedArrays)
+                character.SendPacket(new SCSystemFactionListPacket(expedition));
         }
     }
 

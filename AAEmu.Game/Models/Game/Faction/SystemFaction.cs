@@ -20,6 +20,7 @@ public class SystemFaction : PacketMarshaler
     public bool GuardHelp { get; set; }
     public byte AllowChangeName { get; set; }
     public DateTime Created { get; set; }
+    public DateTime RenameTime { get; set; }
 
     public Dictionary<FactionsEnum, FactionRelation> Relations { get; set; } = new();
 
@@ -74,18 +75,18 @@ public class SystemFaction : PacketMarshaler
 
     public override PacketStream Write(PacketStream stream)
     {
-        stream.Write((uint)Id);                // type
-        stream.Write((uint)MotherId);          // type
-        stream.Write(Name);              // name
-        stream.Write(OwnerId);           // ownerId Int32
-        stream.Write(OwnerName);         // ownerName
-        stream.Write(UnitOwnerType);     // UnitOwnerType Byte
-        stream.Write(PoliticalSystem);   // PoliticalSystem Byte
-        stream.Write(Created);           // createdTime
-        stream.Write(AggroLink);         // aggroLink
-        stream.Write(DiplomacyTarget);   // dTarget
-        stream.Write(AllowChangeName);   // allowChangeName
-        stream.Write(0L);                // renameTime
+        stream.Write((uint)Id);        // type
+        stream.Write((uint)MotherId);  // type
+        stream.Write(Name);            // name
+        stream.Write(OwnerId);         // ownerId Int32
+        stream.Write(OwnerName);       // ownerName
+        stream.Write(UnitOwnerType);   // UnitOwnerType Byte
+        stream.Write(PoliticalSystem); // PoliticalSystem Byte
+        stream.Write(Created);         // createdTime
+        stream.Write(AggroLink);       // aggroLink
+        stream.Write(DiplomacyTarget); // dTarget
+        stream.Write(AllowChangeName); // allowChangeName
+        stream.Write(RenameTime);      // renameTime
         return stream;
     }
 }

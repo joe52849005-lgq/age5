@@ -1,7 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
 using AAEmu.Commons.Network;
+using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Network.Game;
 using AAEmu.Game.Models.Game.Char;
+
 using MySql.Data.MySqlClient;
 
 namespace AAEmu.Game.Models.Game;
@@ -11,19 +16,39 @@ public class Family : PacketMarshaler
     private List<uint> _removedMembers;
 
     public uint Id { get; init; }
-    public List<FamilyMember> Members { get; } = new();
+    public string Name { get; init; }
+    public int Level { get; init; }
+    public int Exp { get; init; }
+    public string Content1 { get; init; }
+    public string Content2 { get; init; }
+    public int IncMemberCount { get; init; }
+    public DateTime ResetTime { get; set; }
+    public DateTime ChangeNameTime { get; set; }
+    
+    public List<FamilyMember> Members { get; } = [];
 
     public Family()
     {
-        _removedMembers = new List<uint>();
+        _removedMembers = [];
     }
 
     public override PacketStream Write(PacketStream stream)
     {
-        stream.Write(Id);
+        stream.Write(Id); // family
         stream.Write(Members.Count); // TODO max length 8
         foreach (var member in Members)
-            stream.Write(member);
+        {
+            member.Write(stream);
+        }
+        stream.Write(Name);           // name
+        stream.Write(Level);          // level
+        stream.Write(Exp);            // exp
+        stream.Write(Content1);       // content1
+        stream.Write(Content2);       // content2
+        stream.Write(IncMemberCount); // incMemberCount
+        stream.Write(ResetTime);      // resetTime
+        stream.Write(ChangeNameTime); // changeNameTime
+
         return stream;
     }
 
@@ -47,39 +72,32 @@ public class Family : PacketMarshaler
 
     public FamilyMember GetMember(Character character)
     {
-        foreach (var member in Members)
-            if (member.Id == character.Id)
-                return member;
-
-        return null;
+        return Members.FirstOrDefault(member => member.Id == character.Id);
     }
 
     public void SendPacket(GamePacket packet, uint exclude = 0)
     {
-        foreach (var member in Members)
-            if (member.Id != exclude)
-                member.Character?.SendPacket(packet);
+        foreach (var member in Members.Where(member => member.Id != exclude))
+            member.Character?.SendPacket(packet);
     }
 
     public void Load(MySqlConnection connection)
     {
-        using (var command = connection.CreateCommand())
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM family_members WHERE family_id=@family_id";
+        command.Parameters.AddWithValue("family_id", Id);
+        command.Prepare();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
         {
-            command.CommandText = "SELECT * FROM family_members WHERE family_id=@family_id";
-            command.Parameters.AddWithValue("family_id", Id);
-            command.Prepare();
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    var member = new FamilyMember();
-                    member.Id = reader.GetUInt32("character_id");
-                    member.Name = reader.GetString("name");
-                    member.Role = reader.GetByte("role");
-                    member.Title = reader.GetString("title");
-                    AddMember(member);
-                }
-            }
+            var member = new FamilyMember();
+            member.Id = reader.GetUInt32("character_id");
+            member.Name = reader.GetString("name");
+            member.Role = reader.GetByte("role");
+            member.Title = reader.GetString("title");
+            // TODO взять данные персонажа
+            member.Character = WorldManager.Instance.GetCharacterById(member.Id);
+            AddMember(member);
         }
     }
 
@@ -139,20 +157,23 @@ public class Family : PacketMarshaler
 public class FamilyMember : PacketMarshaler
 {
     public Character Character { get; set; }
-
     public uint Id { get; set; }
     public string Name { get; set; }
     public byte Role { get; set; }
     public bool Online => Character != null;
     public string Title { get; set; }
+    public DateTime RoleUpdateTime { get; set; }
 
     public override PacketStream Write(PacketStream stream)
     {
-        stream.Write(Id);
-        stream.Write(Name);
-        stream.Write(Role);
-        stream.Write(Online);
-        stream.Write(Title);
+        stream.Write(Id);                  // member
+        stream.Write(Name);                // memberName
+        stream.Write(Character.Level);     // level
+        stream.Write(Character.HeirLevel); // heirLevel
+        stream.Write(Role);                // role
+        stream.Write(Online);              // online
+        stream.Write(Title);               // title
+        stream.Write(RoleUpdateTime);      // roleUpdateTime
         return stream;
     }
 }
