@@ -1,4 +1,6 @@
 ﻿using System.Linq;
+
+using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.DoodadObj.Templates;
 using AAEmu.Game.Models.Game.Units;
 
@@ -11,10 +13,13 @@ public class DoodadFuncPulseTrigger : DoodadPhaseFuncTemplate
 
     public override bool Use(BaseUnit caster, Doodad owner)
     {
-        return true;
+        if (caster is not Character)
+        {
+            return true;
+        }
+
         // TODO: Currently disabled because of lacking functionality of Pulse Triggers
 
-        /*
         // Grab the calling PhaseFunc
         var thisPhaseFunc = owner.CurrentPhaseFuncs.FirstOrDefault(x => x.FuncId == Id);
         if (thisPhaseFunc == null)
@@ -22,7 +27,7 @@ public class DoodadFuncPulseTrigger : DoodadPhaseFuncTemplate
             Logger.Warn($"DoodadFuncPulseTrigger Flag={Flag}, NextPhase={NextPhase} was not triggered from a DoodadFuncPulseTrigger");
             return false; // Fail check as there seems to be a mismatch
         }
-        
+
         Logger.Debug($"DoodadFuncPulseTrigger Flag={Flag}, NextPhase={NextPhase}, PulseTriggered={thisPhaseFunc.PulseTriggered}");
 
         if (Flag && !thisPhaseFunc.PulseTriggered)
@@ -34,6 +39,6 @@ public class DoodadFuncPulseTrigger : DoodadPhaseFuncTemplate
         }
 
         return false;
-        */
+
     }
 }
