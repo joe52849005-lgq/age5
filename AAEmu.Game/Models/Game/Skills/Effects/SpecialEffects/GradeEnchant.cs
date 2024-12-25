@@ -5,6 +5,7 @@ using AAEmu.Game.GameData;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Items.Actions;
+using AAEmu.Game.Models.Game.Items.Templates;
 using AAEmu.Game.Models.Game.Skills.Effects.Enums;
 using AAEmu.Game.Models.Game.Units;
 
@@ -78,7 +79,7 @@ public class GradeEnchant : SpecialEffectAction
 
         //var tasks = new List<ItemTask>();
 
-        var cost = ItemGameData.GoldCost(item, itemType);
+        var cost = ItemGameData.GoldCost(item, (ItemImpl)itemType);
         if (cost == -1)
         {
             // No gold on template, invalid ?

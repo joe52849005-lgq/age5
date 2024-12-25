@@ -627,23 +627,30 @@ namespace AAEmu.Game.GameData
             return GradeEnchantResult.Fail2;
         }
 
-        public static int GoldCost(Item item, int itemType, int scaleCost = 0, FormulaKind formulaKind = FormulaKind.GradeEnchantCost)
+        public static int GoldCost(Item item, ItemImpl itemType, int scaleCost = 0, FormulaKind formulaKind = FormulaKind.GradeEnchantCost)
         {
             uint slotTypeId = 0;
             switch (itemType)
             {
-                case 1:
+                case ItemImpl.Weapon:
                     var weaponTemplate = (WeaponTemplate)item.Template;
                     slotTypeId = weaponTemplate.HoldableTemplate.SlotTypeId;
                     break;
-                case 2:
+                case ItemImpl.Armor:
                     var armorTemplate = (ArmorTemplate)item.Template;
                     slotTypeId = armorTemplate.SlotTemplate.SlotTypeId;
                     break;
-                case 24:
+                case ItemImpl.Accessory:
                     var accessoryTemplate = (AccessoryTemplate)item.Template;
                     slotTypeId = accessoryTemplate.SlotTemplate.SlotTypeId;
                     break;
+                //case ItemImpl.SlaveEquipment:
+                //    var slaveEquip = (ItemSlaveEquip)item;
+                //    if (slaveEquip is not null)
+                //    {
+                //        slotTypeId = GetSlaveEquipSlotTypeId(slaveEquip.SlotPackId);
+                //    }
+                //    break;
             }
 
             if (slotTypeId == 0)

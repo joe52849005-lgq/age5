@@ -154,19 +154,21 @@ public class CSBuyItemsPacket : GamePacket
         if (honorPoints > 0)
         {
             Connection.ActiveChar.ChangeGamePoints(GamePointKind.Honor, -honorPoints);
+            tasks.Add(new ChangeGamePoint(GamePointKind.Honor, -honorPoints));
         }
 
         if (vocationBadges > 0)
         {
             Connection.ActiveChar.ChangeGamePoints(GamePointKind.Vocation, -vocationBadges);
+            tasks.Add(new ChangeGamePoint(GamePointKind.Vocation, -vocationBadges));
         }
 
         if (money > 0)
         {
-            //Connection.ActiveChar.ChangeMoney(SlotType.Bag, -money);
-            tasks.Add(new MoneyChange(money));
+            Connection.ActiveChar.ChangeMoney(SlotType.Bag, -money);
+            tasks.Add(new MoneyChange(-money));
         }
 
-        Connection.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.StoreBuy, tasks, new List<ulong>()));
+        Connection.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.StoreBuy, tasks, []));
     }
 }

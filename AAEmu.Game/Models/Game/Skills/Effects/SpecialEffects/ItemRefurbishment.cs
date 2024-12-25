@@ -6,6 +6,7 @@ using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Formulas;
 using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Items.Actions;
+using AAEmu.Game.Models.Game.Items.Templates;
 using AAEmu.Game.Models.Game.Skills.Effects.Enums;
 using AAEmu.Game.Models.Game.Units;
 
@@ -76,7 +77,7 @@ public class ItemRefurbishment : SpecialEffectAction
         equipItem.GemIds[21] = (uint)nextLevel; // equipItem.TemperPhysical
 
         // let's spend the money
-        var money = ItemGameData.GoldCost(equipItem, itemType, currentLevel + 1, FormulaKind.GradeTemperingCost);
+        var money = ItemGameData.GoldCost(equipItem, (ItemImpl)itemType, currentLevel + 1, FormulaKind.GradeTemperingCost);
         if (money == -1)
         {
             // No gold on template, invalid ?
