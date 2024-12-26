@@ -1034,7 +1034,7 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
         var expedition = GetExpedition(GetExpeditionOfCharacter(character.Id));
         foreach (var pretenderId in pretenderIds)
         {
-            var pretender = WorldManager.Instance.GetCharacterById(pretenderId) ?? GetOfflineCharacterInfo(pretenderId);
+            var pretender = WorldManager.Instance.GetCharacterById(pretenderId) ?? WorldManager.Instance.GetOfflineCharacterInfo(pretenderId);
 
             if (pretender == null) { return; }
 
@@ -1075,37 +1075,5 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
             //SendMyExpeditionInfo(pretender);
             //expedition.OnCharacterLogin(pretender);
         }
-    }
-
-    public Character GetOfflineCharacterInfo(uint characterId)
-    {
-        var characterInfo = new Character(new UnitCustomModelParams());
-        using var connection = MySQL.CreateConnection();
-        using var command = connection.CreateCommand();
-        command.CommandText = "SELECT * FROM characters WHERE id IN(" + string.Join(",", characterId) + ")";
-        command.Prepare();
-        using var reader = command.ExecuteReader();
-        while (reader.Read())
-        {
-            characterInfo.Id = reader.GetUInt32("id");
-            characterInfo.Name = reader.GetString("name");
-            characterInfo.Level = reader.GetByte("level");
-            var expeditionId = (FactionsEnum)reader.GetUInt32("expedition_id");
-            if (expeditionId != 0)
-            {
-                var expedition = GetExpedition(expeditionId);
-                characterInfo.Expedition = expedition;
-            }
-            characterInfo.Ability1 = (AbilityType)reader.GetByte("ability1");
-            characterInfo.Ability2 = (AbilityType)reader.GetByte("ability2");
-            characterInfo.Ability3 = (AbilityType)reader.GetByte("ability3");
-            var position = new Transform(null, null, reader.GetUInt32("world_id"), reader.GetUInt32("zone_id"), 1, reader.GetFloat("x"), reader.GetFloat("y"), reader.GetFloat("z"), 0, 0, 0);
-            characterInfo.Transform = position;
-            characterInfo.Transform.ZoneId = position.ZoneId;
-            characterInfo.InParty = false;
-            characterInfo.IsOnline = false;
-        }
-
-        return characterInfo;
     }
 }

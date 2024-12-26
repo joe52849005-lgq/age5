@@ -12,6 +12,7 @@ public class CSFamilyLeavePacket : GamePacket
 
     public override void Read(PacketStream stream)
     {
+        // empty body
         if (Connection.ActiveChar.Family > 0)
             FamilyManager.Instance.LeaveFamily(Connection.ActiveChar);
         Logger.Debug("FamilyLeave");

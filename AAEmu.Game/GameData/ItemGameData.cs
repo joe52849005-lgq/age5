@@ -16,6 +16,7 @@ using AAEmu.Game.Models.Game.Items.ItemRndAttr;
 using AAEmu.Game.Models.Game.Items.ItemRndAttrs;
 using AAEmu.Game.Models.Game.Items.ItemSockets;
 using AAEmu.Game.Models.Game.Items.Mappings;
+using AAEmu.Game.Models.Game.Items.Slave;
 using AAEmu.Game.Models.Game.Items.Templates;
 using AAEmu.Game.Models.Game.Skills.Effects.Enums;
 using AAEmu.Game.Models.Game.Skills.Templates;

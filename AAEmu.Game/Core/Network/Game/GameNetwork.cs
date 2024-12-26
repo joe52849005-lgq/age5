@@ -202,10 +202,10 @@ public class GameNetwork : Singleton<GameNetwork>
         RegisterPacket(CSOffsets.CSFamilyKickPacket, 5, typeof(CSFamilyKickPacket));
         RegisterPacket(CSOffsets.CSFamilyChangeTitlePacket, 5, typeof(CSFamilyChangeTitlePacket));
         RegisterPacket(CSOffsets.CSFamilyChangeOwnerPacket, 5, typeof(CSFamilyChangeOwnerPacket));
-        //RegisterPacket(CSOffsets.CSFamilySetNamePacket, 5, typeof(CSFamilySetNamePacket));
-        //RegisterPacket(CSOffsets.CSFamilySetContentPacket, 5, typeof(CSFamilySetContentPacket));
-        //RegisterPacket(CSOffsets.CSFamilyOpenIncreaseMemberPacket, 5, typeof(CSFamilyOpenIncreaseMemberPacket));
-        //RegisterPacket(CSOffsets.CSFamilyChangeMemberRolePacket, 5, typeof(CSFamilyChangeMemberRolePacket));
+        RegisterPacket(CSOffsets.CSFamilySetNamePacket, 5, typeof(CSFamilySetNamePacket));
+        RegisterPacket(CSOffsets.CSFamilySetContentPacket, 5, typeof(CSFamilySetContentPacket));
+        RegisterPacket(CSOffsets.CSFamilyOpenIncreaseMemberPacket, 5, typeof(CSFamilyOpenIncreaseMemberPacket));
+        RegisterPacket(CSOffsets.CSFamilyChangeMemberRolePacket, 5, typeof(CSFamilyChangeMemberRolePacket));
         RegisterPacket(CSOffsets.CSFamilyReplyInvitationPacket, 5, typeof(CSFamilyReplyInvitationPacket));
         RegisterPacket(CSOffsets.CSAddFriendPacket, 5, typeof(CSAddFriendPacket));
         RegisterPacket(CSOffsets.CSDeleteFriendPacket, 5, typeof(CSDeleteFriendPacket));

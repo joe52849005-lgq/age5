@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using AAEmu.Commons.Utils;
 using AAEmu.Commons.Utils.DB;
@@ -7,7 +8,7 @@ using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
-
+using AAEmu.Game.Models.Game.Items.Actions;
 using NLog;
 
 namespace AAEmu.Game.Core.Managers;
@@ -98,7 +99,16 @@ public class FamilyManager : Singleton<FamilyManager>
     {
         var invited = WorldManager.Instance.GetCharacter(invitedCharacterName);
         if (invited is { Family: 0 })
-            invited.SendPacket(new SCFamilyInvitationPacket(inviter.Id, inviter.Name, 1, title));
+        {
+            inviter.Inventory.Bag.ConsumeItem(ItemTaskType.FamilyJoin, 41419u, 1, null);
+            // TODO проверить, забирается ли предмет?
+            //inviter.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.FamilyJoin,
+            //    [new ItemCountUpdate(item)], // ID=41419, Регистрационный бланк
+            //    [],
+            //    40));
+
+            invited.SendPacket(new SCFamilyInvitationPacket(inviter.Id, inviter.Name, 0, title));
+        }
     }
 
     /// <summary>
@@ -116,6 +126,8 @@ public class FamilyManager : Singleton<FamilyManager>
         var invitor = WorldManager.Instance.GetCharacterById(invitorId);
         if (invitor == null) return;
 
+        invitedChar.SendPacket(new SCInviteCanceledPacket(3)); // TODO узнать что означает 3
+
         if (invitor.Family == 0)
         {
             CreateFamily(invitor, invitedChar, title);
@@ -128,13 +140,16 @@ public class FamilyManager : Singleton<FamilyManager>
             family.SendPacket(new SCFamilyMemberAddedPacket(family, family.Members.Count - 1));
             SaveFamily(family);
         }
+        invitor.SendPacket(new SCFamilyTitlePacket(invitor.Id, 1, invitor.Name, "", ""));
+        invitedChar.SendPacket(new SCFamilyTitlePacket(invitedChar.Id, 0, invitedChar.Name, "", ""));
+        invitor.BroadcastPacket(new SCSetInstantTimePacket(7, DateTime.UtcNow), true); // TODO узнать что означает 7
     }
 
     private Family CreateFamily(Character invitor, Character invitedChar, string invitedCharTitle)
     {
         var family = new Family
         {
-            Id = FamilyIdManager.Instance.GetNextId()
+            Id = FamilyIdManager.Instance.GetNextId(),
         };
 
         AddFamilyMember(family, invitor);
@@ -306,6 +321,20 @@ public class FamilyManager : Singleton<FamilyManager>
     }
 
     /// <summary>
+    /// Changing the family name
+    /// </summary>
+    /// <param name="owner"></param>
+    /// <param name="newName"></param>
+    public void SetName(Character owner, string newName)
+    {
+        // TODO измени логику для смены имени семьи!
+    }
+    public void SetContent(Character owner, string content1, string content2)
+    {
+        // TODO измени логику для смены контента семьи!
+    }
+
+    /// <summary>
     /// Changes the title of a member
     /// </summary>
     /// <param name="owner"></param>
@@ -322,7 +351,7 @@ public class FamilyManager : Singleton<FamilyManager>
         var member = _familyMembers[memberId];
         member.Title = newTitle;
 
-        family.SendPacket(new SCFamilyTitleChangedPacket(family.Id, memberId, newTitle));
+        family.SendPacket(new SCFamilyMemberTitleChangedPacket(family.Id, memberId, newTitle));
     }
 
     /// <summary>
@@ -342,7 +371,7 @@ public class FamilyManager : Singleton<FamilyManager>
         member.Role = 1;
         previousOwnerMember.Role = 0;
 
-        family.SendPacket(new SCFamilyOwnerChangedPacket(family.Id, memberId));
+        family.SendPacket(new SCFamilyOwnerChangedPacket(family.Id, previousOwnerMember.Id, memberId));
         family.SendPacket(new SCFamilyDescPacket(family));
     }
 

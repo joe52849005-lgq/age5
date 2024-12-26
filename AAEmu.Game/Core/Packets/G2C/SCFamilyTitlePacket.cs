@@ -9,13 +9,15 @@ public class SCFamilyTitlePacket : GamePacket
     private readonly byte _role;
     private readonly string _owner;
     private readonly string _title;
+    private readonly string _name;
 
-    public SCFamilyTitlePacket(uint unitId, byte role, string owner, string title) : base(SCOffsets.SCFamilyTitlePacket, 5)
+    public SCFamilyTitlePacket(uint unitId, byte role, string owner, string title, string name) : base(SCOffsets.SCFamilyTitlePacket, 5)
     {
         _unitId = unitId;
         _role = role;
         _owner = owner;
         _title = title;
+        _name = name;
     }
 
     public override PacketStream Write(PacketStream stream)
@@ -24,6 +26,7 @@ public class SCFamilyTitlePacket : GamePacket
         stream.Write(_role);
         stream.Write(_owner); // TODO max length 128
         stream.Write(_title); // TODO max length 104
+        stream.Write(_name); // TODO max length 256
         return stream;
     }
 }

@@ -3,14 +3,15 @@ using AAEmu.Game.Core.Network.Game;
 
 namespace AAEmu.Game.Core.Packets.G2C;
 
-public class SCFamilyOwnerChangedPacket : GamePacket
+public class SCFamilyMemberRoleChangePacket : GamePacket
 {
     private readonly uint _familyId;
     private readonly uint _oldOwnerId;
     private readonly uint _newOwnerId;
 
-    public SCFamilyOwnerChangedPacket(uint familyId, uint oldOwnerId, uint newOwnerId) : base(SCOffsets.SCFamilyOwnerChangedPacket, 5)
+    public SCFamilyMemberRoleChangePacket(uint familyId, uint oldOwnerId, uint newOwnerId) : base(SCOffsets.SCFamilyMemberRoleChangePacket, 5)
     {
+        // TODO уточнить что за пакет
         _familyId = familyId;
         _oldOwnerId = oldOwnerId;
         _newOwnerId = newOwnerId;

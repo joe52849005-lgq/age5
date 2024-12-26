@@ -8,6 +8,7 @@ using System.Xml;
 
 using AAEmu.Commons.IO;
 using AAEmu.Commons.Utils;
+using AAEmu.Commons.Utils.DB;
 using AAEmu.Commons.Utils.XML;
 using AAEmu.Game.Core.Managers.Id;
 using AAEmu.Game.Core.Network.Game;
@@ -19,11 +20,13 @@ using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.DoodadObj;
 using AAEmu.Game.Models.Game.Gimmicks;
 using AAEmu.Game.Models.Game.NPChar;
+using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Models.Game.World;
 using AAEmu.Game.Models.Game.World.Transform;
 using AAEmu.Game.Models.Game.World.Xml;
 using AAEmu.Game.Models.Game.World.Zones;
+using AAEmu.Game.Models.StaticValues;
 using AAEmu.Game.Utils.DB;
 
 using NLog;
@@ -843,6 +846,39 @@ public class WorldManager : Singleton<WorldManager>, IWorldManager
             if (player.Id.Equals(id))
                 return player;
         return null;
+    }
+
+    public Character GetOfflineCharacterInfo(uint characterId)
+    {
+        var characterInfo = new Character(new UnitCustomModelParams());
+        using var connection = MySQL.CreateConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM characters WHERE id IN(" + string.Join(",", characterId) + ")";
+        command.Prepare();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            characterInfo.Id = reader.GetUInt32("id");
+            characterInfo.Name = reader.GetString("name");
+            characterInfo.Level = reader.GetByte("level");
+            var expeditionId = (FactionsEnum)reader.GetUInt32("expedition_id");
+            if (expeditionId != 0)
+            {
+                var expedition = ExpeditionManager.Instance.GetExpedition(expeditionId);
+                characterInfo.Expedition = expedition;
+            }
+            characterInfo.Family = reader.GetUInt32("family");
+            characterInfo.Ability1 = (AbilityType)reader.GetByte("ability1");
+            characterInfo.Ability2 = (AbilityType)reader.GetByte("ability2");
+            characterInfo.Ability3 = (AbilityType)reader.GetByte("ability3");
+            var position = new Transform(null, null, reader.GetUInt32("world_id"), reader.GetUInt32("zone_id"), 1, reader.GetFloat("x"), reader.GetFloat("y"), reader.GetFloat("z"), 0, 0, 0);
+            characterInfo.Transform = position;
+            characterInfo.Transform.ZoneId = position.ZoneId;
+            characterInfo.InParty = false;
+            characterInfo.IsOnline = false;
+        }
+
+        return characterInfo;
     }
 
     /// <summary>

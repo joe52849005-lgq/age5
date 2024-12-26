@@ -25,11 +25,16 @@ public class Family : PacketMarshaler
     public DateTime ResetTime { get; set; }
     public DateTime ChangeNameTime { get; set; }
     
-    public List<FamilyMember> Members { get; } = [];
+    public List<FamilyMember> Members { get; }
 
     public Family()
     {
         _removedMembers = [];
+        Level = 1;
+        Name = "";
+        Content1 = "";
+        Content2 = "";
+        Members = [];
     }
 
     public override PacketStream Write(PacketStream stream)
@@ -96,7 +101,7 @@ public class Family : PacketMarshaler
             member.Role = reader.GetByte("role");
             member.Title = reader.GetString("title");
             // TODO взять данные персонажа
-            member.Character = WorldManager.Instance.GetCharacterById(member.Id);
+            member.Character = WorldManager.Instance.GetCharacterById(member.Id) ?? WorldManager.Instance.GetOfflineCharacterInfo(member.Id);
             AddMember(member);
         }
     }
@@ -171,7 +176,7 @@ public class FamilyMember : PacketMarshaler
         stream.Write(Character.Level);     // level
         stream.Write(Character.HeirLevel); // heirLevel
         stream.Write(Role);                // role
-        stream.Write(Online);              // online
+        stream.Write(Character.IsOnline);  // online
         stream.Write(Title);               // title
         stream.Write(RoleUpdateTime);      // roleUpdateTime
         return stream;

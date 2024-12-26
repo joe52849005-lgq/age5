@@ -170,7 +170,7 @@ public enum ItemTaskType : byte
     BlessUthstinExpandPage = 161,   // bless-uthstin-expand-page
     BlessUthstinSelectPage = 162,   // bless-uthstin-select-page
     BlessUthstinCopyPage = 163,     // bless-uthstin-copy-page
-    FamilyJoin,                     // family-join
+    FamilyJoin = 166,               // family-join
     FamilyLeave,                    // family-leave
     FamilyKick,                     // family-kick
     FamilyIncMember,                // family-inc-member

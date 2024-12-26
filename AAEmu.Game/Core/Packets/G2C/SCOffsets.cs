@@ -79,8 +79,8 @@
         public const ushort SCFamilyRemovedPacket = 0x233;
         public const ushort SCFamilyMemberRemovedPacket = 0x08C;
         public const ushort SCFamilyOwnerChangedPacket = 0x294;
-        public const ushort SCFamilyTitleChangedPacket = 0x1DE;
-        public const ushort SCFamilyMemberNameChangedPacket = 0x15B;
+        public const ushort SCFamilyMemberTitleChangedPacket = 0x1DE;
+        public const ushort SCFamilyNameChangedPacket = 0x15B;
         public const ushort SCFamilyTitlePacket = 0x1DA;
         public const ushort SCFamilyMemberOnlinePacket = 0x0BB; //off_39E9A70C
         public const ushort SCFamilyMemberRoleChangePacket = 0x1C9;
