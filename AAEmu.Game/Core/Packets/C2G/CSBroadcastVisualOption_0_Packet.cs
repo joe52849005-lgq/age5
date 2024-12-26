@@ -52,7 +52,8 @@ public class CSBroadcastVisualOption_0_Packet : GamePacket
         Connection.SendPacket(new SCActionSlotsPacket(Connection.ActiveChar.Slots));
 
         Connection.ActiveChar.BroadcastPacket(new SCReputationChangedPacket(DateTime.UtcNow, false), true);
-        //Connection.ActiveChar.BroadcastPacket(new SCItemTaskSuccessPacket(ItemTaskType.ItemTaskRemoveHeroReward, [], []), true);
+        // TODO здесь шлем пустой таск с номером 143 (пока не знаю точно, что это)
+        Connection.ActiveChar.BroadcastPacket(new SCItemTaskSuccessPacket(ItemTaskType.ItemTaskBattleCoin, [], []), true);
 
         Connection.ActiveChar.BroadcastPacket(new SCUnitVisualOptionsPacket(Connection.ActiveChar.ObjId, Connection.ActiveChar.VisualOptions), true);
 

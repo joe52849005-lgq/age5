@@ -65,6 +65,9 @@ namespace AAEmu.Game.GameData
         private ConcurrentDictionary<int, ItemEnchantingGem> _itemEnchantingGems;
         private ConcurrentDictionary<int, ItemGradeEnchantingSupport> _itemGradeEnchantingSupports;
 
+        private ConcurrentDictionary<uint, ItemSlaveEquipment> _itemSlaveEquipments;
+        private ConcurrentDictionary<int, SlaveEquipmentEquipSlotPack> _slaveEquipmentEquipSlotPacks;
+
         #region Synthesis
         public BuffTemplate GetItemBuff(uint itemId, byte gradeId)
         {
@@ -467,7 +470,7 @@ namespace AAEmu.Game.GameData
         #endregion Mapping
 
         #region GradeEnchant
-        
+
         public int GetItemEnchantRatioGroupByItemId(int itemId)
         {
             _itemEnchantRatioItems.TryGetValue(itemId, out var value);
@@ -518,7 +521,7 @@ namespace AAEmu.Game.GameData
             {
                 if (itemEnchantRatios.TryGetValue(grade, out var value))
                 {
-                   return value.GradeEnchantCost;
+                    return value.GradeEnchantCost;
                 }
             }
 
@@ -645,13 +648,13 @@ namespace AAEmu.Game.GameData
                     var accessoryTemplate = (AccessoryTemplate)item.Template;
                     slotTypeId = accessoryTemplate.SlotTemplate.SlotTypeId;
                     break;
-                //case ItemImpl.SlaveEquipment:
-                //    var slaveEquip = (ItemSlaveEquip)item;
-                //    if (slaveEquip is not null)
-                //    {
-                //        slotTypeId = GetSlaveEquipSlotTypeId(slaveEquip.SlotPackId);
-                //    }
-                //    break;
+                    //case ItemImpl.SlaveEquipment:
+                    //    var slaveEquip = (ItemSlaveEquip)item;
+                    //    if (slaveEquip is not null)
+                    //    {
+                    //        slotTypeId = GetSlaveEquipSlotTypeId(slaveEquip.SlotPackId);
+                    //    }
+                    //    break;
             }
 
             if (slotTypeId == 0)
@@ -712,8 +715,9 @@ namespace AAEmu.Game.GameData
         #region Sqlite
         public void Load(SqliteConnection connection, SqliteConnection connection2)
         {
-            #region Synthesis
             InitializeDictionaries();
+
+            #region Synthesis
             LoadItemGradeBuffs(connection);
             LoadItemRndAttrCategories(connection);
             LoadItemRndAttrCategoryMaterials(connection);
@@ -743,6 +747,10 @@ namespace AAEmu.Game.GameData
             LoadItemEnchantingGems(connection);
             LoadItemGradeEnchantingSupports(connection);
             #endregion GradeEnchant
+
+            LoadItemSlaveEquipments(connection);
+            LoadSlaveEquipmentEquipSlotPacks(connection);
+
         }
 
         private void InitializeDictionaries()
@@ -778,6 +786,9 @@ namespace AAEmu.Game.GameData
             _itemEnchantingGems = new ConcurrentDictionary<int, ItemEnchantingGem>();
             _itemGradeEnchantingSupports = new ConcurrentDictionary<int, ItemGradeEnchantingSupport>();
             #endregion GradeEnchant
+
+            _itemSlaveEquipments = new ConcurrentDictionary<uint, ItemSlaveEquipment>();
+            _slaveEquipmentEquipSlotPacks = new ConcurrentDictionary<int, SlaveEquipmentEquipSlotPack>();
         }
 
         #region Synthesis
@@ -932,7 +943,9 @@ namespace AAEmu.Game.GameData
                 _itemRndAttrUnitModifiers[modifier.GroupId][modifier.GradeId] = modifier;
             }
         }
+        #endregion Synthesis
 
+        #region Socketing
         private void LoadItemSockets(SqliteConnection connection)
         {
             using var command = connection.CreateCommand();
@@ -1024,6 +1037,9 @@ namespace AAEmu.Game.GameData
             }
         }
 
+        #endregion Socketing
+
+        #region Mapping
         private void LoadItemChangeMappingGroups(SqliteConnection connection)
         {
             using var command = connection.CreateCommand();
@@ -1066,7 +1082,7 @@ namespace AAEmu.Game.GameData
                 _itemChangeMappings[itemChangeMapping.Id] = itemChangeMapping;
             }
         }
-        #endregion
+        #endregion Mapping
 
         #region GradeEnchant
         private void LoadEnchantScaleRatios(SqliteConnection connection)
@@ -1218,6 +1234,51 @@ namespace AAEmu.Game.GameData
             }
         }
         #endregion GradeEnchant
+
+        private void LoadItemSlaveEquipments(SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM item_slave_equipments";
+            command.Prepare();
+            using var sqliteReader = command.ExecuteReader();
+            using var reader = new SQLiteWrapperReader(sqliteReader);
+            while (reader.Read())
+            {
+                var itemSlaveEquipment = new ItemSlaveEquipment
+                {
+                    Id = reader.GetUInt32("id"),
+                    ItemId = reader.GetUInt32("item_id"),
+                    DoodadScale = reader.GetFloat("doodad_scale"),
+                    DoodadId = reader.GetUInt32("doodad_id"),
+                    RequireItemId = reader.GetUInt32("require_item_id"),
+                    SlaveEquipPackId = reader.GetUInt32("slave_equip_pack_id"),
+                    SlaveId = reader.GetUInt32("slave_id"),
+                    SlotPackId = reader.GetUInt32("slot_pack_id")
+                };
+
+                _itemSlaveEquipments[itemSlaveEquipment.Id] = itemSlaveEquipment;
+            }
+        }
+
+        private void LoadSlaveEquipmentEquipSlotPacks(SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM slave_equipment_equip_slot_packs";
+            command.Prepare();
+            using var sqliteReader = command.ExecuteReader();
+            using var reader = new SQLiteWrapperReader(sqliteReader);
+            while (reader.Read())
+            {
+                var slotPack = new SlaveEquipmentEquipSlotPack
+                {
+                    Id = reader.GetInt32("id"),
+                    GradeEnchantCost = reader.GetInt32("grade_enchant_cost"),
+                    Name = reader.GetString("name")
+                };
+
+                _slaveEquipmentEquipSlotPacks[slotPack.Id] = slotPack;
+            }
+        }
 
         public void PostLoad()
         {

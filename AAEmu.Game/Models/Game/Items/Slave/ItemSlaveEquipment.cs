@@ -1,6 +1,6 @@
 ﻿namespace AAEmu.Game.Models.Game.Items.Slave;
 
-public class ItemSlaveEquip
+public class ItemSlaveEquipment
 {
     public uint Id { get; set; }
     public uint ItemId { get; set; }

@@ -151,7 +151,7 @@ public enum ItemTaskType : byte
     GiveRewardItem = 144,           // give-reward-item
     ExchangeAapointFromCash,        // exchange-aapoint-from-cash
     SpendItemFromChat,              // spend-item-from-chat
-    ItemTaskRemoveHeroReward,       // = 143,// item-task-remove-hero-reward
+    ItemTaskRemoveHeroReward,       // item-task-remove-hero-reward
     ExpeditionSummon,               // expedition-summon
     MateRevive,                     // mate-revive
     ExpandAbilitySetSlot,           // expand-ability-set-slot

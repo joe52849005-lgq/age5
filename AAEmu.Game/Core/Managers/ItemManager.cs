@@ -76,7 +76,7 @@ public class ItemManager : Singleton<ItemManager>
     private Dictionary<uint, ItemSet> _itemSets;
 
     // ItemSlaveEquip
-    private Dictionary<uint, ItemSlaveEquip> _ItemSlaveEquips;
+    private Dictionary<uint, ItemSlaveEquipment> _ItemSlaveEquips;
 
     // Events
     public event EventHandler OnItemsLoaded;
@@ -658,7 +658,7 @@ public class ItemManager : Singleton<ItemManager>
         _config = new ItemConfig();
         ItemTimerLock = new();
         LastTimerCheck = DateTime.UtcNow;
-        _ItemSlaveEquips = new Dictionary<uint, ItemSlaveEquip>();
+        _ItemSlaveEquips = new Dictionary<uint, ItemSlaveEquipment>();
 
         SkillManager.Instance.OnSkillsLoaded += OnSkillsLoaded;
 
@@ -1676,7 +1676,7 @@ public class ItemManager : Singleton<ItemManager>
                 {
                     while (reader.Read())
                     {
-                        var template = new ItemSlaveEquip();
+                        var template = new ItemSlaveEquipment();
                         template.Id = reader.GetUInt32("id");
                         template.ItemId = reader.GetUInt32("item_id");
                         template.DoodadScale = reader.GetFloat("doodad_scale");
