@@ -90,14 +90,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50579,
+    "Id": 55337,
     "UnitId": 10913,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3710.012,
-      "Y": 4545.766,
-      "Z": 144.9243,
+      "Y": 4545.76,
+      "Z": 144.95,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 70.3125
@@ -105,14 +105,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50638,
+    "Id": 55396,
     "UnitId": 10913,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3681.774,
-      "Y": 4561.092,
-      "Z": 156.1347,
+      "X": 3681.768,
+      "Y": 4561.09,
+      "Z": 156.1825,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 8.4375
@@ -120,14 +120,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50627,
+    "Id": 55385,
     "UnitId": 10913,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3689.408,
-      "Y": 4547.642,
-      "Z": 149.413,
+      "X": 3689.398,
+      "Y": 4547.639,
+      "Z": 149.4138,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 8.4375
@@ -150,14 +150,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50626,
+    "Id": 55384,
     "UnitId": 10914,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3689.072,
-      "Y": 4566.348,
-      "Z": 156.1397,
+      "X": 3689.07,
+      "Y": 4566.34,
+      "Z": 156.1355,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 75.9375
@@ -165,14 +165,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50619,
+    "Id": 55377,
     "UnitId": 10914,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3703.898,
-      "Y": 4558.98,
-      "Z": 149.413,
+      "X": 3703.889,
+      "Y": 4558.969,
+      "Z": 149.4588,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 75.9375
@@ -180,14 +180,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50609,
+    "Id": 55367,
     "UnitId": 10915,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3704.36,
-      "Y": 4561.46,
-      "Z": 149.413,
+      "X": 3704.352,
+      "Y": 4561.449,
+      "Z": 149.4168,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 120.9375
@@ -195,14 +195,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50613,
+    "Id": 55371,
     "UnitId": 10915,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3690.918,
-      "Y": 4536.194,
-      "Z": 144.9243,
+      "X": 3690.908,
+      "Y": 4536.189,
+      "Z": 144.914,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -56.25
@@ -210,14 +210,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50630,
+    "Id": 55388,
     "UnitId": 10915,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3687.458,
-      "Y": 4548.0,
-      "Z": 149.43,
+      "X": 3687.447,
+      "Y": 4547.988,
+      "Z": 149.4138,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -56.25
@@ -240,14 +240,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50590,
+    "Id": 55348,
     "UnitId": 10915,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3712.316,
-      "Y": 4546.04,
-      "Z": 144.9113,
+      "X": 3712.309,
+      "Y": 4546.039,
+      "Z": 144.914,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 120.9375
@@ -255,14 +255,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50617,
+    "Id": 55375,
     "UnitId": 10915,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3710.472,
+      "X": 3710.461,
       "Y": 4550.02,
-      "Z": 144.9113,
+      "Z": 144.912,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 123.75
@@ -270,14 +270,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50584,
+    "Id": 55342,
     "UnitId": 10915,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3714.364,
-      "Y": 4547.796,
-      "Z": 144.9873,
+      "X": 3714.355,
+      "Y": 4547.789,
+      "Z": 145.026,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 120.9375
@@ -285,14 +285,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50597,
+    "Id": 55355,
     "UnitId": 10915,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3712.008,
-      "Y": 4543.57,
-      "Z": 144.9113,
+      "X": 3711.996,
+      "Y": 4543.568,
+      "Z": 144.95,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 123.75
@@ -330,14 +330,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50581,
+    "Id": 55339,
     "UnitId": 10916,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3552.488,
-      "Y": 4405.684,
-      "Z": 104.1884,
+      "X": 3552.477,
+      "Y": 4405.68,
+      "Z": 104.2316,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 25.3125
@@ -345,14 +345,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50632,
+    "Id": 55390,
     "UnitId": 10917,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3864.84,
-      "Y": 4637.43,
-      "Z": 107.9579,
+      "X": 3864.832,
+      "Y": 4637.42,
+      "Z": 107.919,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 129.375
@@ -360,14 +360,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50595,
+    "Id": 55353,
     "UnitId": 10918,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3951.646,
-      "Y": 4592.45,
-      "Z": 105.0767,
+      "X": 3951.643,
+      "Y": 4592.439,
+      "Z": 105.0849,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 36.5625
@@ -375,14 +375,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50616,
+    "Id": 55374,
     "UnitId": 10918,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3618.258,
-      "Y": 4305.174,
-      "Z": 103.7522,
+      "X": 3618.252,
+      "Y": 4305.17,
+      "Z": 103.7333,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 67.5
@@ -390,14 +390,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50622,
+    "Id": 55380,
     "UnitId": 10919,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3502.826,
-      "Y": 4378.592,
-      "Z": 105.9561,
+      "X": 3502.818,
+      "Y": 4378.59,
+      "Z": 105.9582,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 61.875
@@ -405,14 +405,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50605,
+    "Id": 55363,
     "UnitId": 10919,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3855.028,
-      "Y": 4704.44,
-      "Z": 109.7776,
+      "X": 3855.027,
+      "Y": 4704.43,
+      "Z": 109.8158,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 39.375
@@ -420,14 +420,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50585,
+    "Id": 55343,
     "UnitId": 10921,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3947.884,
-      "Y": 4698.652,
-      "Z": 108.5141,
+      "X": 3947.875,
+      "Y": 4698.648,
+      "Z": 108.5363,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 61.875
@@ -435,14 +435,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50587,
+    "Id": 55345,
     "UnitId": 10921,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3494.974,
-      "Y": 4240.622,
-      "Z": 104.4785,
+      "X": 3494.963,
+      "Y": 4240.619,
+      "Z": 104.5107,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -75.9375
@@ -450,14 +450,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50600,
+    "Id": 55358,
     "UnitId": 10922,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3820.058,
-      "Y": 4869.56,
-      "Z": 109.0993,
+      "X": 3820.057,
+      "Y": 4869.559,
+      "Z": 109.1195,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -73.125
@@ -465,14 +465,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50598,
+    "Id": 55356,
     "UnitId": 10922,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 4920.43,
-      "Y": 4486.99,
-      "Z": 153.8748,
+      "X": 4920.42,
+      "Y": 4486.979,
+      "Z": 153.9216,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 123.75
@@ -480,14 +480,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50637,
+    "Id": 55395,
     "UnitId": 10922,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3469.22,
-      "Y": 4238.56,
-      "Z": 105.9391,
+      "X": 3469.215,
+      "Y": 4238.559,
+      "Z": 105.9402,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -67.5
@@ -495,14 +495,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50586,
+    "Id": 55344,
     "UnitId": 10922,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3926.526,
-      "Y": 4650.826,
-      "Z": 108.316,
+      "X": 3926.525,
+      "Y": 4650.818,
+      "Z": 108.2762,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 87.1875
@@ -510,14 +510,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50624,
+    "Id": 55382,
     "UnitId": 10922,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3595.234,
-      "Y": 4435.612,
-      "Z": 105.758,
+      "X": 3595.229,
+      "Y": 4435.609,
+      "Z": 105.7342,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 143.4375
@@ -525,14 +525,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50580,
+    "Id": 55338,
     "UnitId": 10922,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3930.06,
-      "Y": 4713.306,
-      "Z": 109.5955,
+      "X": 3930.059,
+      "Y": 4713.299,
+      "Z": 109.5957,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -140.625
@@ -540,14 +540,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50596,
+    "Id": 55354,
     "UnitId": 10922,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3565.814,
-      "Y": 4331.112,
-      "Z": 105.3188,
+      "X": 3565.807,
+      "Y": 4331.109,
+      "Z": 105.339,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 123.75
@@ -555,14 +555,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50604,
+    "Id": 55362,
     "UnitId": 10922,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3861.438,
-      "Y": 4653.868,
-      "Z": 109.3604,
+      "X": 3861.428,
+      "Y": 4653.859,
+      "Z": 109.3246,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -165.9375
@@ -570,14 +570,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50629,
+    "Id": 55387,
     "UnitId": 10923,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3545.012,
       "Y": 4441.52,
-      "Z": 105.4339,
+      "Z": 105.423,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 137.8125
@@ -585,14 +585,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50618,
+    "Id": 55376,
     "UnitId": 10924,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3573.418,
-      "Y": 4398.46,
-      "Z": 105.9761,
+      "X": 3573.408,
+      "Y": 4398.449,
+      "Z": 105.9833,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 84.375
@@ -600,14 +600,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50582,
+    "Id": 55340,
     "UnitId": 10925,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3585.968,
-      "Y": 4412.744,
-      "Z": 105.9411,
+      "X": 3585.957,
+      "Y": 4412.738,
+      "Z": 105.9522,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 78.75
@@ -615,14 +615,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50578,
+    "Id": 55336,
     "UnitId": 10926,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3613.584,
-      "Y": 4424.888,
-      "Z": 103.7522,
+      "X": 3613.582,
+      "Y": 4424.879,
+      "Z": 103.7343,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 81.5625
@@ -630,14 +630,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50610,
+    "Id": 55368,
     "UnitId": 10927,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3532.554,
-      "Y": 4422.388,
-      "Z": 104.2694,
+      "X": 3532.553,
+      "Y": 4422.379,
+      "Z": 104.2586,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -56.25
@@ -645,14 +645,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50611,
+    "Id": 55369,
     "UnitId": 10927,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3842.974,
-      "Y": 4670.184,
-      "Z": 109.4554,
+      "X": 3842.963,
+      "Y": 4670.18,
+      "Z": 109.4767,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 137.8125
@@ -660,14 +660,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50589,
+    "Id": 55347,
     "UnitId": 12053,
     "Title": "Bugira",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3612.494,
-      "Y": 4682.662,
-      "Z": 147.7964,
+      "X": 3612.482,
+      "Y": 4682.658,
+      "Z": 147.7772,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -59.0625
@@ -735,14 +735,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50602,
+    "Id": 55360,
     "UnitId": 12230,
     "Title": "Lucky Bunny",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3616.848,
+      "X": 3616.84,
       "Y": 4690.51,
-      "Z": 147.7804,
+      "Z": 147.7882,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 109.6875
@@ -750,14 +750,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50588,
+    "Id": 55346,
     "UnitId": 12230,
     "Title": "Lucky Bunny",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3608.066,
-      "Y": 4681.99,
-      "Z": 147.7594,
+      "X": 3608.064,
+      "Y": 4681.979,
+      "Z": 147.7601,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 123.75
@@ -765,14 +765,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50577,
+    "Id": 55335,
     "UnitId": 12230,
     "Title": "Lucky Bunny",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3621.508,
-      "Y": 4684.662,
-      "Z": 147.7644,
+      "Y": 4684.658,
+      "Z": 147.7651,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 137.8125
@@ -780,13 +780,13 @@
     "Scale": 1.0
   },
   {
-    "Id": 50591,
+    "Id": 55349,
     "UnitId": 12231,
     "Title": "Lucky Bunny",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3590.988,
-      "Y": 4689.234,
+      "X": 3590.977,
+      "Y": 4689.229,
       "Z": 161.9029,
       "Roll": 0.0,
       "Pitch": 0.0,
@@ -795,14 +795,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50628,
+    "Id": 55386,
     "UnitId": 12231,
     "Title": "Lucky Bunny",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3613.776,
-      "Y": 4661.184,
-      "Z": 161.8639,
+      "X": 3613.77,
+      "Y": 4661.18,
+      "Z": 161.9029,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 59.0625
@@ -810,14 +810,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50606,
+    "Id": 55364,
     "UnitId": 12231,
     "Title": "Lucky Bunny",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3617.636,
-      "Y": 4697.806,
-      "Z": 161.8879,
+      "X": 3617.633,
+      "Y": 4697.799,
+      "Z": 161.8648,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -163.125
@@ -825,14 +825,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50615,
+    "Id": 55373,
     "UnitId": 12399,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3553.656,
-      "Y": 4428.0,
-      "Z": 105.2958,
+      "X": 3553.652,
+      "Y": 4427.988,
+      "Z": 105.316,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 118.125
@@ -840,14 +840,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50620,
+    "Id": 55378,
     "UnitId": 12400,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3739.214,
+      "X": 3739.209,
       "Y": 4674.02,
-      "Z": 143.5598,
+      "Z": 143.5624,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 157.5
@@ -855,14 +855,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50625,
+    "Id": 55383,
     "UnitId": 12401,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3559.954,
-      "Y": 4545.348,
-      "Z": 142.5804,
+      "X": 3559.943,
+      "Y": 4545.34,
+      "Z": 142.5881,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 129.375
@@ -870,7 +870,7 @@
     "Scale": 1.0
   },
   {
-    "Id": 50583,
+    "Id": 0,
     "UnitId": 12402,
     "Title": "Mirage Isle Guide",
     "NpcSpawnerIds": [],
@@ -1095,14 +1095,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50592,
+    "Id": 55350,
     "UnitId": 13384,
     "Title": "Sinru",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3533.004,
-      "Y": 4456.326,
-      "Z": 105.869,
+      "Y": 4456.318,
+      "Z": 105.8362,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 149.0625
@@ -1110,14 +1110,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50608,
+    "Id": 55366,
     "UnitId": 13385,
     "Title": "Kiru",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3840.778,
-      "Y": 4632.102,
-      "Z": 108.369,
+      "X": 3840.771,
+      "Y": 4632.1,
+      "Z": 108.3572,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -146.25
@@ -1127,7 +1127,7 @@
   {
     "Id": 0,
     "UnitId": 13451,
-    "Title": "Red Dragon Revenant",
+    "Title": "Red Dragon Hatchling",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3380.16113,
@@ -1140,14 +1140,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50636,
+    "Id": 55394,
     "UnitId": 13453,
     "Title": "Lunaru",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3522.716,
+      "X": 3522.711,
       "Y": 4427.0,
-      "Z": 104.7336,
+      "Z": 104.7788,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -56.25
@@ -1155,14 +1155,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50593,
+    "Id": 55351,
     "UnitId": 13453,
     "Title": "Lunaru",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3857.476,
-      "Y": 4651.316,
-      "Z": 109.2864,
+      "X": 3857.465,
+      "Y": 4651.309,
+      "Z": 109.2866,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 143.4375
@@ -1170,14 +1170,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50633,
+    "Id": 55391,
     "UnitId": 13454,
     "Title": "Garini",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3518.248,
-      "Y": 4431.766,
-      "Z": 104.4125,
+      "X": 3518.242,
+      "Y": 4431.76,
+      "Z": 104.3936,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -53.4375
@@ -1185,14 +1185,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50634,
+    "Id": 55392,
     "UnitId": 13454,
     "Title": "Garini",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3851.76,
-      "Y": 4653.53,
-      "Z": 109.4714,
+      "X": 3851.754,
+      "Y": 4653.529,
+      "Z": 109.4397,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 143.4375
@@ -1200,14 +1200,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50594,
+    "Id": 55352,
     "UnitId": 13455,
     "Title": "Morudo",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3514.962,
-      "Y": 4436.224,
-      "Z": 104.7006,
+      "X": 3514.951,
+      "Y": 4436.219,
+      "Z": 104.7077,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -53.4375
@@ -1215,14 +1215,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50635,
+    "Id": 55393,
     "UnitId": 13455,
     "Title": "Morudo",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3847.73,
-      "Y": 4658.276,
-      "Z": 109.4714,
+      "X": 3847.725,
+      "Y": 4658.27,
+      "Z": 109.4527,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 143.4375
@@ -4952,7 +4952,7 @@
   {
     "Id": 0,
     "UnitId": 14010,
-    "Title": "National Liberation Day Event Guide",
+    "Title": "258261 DO NOT TRANSLATE",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3729.28,
@@ -4967,7 +4967,7 @@
   {
     "Id": 0,
     "UnitId": 14036,
-    "Title": "National Liberation Day Troupe Captain",
+    "Title": "258358 DO NOT TRANSLATE",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3733.784,
@@ -4982,7 +4982,7 @@
   {
     "Id": 0,
     "UnitId": 14037,
-    "Title": "National Liberation Day Trouper",
+    "Title": "258359 DO NOT TRANSLATE",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3733.784,
@@ -4997,7 +4997,7 @@
   {
     "Id": 0,
     "UnitId": 14037,
-    "Title": "National Liberation Day Trouper",
+    "Title": "258359 DO NOT TRANSLATE",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3733.784,
@@ -5012,7 +5012,7 @@
   {
     "Id": 0,
     "UnitId": 14037,
-    "Title": "National Liberation Day Trouper",
+    "Title": "258359 DO NOT TRANSLATE",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3733.784,
@@ -5027,7 +5027,7 @@
   {
     "Id": 0,
     "UnitId": 14037,
-    "Title": "National Liberation Day Trouper",
+    "Title": "258359 DO NOT TRANSLATE",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3733.784,
@@ -5312,7 +5312,7 @@
   {
     "Id": 0,
     "UnitId": 14242,
-    "Title": "Linguist Siskuru",
+    "Title": "Darot",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3686.16113,
@@ -5325,14 +5325,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50603,
+    "Id": 55361,
     "UnitId": 14275,
-    "Title": "Contest Coin Collector",
+    "Title": "Sopere",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3711.946,
-      "Y": 4512.142,
-      "Z": 144.9493,
+      "X": 3711.936,
+      "Y": 4512.139,
+      "Z": 144.945,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -50.625
@@ -5340,14 +5340,14 @@
     "Scale": 1.0
   },
   {
-    "Id": 50607,
+    "Id": 55365,
     "UnitId": 14275,
-    "Title": "Contest Coin Collector",
+    "Title": "Sopere",
     "NpcSpawnerIds": [],
     "Position": {
-      "X": 3463.578,
-      "Y": 3783.9,
-      "Z": 101.9135,
+      "X": 3463.576,
+      "Y": 3783.891,
+      "Z": 101.9436,
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": -39.375
@@ -5357,7 +5357,7 @@
   {
     "Id": 0,
     "UnitId": 14277,
-    "Title": "Sejong's Faithful Sunsamuru",
+    "Title": "Lugo",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3689.278,
@@ -6124,7 +6124,7 @@
   {
     "Id": 0,
     "UnitId": 14835,
-    "Title": "ArcheAge Birthday Hat Helper",
+    "Title": "Johnny the Gambler",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3729.103,
@@ -6184,7 +6184,7 @@
   {
     "Id": 0,
     "UnitId": 14903,
-    "Title": "Chocolatier Roche",
+    "Title": "Independence Day Guide",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3699.502,
@@ -6229,7 +6229,7 @@
   {
     "Id": 0,
     "UnitId": 14953,
-    "Title": "Guild Loyalty Agent Boson",
+    "Title": "Guild Unity Agent Boson",
     "NpcSpawnerIds": [],
     "Position": {
       "X": 3699.503,
@@ -6268,6 +6268,176 @@
       "Roll": 0.0,
       "Pitch": 0.0,
       "Yaw": 0.0
+    },
+    "Scale": 1.0
+  },
+  {
+    "Id": 58400,
+    "UnitId": 22044,
+    "Title": "",
+    "NpcSpawnerIds": [
+      0
+    ],
+    "Position": {
+      "X": 3705.877,
+      "Y": 4538.105,
+      "Z": 144.988,
+      "Roll": 0.0,
+      "Pitch": 0.0,
+      "Yaw": 225.0
+    },
+    "Scale": 1.0
+  },
+  {
+    "Id": 55379,
+    "UnitId": 10915,
+    "Title": "Mirage Isle Guide",
+    "NpcSpawnerIds": [
+      0
+    ],
+    "Position": {
+      "X": 3692.689,
+      "Y": 4532.779,
+      "Z": 144.958,
+      "Roll": 0.0,
+      "Pitch": 0.0,
+      "Yaw": -36.5625
+    },
+    "Scale": 1.0
+  },
+  {
+    "Id": 55370,
+    "UnitId": 16859,
+    "Title": "Daru Priest",
+    "NpcSpawnerIds": [
+      0
+    ],
+    "Position": {
+      "X": 3706.432,
+      "Y": 4519.449,
+      "Z": 144.949,
+      "Roll": 0.0,
+      "Pitch": 0.0,
+      "Yaw": -53.4375
+    },
+    "Scale": 1.0
+  },
+  {
+    "Id": 55359,
+    "UnitId": 10914,
+    "Title": "Mirage Isle Guide",
+    "NpcSpawnerIds": [
+      0
+    ],
+    "Position": {
+      "X": 3695.639,
+      "Y": 4533.559,
+      "Z": 144.914,
+      "Roll": 0.0,
+      "Pitch": 0.0,
+      "Yaw": -5.625
+    },
+    "Scale": 1.0
+  },
+  {
+    "Id": 55334,
+    "UnitId": 17820,
+    "Title": "Lupios",
+    "NpcSpawnerIds": [
+      0
+    ],
+    "Position": {
+      "X": 3703.775,
+      "Y": 4523.34,
+      "Z": 144.946,
+      "Roll": 0.0,
+      "Pitch": 0.0,
+      "Yaw": -53.4375
+    },
+    "Scale": 1.0
+  },
+  {
+    "Id": 55389,
+    "UnitId": 10856,
+    "Title": "Piporo",
+    "NpcSpawnerIds": [
+      0
+    ],
+    "Position": {
+      "X": 3717.604,
+      "Y": 4536.969,
+      "Z": 144.949,
+      "Roll": 0.0,
+      "Pitch": 0.0,
+      "Yaw": 59.0625
+    },
+    "Scale": 1.0
+  },
+  {
+    "Id": 55381,
+    "UnitId": 16485,
+    "Title": "Lord's Tailor",
+    "NpcSpawnerIds": [
+      0
+    ],
+    "Position": {
+      "X": 3725.49,
+      "Y": 4544.35,
+      "Z": 144.912,
+      "Roll": 0.0,
+      "Pitch": 0.0,
+      "Yaw": 126.5625
+    },
+    "Scale": 1.0
+  },
+  {
+    "Id": 55372,
+    "UnitId": 7988,
+    "Title": "Glorious Nui",
+    "NpcSpawnerIds": [
+      0
+    ],
+    "Position": {
+      "X": 3532.508,
+      "Y": 4699.021,
+      "Z": 156.9969,
+      "Roll": 0.0,
+      "Pitch": 0.0,
+      "Yaw": 115.3125
+    },
+    "Scale": 1.0
+  },
+  {
+    "Id": 55357,
+    "UnitId": 502,
+    "Title": "Temple Priestess",
+    "NpcSpawnerIds": [
+      0
+    ],
+    "Position": {
+      "X": 3528.23,
+      "Y": 4696.42,
+      "Z": 156.1785,
+      "Roll": 0.0,
+      "Pitch": 0.0,
+      "Yaw": 120.9375
+    },
+    "Scale": 1.1
+  },
+  {
+    "Id": 55341,
+    "UnitId": 12402,
+    "Title": "Mirage Isle Guide",
+    "NpcSpawnerIds": [
+      0
+    ],
+    "Position": {
+      "X": 3568.656,
+      "Y": 4532.434,
+      "Z": 142.529,
+      "Roll": 0.0,
+      "Pitch": 0.0,
+      "Yaw": 132.1875
     },
     "Scale": 1.0
   }
