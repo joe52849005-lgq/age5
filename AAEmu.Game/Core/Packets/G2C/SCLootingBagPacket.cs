@@ -6,29 +6,18 @@ using AAEmu.Game.Models.Game.Items;
 
 namespace AAEmu.Game.Core.Packets.G2C;
 
-class SCLootingBagPacket : GamePacket
+class SCLootingBagPacket(List<Item> items, bool lootAll, bool autoLoot) : GamePacket(SCOffsets.SCLootingBagPacket, 5)
 {
-    private readonly List<Item> _items;
-    private readonly bool _lootAll;
-    private readonly bool _autoLoot;
-
-    public SCLootingBagPacket(List<Item> items, bool lootAll, bool autoLoot) : base(SCOffsets.SCLootingBagPacket, 5)
-    {
-        _items = items;
-        _lootAll = lootAll;
-        _autoLoot = autoLoot;
-    }
-
     public override PacketStream Write(PacketStream stream)
     {
-        stream.Write((byte)_items.Count);
+        stream.Write((byte)items.Count);
 
-        foreach (var item in _items)
+        foreach (var item in items)
         {
             stream.Write(item);
         }
-        stream.Write(_lootAll);
-        stream.Write(_autoLoot);
+        stream.Write(lootAll);
+        stream.Write(autoLoot);
 
         return stream;
     }

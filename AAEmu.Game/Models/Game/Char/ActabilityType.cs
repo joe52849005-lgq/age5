@@ -1,7 +1,8 @@
-namespace AAEmu.Game.Models.Game.Char;
+﻿namespace AAEmu.Game.Models.Game.Char;
 
 public enum ActabilityType
 {
+    None = 0,
     Alchemy = 1,
     Construction = 2,
     Cooking = 3,

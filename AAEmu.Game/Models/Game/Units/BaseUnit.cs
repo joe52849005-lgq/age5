@@ -7,6 +7,7 @@ using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Faction;
 using AAEmu.Game.Models.Game.Housing;
+using AAEmu.Game.Models.Game.Items.Containers;
 using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.Skills.Static;
 using AAEmu.Game.Models.Game.Skills.Templates;
@@ -31,6 +32,11 @@ public class BaseUnit : GameObject, IBaseUnit
     public BuffModifiers BuffModifiersCache { get; set; }
     public CombatBuffs CombatBuffs { get; set; }
     public object ChargeLock { get; set; }
+    
+    /// <summary>
+    /// The loot container for items dropped by this unit
+    /// </summary>
+    public LootingContainer LootingContainer { get; init; }
 
     public BaseUnit()
     {
@@ -38,6 +44,7 @@ public class BaseUnit : GameObject, IBaseUnit
         SkillModifiersCache = new SkillModifiers();
         BuffModifiersCache = new BuffModifiers();
         CombatBuffs = new CombatBuffs(this);
+        LootingContainer = new LootingContainer(this);
     }
 
     /// <summary>

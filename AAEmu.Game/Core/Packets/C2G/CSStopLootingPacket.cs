@@ -3,12 +3,8 @@ using AAEmu.Game.Core.Network.Game;
 
 namespace AAEmu.Game.Core.Packets.C2G;
 
-public class CSStopLootingPacket : GamePacket
+public class CSStopLootingPacket() : GamePacket(CSOffsets.CSStopLootingPacket, 5)
 {
-    public CSStopLootingPacket() : base(CSOffsets.CSStopLootingPacket, 5)
-    {
-    }
-
     public override void Read(PacketStream stream)
     {
         var st = stream.ReadUInt32();

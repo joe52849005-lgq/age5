@@ -944,6 +944,9 @@ public class SpawnManager : Singleton<SpawnManager>
         return res;
     }
 
+    /// <summary>
+    /// Handles timed re-spawning and de-spawning tick
+    /// </summary>
     private void CheckRespawns()
     {
         while (_work)
@@ -967,20 +970,20 @@ public class SpawnManager : Singleton<SpawnManager>
                 }
             }
 
-            var despawns = GetDespawnsReady();
-            if (despawns.Count > 0)
+            var deSpawns = GetDespawnsReady();
+            if (deSpawns.Count > 0)
             {
-                foreach (var obj in despawns)
+                foreach (var obj in deSpawns)
                 {
                     if (obj.Despawn >= DateTime.UtcNow)
                         continue;
-                    if (obj is Npc npc && npc.Spawner != null)
+                    if (obj is Npc { Spawner: not null } npc)
                         npc.Spawner.Despawn(npc);
-                    else if (obj is Doodad doodad && doodad.Spawner != null)
+                    else if (obj is Doodad { Spawner: not null } doodad)
                         doodad.Spawner.Despawn(doodad);
-                    else if (obj is Transfer transfer && transfer.Spawner != null)
+                    else if (obj is Transfer { Spawner: not null } transfer)
                         transfer.Spawner.Despawn(transfer);
-                    else if (obj is Gimmick gimmick && gimmick.Spawner != null)
+                    else if (obj is Gimmick { Spawner: not null } gimmick)
                         gimmick.Spawner.Despawn(gimmick);
                     else if (obj is Slave slave) // slaves don't have a spawner, but this is used for delayed despawn of un-summoned boats
                         slave.Delete();
@@ -992,6 +995,16 @@ public class SpawnManager : Singleton<SpawnManager>
                         obj.Delete();
                     }
                     RemoveDespawn(obj);
+                }
+            }
+
+            // Check if any Npcs with loot need to be made public
+            var makePublic = WorldManager.Instance.GetNpcsToMakePublicLooting();
+            if (makePublic.Count > 0)
+            {
+                foreach (var npc in makePublic)
+                {
+                    npc.LootingContainer.MakeLootPublic();
                 }
             }
 

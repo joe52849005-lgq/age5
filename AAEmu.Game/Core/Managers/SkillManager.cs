@@ -2,13 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using AAEmu.Commons.Network;
 using AAEmu.Commons.Utils;
-using AAEmu.Game.Core.Network.Game;
-using AAEmu.Game.Core.Packets.C2G;
 using AAEmu.Game.Models.Game.AI.Enums;
-using AAEmu.Game.Models.Game.Items.Actions;
-using AAEmu.Game.Models.Game.Items;
+using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.NPChar;
 using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.Skills.Buffs;
@@ -20,9 +16,10 @@ using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Models.Game.World;
 using AAEmu.Game.Models.StaticValues;
 using AAEmu.Game.Utils.DB;
+
 using Newtonsoft.Json.Linq;
+
 using NLog;
-using AAEmu.Game.Models.Game.Char;
 
 namespace AAEmu.Game.Core.Managers;
 
@@ -1927,5 +1924,17 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
         var coolDownTime = includeCooldown ? skillTemplate.CooldownTime * (caster.GlobalCooldownMul / 100.0) : 0.0;
         var additionalTime = additionalDelay * (caster.GlobalCooldownMul / 100.0);
         return castTime + coolDownTime + additionalTime;
+    }
+
+    /// <summary>
+    /// Gets the related ActAbility to a skill
+    /// </summary>
+    /// <param name="skillId"></param>
+    /// <returns></returns>
+    public ActabilityType GetSkillActAbility(uint skillId)
+    {
+        if (!_skills.TryGetValue(skillId, out var value))
+            return ActabilityType.None;
+        return (ActabilityType)value.ActabilityGroupId;
     }
 }

@@ -9,6 +9,7 @@ using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.Id;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.GameData;
+using AAEmu.Game.Models.Game.Items.Containers;
 using AAEmu.Game.Models.Game.Skills.Effects;
 using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Models.Game.World;
@@ -123,6 +124,11 @@ public class NpcSpawner : Spawner<Npc>
         }
 
         npc.Despawn = DateTime.UtcNow.AddSeconds(npc.Spawner.DespawnTime);
+        // If it has loot, extend the time
+        if (npc.LootingContainer?.Items.Count > 0)
+        {
+            npc.Despawn += TimeSpan.FromSeconds(LootingContainer.LootDespawnExtensionTime);
+        }
         SpawnManager.Instance.AddDespawn(npc);
     }
 

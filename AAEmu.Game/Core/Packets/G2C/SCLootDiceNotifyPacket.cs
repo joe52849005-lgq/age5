@@ -7,14 +7,20 @@ namespace AAEmu.Game.Core.Packets.G2C;
 public class SCLootDiceNotifyPacket : GamePacket
 {
     private readonly string _charName;
-    private readonly sbyte _dice;
     private readonly Item _item;
+    private readonly sbyte _dice;
 
-    public SCLootDiceNotifyPacket(string charName, sbyte dice, Item item = null) : base(SCOffsets.SCLootDiceNotifyPacket, 5)
+    /// <summary>
+    /// Notify player of a roll result of any eligible players for a given item
+    /// </summary>
+    /// <param name="charName"></param>
+    /// <param name="item"></param>
+    /// <param name="dice"></param>
+    public SCLootDiceNotifyPacket(string charName, Item item, sbyte dice) : base(SCOffsets.SCLootDiceNotifyPacket, 5)
     {
         _charName = charName;
-        _dice = dice;
         _item = item;
+        _dice = dice;
     }
     public override PacketStream Write(PacketStream stream)
     {

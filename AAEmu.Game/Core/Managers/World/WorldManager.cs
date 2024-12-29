@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Security.Cryptography;
 using System.Xml;
 
 using AAEmu.Commons.IO;
@@ -738,20 +739,17 @@ public class WorldManager : Singleton<WorldManager>, IWorldManager
 
     public GameObject GetGameObject(uint objId)
     {
-        _objects.TryGetValue(objId, out var ret);
-        return ret;
+        return _objects.GetValueOrDefault(objId);
     }
 
     public BaseUnit GetBaseUnit(uint objId)
     {
-        _baseUnits.TryGetValue(objId, out var ret);
-        return ret;
+        return _baseUnits.GetValueOrDefault(objId);
     }
 
     public Doodad GetDoodad(uint objId)
     {
-        _doodads.TryGetValue(objId, out var ret);
-        return ret;
+        return _doodads.GetValueOrDefault(objId);
     }
 
     public Doodad GetDoodadByDbId(uint dbId)
@@ -820,32 +818,30 @@ public class WorldManager : Singleton<WorldManager>, IWorldManager
     public static Character GetTargetOrSelf(Character character, string TargetName, out int FirstNonNameArgument)
     {
         FirstNonNameArgument = 0;
-        if ((TargetName != null) && (TargetName != string.Empty))
+        if (string.IsNullOrEmpty(TargetName))
         {
-            var player = Instance.GetCharacter(TargetName);
-            if (player != null)
-            {
-                FirstNonNameArgument = 1;
-                return player;
-            }
+            return character.CurrentTarget as Character ?? character;
         }
-        if ((character.CurrentTarget != null) && (character.CurrentTarget is Character))
-            return (Character)character.CurrentTarget;
-        return character;
+
+        var player = Instance.GetCharacter(TargetName);
+        if (player is null)
+        {
+            return character.CurrentTarget as Character ?? character;
+        }
+
+        FirstNonNameArgument = 1;
+        return player;
+
     }
 
     public Character GetCharacterByObjId(uint id)
     {
-        _characters.TryGetValue(id, out var ret);
-        return ret;
+        return _characters.GetValueOrDefault(id);
     }
 
     public Character GetCharacterById(uint id)
     {
-        foreach (var player in _characters.Values)
-            if (player.Id.Equals(id))
-                return player;
-        return null;
+        return _characters.Values.FirstOrDefault(player => player.Id.Equals(id));
     }
 
     public Character GetOfflineCharacterInfo(uint characterId)
@@ -1529,5 +1525,23 @@ public class WorldManager : Singleton<WorldManager>, IWorldManager
         //{
         //    Logger.Info($"[Dungeon] could not delete the list of NpcEventSpawners for dungeon id={worldId}!");
         //}
+    }
+
+    /// <summary>
+    /// Get a list of NPCs that have loot and are past the "make public" time
+    /// </summary>
+    /// <returns></returns>
+    public HashSet<Npc> GetNpcsToMakePublicLooting()
+    {
+        HashSet<Npc> temp;
+        lock (_npcs)
+        {
+            temp = [.. _npcs.Values];
+        }
+
+        var res = new HashSet<Npc>();
+        foreach (var item in temp.Where(item => item.LootingContainer.CanMakePublic()))
+            res.Add(item);
+        return res;
     }
 }

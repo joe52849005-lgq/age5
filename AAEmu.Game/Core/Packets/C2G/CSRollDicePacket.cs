@@ -5,17 +5,12 @@ using AAEmu.Game.Core.Network.Game;
 
 namespace AAEmu.Game.Core.Packets.C2G;
 
-public class CSRollDicePacket : GamePacket
+public class CSRollDicePacket() : GamePacket(CSOffsets.CSRollDicePacket, 5)
 {
-    public CSRollDicePacket() : base(CSOffsets.CSRollDicePacket, 5)
-    {
-    }
-
     public override void Read(PacketStream stream)
     {
 
         var max = stream.ReadUInt32();
         CharacterManager.PlayerRoll(Connection.ActiveChar, int.Parse(max.ToString()));
-
     }
 }

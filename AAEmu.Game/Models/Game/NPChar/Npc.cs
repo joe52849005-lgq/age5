@@ -88,8 +88,11 @@ public partial class Npc : Unit
         }
     }
 
-    public bool CanFly { get; set; } // TODO mark Npc's that can fly so that they don't land on the ground when calculating the Z height
-    //Tagging works differently to Aggro.:
+    public bool CanFly { get; set; } // TODO: mark NPCs that can fly so that they don't land on the ground when calculating the Z height
+
+    /// <summary>
+    /// Tagging works differently to Aggro and has its own system 
+    /// </summary>
     public Tagging CharacterTagging { get; set; }
 
 
@@ -136,16 +139,14 @@ public partial class Npc : Unit
 
             if (IsUnderWater)
             {
-                if (value == GameStanceType.Combat)
-                    _currentGameStance = GameStanceType.CoSwim;
-                else
-                    _currentGameStance = GameStanceType.Swim;
+                _currentGameStance = value == GameStanceType.Combat ? GameStanceType.CoSwim : GameStanceType.Swim;
                 return;
             }
 
             _currentGameStance = value;
         }
     }
+
     public MoveTypeAlertness CurrentAlertness { get; set; }
 
     #region Attributes
@@ -760,7 +761,7 @@ public partial class Npc : Unit
     {
         Name = "";
         AggroTable = new ConcurrentDictionary<uint, Aggro>();
-        CharacterTagging = new Tagging(this);//Adding because Tagging works differently than Aggro
+        CharacterTagging = new Tagging(this); // Adding because Tagging works differently than Aggro
         //Equip = new Item[28];
     }
 
@@ -769,36 +770,32 @@ public partial class Npc : Unit
         var eligiblePlayers = new HashSet<Character>();
         if (CharacterTagging.TagTeam != 0)
         {
-            //A team has tagging rights
+            // A team has tagging rights
             var team = TeamManager.Instance.GetActiveTeam(CharacterTagging.TagTeam);
             if (team != null)
             {
 
-                //Just to check the team is still a valid team.
+                // Just to check the team is still a valid team.
                 foreach (var member in team.Members)
                 {
-                    if (member != null && member.Character != null)
+                    if (member?.Character != null)
                     {
-                        if (member.Character is Character tm)
+                        if (member.Character.GetDistanceTo(this, true) <= Items.Containers.LootingContainer.MaxLootingRange)
                         {
-                            var distance = tm.Transform.World.Position - this.Transform.World.Position;
-                            if (distance.Length() <= 200)
-                            {
-                                eligiblePlayers.Add(tm);
-                            }
+                            eligiblePlayers.Add(member.Character);
                         }
                     }
                 }
             }
             else if (CharacterTagging.Tagger != null)
             {
-                //A player has tag rights, but the team is not valid.
+                // A player has tag rights, but the team is not valid.
                 eligiblePlayers.Add(CharacterTagging.Tagger);
             }
         }
         else if (CharacterTagging.Tagger != null)
         {
-            //A player has tag rights
+            // A player has tag rights
             eligiblePlayers.Add(CharacterTagging.Tagger);
         }
 
@@ -806,7 +803,7 @@ public partial class Npc : Unit
 
         if (eligiblePlayers.Count == 0 && killer is Character characterKiller)
         {
-            QuestManager.Instance.DoOnMonsterHuntEvents(characterKiller, this);//No eligible owner, but the killer is a character.
+            QuestManager.Instance.DoOnMonsterHuntEvents(characterKiller, this); // No eligible owner, but the killer is a character.
             characterKiller.AddExp(KillExp, true);
             var mates = MateManager.Instance.GetActiveMates(characterKiller.ObjId); // в версии 3+ может быть несколько
             if (mates != null)
@@ -825,14 +822,14 @@ public partial class Npc : Unit
             var isRaid = false;
             if (CharacterTagging.TagTeam != 0)
             {
-                //A team has tagging rights
+                // A team has tagging rights
                 var team = TeamManager.Instance.GetActiveTeam(CharacterTagging.TagTeam);
                 if (team != null)
                 {
                     if (!team.IsParty)
                     {
                         isRaid = true;
-                        //Team is a raid.
+                        // Team is a raid.
                     }
                     else if (team.MembersCount() > 3)
                     {
@@ -850,20 +847,20 @@ public partial class Npc : Unit
 
                 if (isRaid)
                 {
-                    //Player is in a raid. 1.2, pet XP is capped a full team value, but player gets raid XP regardless of how many raiders are present.
+                    // Player is in a raid. 1.2, pet XP is capped a full team value, but player gets raid XP regardless of how many raiders are present.
                     plMod = 0.33f;
                     mateMod = 0.66f;
                 }
                 else if (isFullTeam)
                 {
-                    //Player is in a team of more than 3 people. Player gets full party XP regardless of how many party members are present.
+                    // Player is in a team of more than 3 people. Player gets full party XP regardless of how many party members are present.
                     plMod = 0.66f;
                     mateMod = 0.66f;
                 }
 
                 else if (eligiblePlayers.Count > 1 && eligiblePlayers.Count <= 3)
                 {
-                    //If players are between 2 and 3, we scale. At this point, the party doesn't matter, just nearby players. 
+                    // If players are between 2 and 3, we scale. At this point, the party doesn't matter, just nearby players. 
                     if (eligiblePlayers.Count == 2)
                     {
                         plMod = 0.90f;
@@ -877,17 +874,17 @@ public partial class Npc : Unit
                 }
                 else
                 {
-                    //Player is solo, or at least only 1 player is close enough to get rights
+                    // Player is solo, or at least only 1 player is close enough to get rights
                     plMod = 1f;
                     mateMod = 1f;
                 }
 
-                //Now we need to scale XP based on level difference, which gets a bit more complex.
+                // Now we need to scale XP based on level difference, which gets a bit more complex.
 
 
                 if (pl.Level >= this.Level + 10 || pl.Level <= this.Level - 10)
                 {
-                    //No XP for you or your pet. Will check on the +10
+                    // No XP for you or your pet. Will check on the +10
                 }
                 else
                 {

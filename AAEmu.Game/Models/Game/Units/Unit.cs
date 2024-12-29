@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+
 using AAEmu.Commons.Network;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.AAEmu.Game.Core.Managers;
@@ -448,102 +449,23 @@ public class Unit : BaseUnit, IUnit
         {
             switch (this)
             {
-                //case Npc:
-                //    break;
                 case Mate mate:
                     DespawnMate(WorldManager.Instance.GetCharacterByObjId(mate.OwnerObjId));
                     break;
                 case Character character:
                     DespawnMate(character);
                     break;
-                    //default:
-                    //    break;
             }
             return;
         }
 
-        var lootDropItems = ItemManager.Instance.CreateLootDropItems(ObjId, killer);
-        // Without moving the tagging into the root of unit, we need to do some work for loot distribution:
-        if (lootDropItems.Count > 0)
-        {
-            // Logger.Info($"Loot item count is {lootDropItems.Count}");
-            var unit = WorldManager.Instance.GetNpc(ObjId);
-            if (unit == null)
-            {
-                // Defaulting to the original code if this isn't an NPC
-                // Logger.Info($"Not an NPC for {ObjId}");
+        // Generate the loot for this Npc
+        LootingContainer.GenerateLoot(killer);
 
-                killer.BroadcastPacket(new SCLootableStatePacket(ObjId, true), true);
-
-            }
-            else
-            {
-                // it's an NPC, and we have a thing for this!
-                var eligiblePlayers = new HashSet<Character>();
-                if (unit.CharacterTagging.TagTeam != 0)
-                {
-                    // A team has tagging rights.
-                    // TODO: Master Looter
-                    var activeTeam = TeamManager.Instance.GetActiveTeam(unit.CharacterTagging.TagTeam);
-                    if (activeTeam.LootingRule.LootMethod == 0)
-                    {
-                        // FFA Loot
-                        foreach (var member in activeTeam.Members)
-                        {
-                            if (member?.Character == null)
-                                continue;
-
-                            if (GetDistanceTo(member.Character) <= 200)
-                            {
-                                eligiblePlayers.Add(member.Character);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // RoundRobin
-                        // TODO: Master Looter
-                        var nextEligibleLooter = TeamManager.Instance.GetNextEligibleLooter(unit.CharacterTagging.TagTeam, unit);
-                        if (nextEligibleLooter != null)
-                        {
-                            eligiblePlayers.Add(nextEligibleLooter);
-                            Logger.Warn($"Eligible team, adding {nextEligibleLooter}");
-                        }
-                        else
-                        {
-                            Logger.Warn("Next eligible looter was null");
-                        }
-                    }
-                }
-                else if (unit.CharacterTagging.Tagger != null)
-                {
-                    //A player has tag rights
-                    eligiblePlayers.Add(unit.CharacterTagging.Tagger);
-                    Logger.Warn($"Added tagger {unit.CharacterTagging.Tagger}");
-                }
-                if (eligiblePlayers.Count > 0)
-                {
-                    foreach (var eligible in eligiblePlayers)
-                    {
-                        if (eligible != null)
-                        {
-                            eligible.SendPacket(new SCLootableStatePacket(ObjId, true));
-                        }
-                        else
-                        {
-                            Logger.Warn($"Eligible player was null, eligible player count was {eligiblePlayers.Count}");
-                        }
-                    }
-                }
-            }
-
-        }
-
-
-
+        // Cleanup targeting and aggro packets
         if (CurrentTarget != null)
         {
-            killer.SendPacketToPlayers([this, killer], new SCUnitAiAggroPacket(killer.ObjId, 0));
+            killer.SendPacketToPlayers([this, killer], new SCAiAggroPacket(killer.ObjId, 0));
 
             if (killer is Unit killerUnit)
             {
@@ -624,7 +546,7 @@ public class Unit : BaseUnit, IUnit
 
         var newTask = new UseAutoAttackSkillTask(skill, character);
         character.AutoAttackTask = newTask;
-        var attackDelayTimes = SkillManager.GetAttackDelay(skill.Template, character); 
+        var attackDelayTimes = SkillManager.GetAttackDelay(skill.Template, character);
 
         TaskManager.Instance.Schedule(character.AutoAttackTask, TimeSpan.FromMilliseconds(attackDelayTimes),
             TimeSpan.FromMilliseconds(attackDelayTimes), -1);
@@ -797,7 +719,7 @@ public class Unit : BaseUnit, IUnit
                 continue;
             value += bonus.Value;
         }
-        
+
         // Percent Values
         foreach (var bonus in bonuses)
         {
@@ -1083,8 +1005,8 @@ public class Unit : BaseUnit, IUnit
 
             // Mods from equipped Gems
             foreach (var gem in ei.GemIds)
-            foreach (var template in ItemManager.Instance.GetUnitModifiers(gem))
-                AddBonus(1, new Bonus { Template = template, Value = template.Value });
+                foreach (var template in ItemManager.Instance.GetUnitModifiers(gem))
+                    AddBonus(1, new Bonus { Template = template, Value = template.Value });
         }
 
         // Apply Equipment Effects
@@ -1383,9 +1305,9 @@ public class Unit : BaseUnit, IUnit
                     Buffs.AddBuff(newEffect);
                 }
             }
-            
+
             // Unit_Modifiers from items
-            
+
         }
 
         if (itemAdded == null && itemRemoved == null) // This is the first load check to apply buffs for equipped items. 
@@ -1482,7 +1404,7 @@ public class Unit : BaseUnit, IUnit
                 }
             }
         }
-        
+
         // Ok, we actually changed zone groups, we'll have to do some chat channel stuff
         if (this is Character player)
         {

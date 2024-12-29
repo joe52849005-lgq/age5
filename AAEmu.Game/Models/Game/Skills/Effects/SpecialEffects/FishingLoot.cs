@@ -44,13 +44,13 @@ public class FishingLoot : SpecialEffectAction
 
         var pack = LootGameData.Instance.GetPack(lootTableId);
 
-        if (pack == null || pack.Loots.Count <= 0)
+        if (pack is null || pack.Loots.Count <= 0)
         {
-            Logger.Warn($"FishingLoot: {character.Name} в таблицах добычи отсутствует требуемый LootPackId={lootTableId}");
+            Logger.Warn($"FishingLoot: {character.Name} loot tables are missing required LootPackId={lootTableId}");
             return;
         }
 
-        if (!pack.GiveLootPack(character, ItemTaskType.SkillEffectGainItem))
+        if (!pack.GiveLootPack(character, ActabilityType.Fishing, ItemTaskType.SkillEffectGainItem))
         {
             character.SendErrorMessage(ErrorMessageType.BagFull);
         }

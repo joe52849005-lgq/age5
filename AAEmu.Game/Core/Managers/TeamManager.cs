@@ -5,11 +5,9 @@ using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers.Id;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Packets.G2C;
-using AAEmu.Game.Models.Game;
-using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Team;
-using AAEmu.Game.Models.Game.World.Transform;
+using AAEmu.Game.Models.Game.Units;
 
 namespace AAEmu.Game.Core.Managers;
 
@@ -215,7 +213,7 @@ public class TeamManager : Singleton<TeamManager>
     {
         var activeTeam = GetActiveTeam(teamId);
         if (activeTeam == null) return null;
-       
+
         //Round Robin vs FFA
         //if(activeTeam.LootingRule==)
         foreach (var member in activeTeam.Members)
@@ -261,8 +259,7 @@ public class TeamManager : Singleton<TeamManager>
         {
             Id = TeamIdManager.Instance.GetNextId(),
             OwnerId = activeInvitation.Owner.Id,
-            IsParty = activeInvitation.IsParty,
-            LootingRule = new LootingRule()
+            IsParty = activeInvitation.IsParty
         };
         if (newTeam.AddMember(activeInvitation.Owner).Item1 == null || newTeam.AddMember(activeInvitation.Target).Item1 == null) return;
 
@@ -294,8 +291,7 @@ public class TeamManager : Singleton<TeamManager>
         {
             Id = TeamIdManager.Instance.GetNextId(),
             OwnerId = character.Id,
-            IsParty = true,
-            LootingRule = new LootingRule()
+            IsParty = true
         };
         if (newTeam.AddMember(character).Item1 == null) return;
 
@@ -357,7 +353,7 @@ public class TeamManager : Singleton<TeamManager>
         }
 
         // Disband if only one member left in a Party (not raid)
-        if ((activeTeam.IsParty) && (activeTeam.MembersCount() <= 1))
+        if (activeTeam.IsParty && activeTeam.MembersCount() <= 1)
             isAutoDisband = true;
 
         // If everybody is offline, also disband regardless of raid or party status
@@ -395,7 +391,7 @@ public class TeamManager : Singleton<TeamManager>
     public void MakeTeamOwner(Character unit, uint teamId, uint memberId)
     {
         var activeTeam = GetActiveTeam(teamId);
-        if ((activeTeam?.OwnerId != unit.Id) || activeTeam.OwnerId == memberId) return;
+        if (activeTeam?.OwnerId != unit.Id || activeTeam.OwnerId == memberId) return;
 
         if (activeTeam.IsMember(memberId)) activeTeam.OwnerId = memberId;
         activeTeam.BroadcastPacket(new SCTeamOwnerChangedPacket(activeTeam.Id, activeTeam.OwnerId));
@@ -410,7 +406,7 @@ public class TeamManager : Singleton<TeamManager>
         activeTeam.IsParty = false;
         activeTeam.BroadcastPacket(new SCTeamBecameRaidTeamPacket(activeTeam.Id));
         foreach (var m in activeTeam.Members)
-            if ((m != null) && (m.Character != null))
+            if (m != null && m.Character != null)
                 ChatManager.Instance.GetRaidChat(activeTeam).JoinChannel(m.Character);
     }
 
@@ -447,20 +443,43 @@ public class TeamManager : Singleton<TeamManager>
         activeTeam.BroadcastPacket(new SCOverHeadMarkerSetPacket(teamId, index, type == 2, targetId));
     }
 
-    public void ChangeLootingRule(Character owner, uint teamId, LootingRule newRules, byte flags)
+    public void ChangeLootingRule(Character owner, uint teamId, byte flags, LootingRuleMethod lootingRuleMethod, byte minimumGrade, uint lootMaster, bool rollForBindOnPickup)
     {
         var activeTeam = GetActiveTeam(teamId);
         if (activeTeam?.OwnerId != owner.Id) return;
 
-        // TODO - FLAGS??
-        activeTeam.LootingRule = newRules;
-        activeTeam.BroadcastPacket(new SCTeamLootingRuleChangedPacket(teamId, newRules, flags));
+        // Flags:
+        // 1: Method
+        // 2: Grade
+        // 4: LootMaster
+        // 8: BindOnPickup
+        if ((flags & 0x08) != 0)
+        {
+            activeTeam.LootingRule.RollForBindOnPickup = rollForBindOnPickup;
+        }
+        if ((flags & 0x04) != 0)
+        {
+            activeTeam.LootingRule.LootMaster = lootMaster;
+        }
+        if ((flags & 0x02) != 0)
+        {
+            activeTeam.LootingRule.MinimumGrade = minimumGrade;
+        }
+        if ((flags & 0x01) != 0)
+        {
+            activeTeam.LootingRule.LootMethod = lootingRuleMethod;
+            if (activeTeam.LootingRule.LootMethod != LootingRuleMethod.LootMaster)
+                activeTeam.LootingRule.LootMaster = 0;
+        }
+
+        activeTeam.BroadcastPacket(new SCTeamLootingRuleChangedPacket(teamId, activeTeam.LootingRule, flags));
     }
 
     public void SetPingPos(Character unit, TeamPingPos teamPingPos)
     {
         var activeTeam = GetActiveTeam(teamPingPos.TeamId);
-        if ((activeTeam.OwnerId != unit.Id) && (activeTeam == null || !activeTeam.IsMarked(unit.Id))) return;
+        if (activeTeam == null || (activeTeam.OwnerId != unit.Id && !activeTeam.IsMarked(unit.Id)))
+            return;
 
         activeTeam.PingPosition = teamPingPos;
         activeTeam.BroadcastPacket(new SCTeamPingPosPacket(activeTeam.PingPosition));
