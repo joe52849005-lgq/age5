@@ -1927,6 +1927,26 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
     }
 
     /// <summary>
+    /// Gets the first spawn effect for a given Gimmick TemplateId
+    /// </summary>
+    /// <param name="gimmickTemplateId"></param>
+    /// <returns></returns>
+    public SpawnGimmickEffect GetSpawnGimmickEffect(uint gimmickTemplateId)
+    {
+        if (!_effects.TryGetValue("SpawnGimmickEffect", out var spawnGimmickEffects))
+            return null;
+
+        foreach (var effect in spawnGimmickEffects.Values)
+        {
+            if (effect is not SpawnGimmickEffect spawnGimmickEffect)
+                continue;
+            if (spawnGimmickEffect.GimmickId == gimmickTemplateId)
+                return spawnGimmickEffect;
+        }
+
+        return null;
+    }
+
     /// Gets the related ActAbility to a skill
     /// </summary>
     /// <param name="skillId"></param>

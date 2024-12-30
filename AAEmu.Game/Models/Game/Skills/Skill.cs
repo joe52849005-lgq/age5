@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 using AAEmu.Commons.Utils;
@@ -22,7 +21,6 @@ using AAEmu.Game.Models.Game.Items.Templates;
 using AAEmu.Game.Models.Game.NPChar;
 using AAEmu.Game.Models.Game.Skills.Effects;
 using AAEmu.Game.Models.Game.Skills.Effects.Enums;
-using AAEmu.Game.Models.Game.Skills.Effects.SpecialEffects;
 using AAEmu.Game.Models.Game.Skills.Plots.Tree;
 using AAEmu.Game.Models.Game.Skills.SkillControllers;
 using AAEmu.Game.Models.Game.Skills.Static;
@@ -208,7 +206,7 @@ public class Skill
 
         // HackFix: for quest Unblock the Spring ( 3707 ), unable to use the boulder because of being "too close"
         // The range of skill Remove Stone ( 16462 ) is defined as 100~200 which can't possibly be correct 
-        if ((Template.TargetType == SkillTargetType.Doodad) && (Template.MinRange >= 100))
+        if (Template.TargetType == SkillTargetType.Doodad && Template.MinRange >= 100)
         {
             minRangeCheck = Template.MinRange / 100.0;
         }
@@ -241,7 +239,7 @@ public class Skill
 
         // TODO: Remove exception for doodads
         // TODO: Remove exceptions for slave initiated by Doodads (needed to fix repair points on ships)
-        if ((targetDist > maxRangeCheck) && (target is not Doodad) && (target is not Slave))
+        if (targetDist > maxRangeCheck && target is not Doodad && target is not Slave)
         {
             SkillTlIdManager.ReleaseId(TlId);
             TlId = 0;
@@ -819,7 +817,7 @@ public class Skill
 
         // TODO: добавил, так как для квеста 3469 нет события OnItemUse
         // TODO: added since there is no OnItemUse event for quest 3469 and other quests that require the use on non-consuming items
-        if ((Cancelled == false) && (casterCaster is SkillItem { ItemTemplateId: > 0 } item && caster is Character player))
+        if (Cancelled == false && casterCaster is SkillItem { ItemTemplateId: > 0 } item && caster is Character player)
         {
             player.ItemUse(item.ItemId);
         }
@@ -888,6 +886,13 @@ public class Skill
         else
         {
             possibleTargets.Add(targetSelf);
+        }
+        // Filter out duplicate entries and non-existing
+        possibleTargets = possibleTargets.Distinct().ToList();
+        // Add origin in case of no targets and using a target position cast
+        if (possibleTargets.Count <= 0 && targetCaster is SkillCastPositionTarget)
+        {
+            possibleTargets.Add(caster);
         }
 
         foreach (var target in possibleTargets)
@@ -1036,6 +1041,13 @@ public class Skill
                 effectsToApply.Add((target, effect));
                 lastAppliedEffect = effect;
                 //effect.Template?.Apply(caster, casterCaster, target, targetCaster, new CastSkill(Template.Id, TlId), new EffectSource(this), skillObject, DateTime.UtcNow, packets);
+
+                // TODO: Fix this HACK, only use the first target if it's a position.
+                // Hack added to fix SummonDoodad issues from Skill 15343, spawns Recovered Treasure Chest ( 3483 )
+                if (targetCaster is SkillCastPositionTarget)
+                {
+                    break;
+                }
             }
         }
 
@@ -1212,7 +1224,7 @@ public class Skill
             // but has none attached, consume 1 of the source item instead
             // TODO: Check if this is intended behaviour, or if this is a bug in the compact.sqlite3 file
             var item = ItemManager.Instance.GetItemByItemId(skillItem.ItemId);
-            if ((item?.Template.UseSkillAsReagent == true) && (reagents.Count <= 0) && (skillProducts.Count <= 0) && (consumedItems.Count <= 0))
+            if (item?.Template.UseSkillAsReagent == true && reagents.Count <= 0 && skillProducts.Count <= 0 && consumedItems.Count <= 0)
             {
                 consumedItems.Add((item, 1));
                 Logger.Debug($"Consumed item template 1 x {item.TemplateId} ({item.Id}) because of missing reagent information with skill {Template.Id}");

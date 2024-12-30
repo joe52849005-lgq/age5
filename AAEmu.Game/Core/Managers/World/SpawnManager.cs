@@ -396,8 +396,8 @@ public class SpawnManager : Singleton<SpawnManager>
                             entry++;
                             if (spawner.UnitId != 0 && !GimmickManager.Instance.Exist(spawner.UnitId))
                             {
-                                Logger.Warn($"Gimmick Template {spawner.UnitId} (file entry {entry}) doesn't exist - {jsonFileName}");
-                                continue; // TODO ... so mb warn here?
+                                Logger.Error($"Gimmick Template {spawner.UnitId} (file entry {entry}) doesn't exist - {jsonFileName}");
+                                continue;
                             }
                             spawner.Id = _nextId;
                             //spawner.UnitId = 0; // EntityGuid is used for elevators

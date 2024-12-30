@@ -104,6 +104,7 @@ public sealed class GameService : IHostedService, IDisposable
         // SkillTlIdManager.Instance.Initialize();
         IndunManager.Instance.Initialize();
         AuctionIdManager.Instance.Initialize();
+        GimmickIdManager.Instance.Initialize();
 
         GameDataManager.Instance.LoadGameData();
         QuestManager.Instance.Load();
