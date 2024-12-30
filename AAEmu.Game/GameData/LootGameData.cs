@@ -130,30 +130,36 @@ public class LootGameData : Singleton<LootGameData>, IGameDataLoader
 
         // Generate packs
 
-        foreach (var lootPackId in _lootsByPackId.Keys)
+        foreach (var (lootPackId, loots) in _lootsByPackId)
         {
             var pack = new LootPack()
             {
                 Id = lootPackId,
-                Loots = _lootsByPackId[lootPackId],
-                Groups = new Dictionary<uint, LootGroups>(),
-                ActabilityGroups = new Dictionary<uint, LootActabilityGroups>(),
-                LootsByGroupNo = new Dictionary<uint, List<Loot>>(),
+                Loots = loots,
+                Groups = [],
+                ActabilityGroups = [],
+                LootsByGroupNo = [],
                 GroupCount = 0
             };
 
+            // Get actual DB data for groups
             if (_lootGroupsByPackId.TryGetValue(lootPackId, out var lootGroupsList))
+            {
                 foreach (var lootGroup in lootGroupsList)
                     pack.Groups.Add(lootGroup.GroupNo, lootGroup);
+            }
 
+            // Skill related rolls
             if (_lootActabilityGroupsByPackId.TryGetValue(lootPackId, out var lootActAbilityGroups))
+            {
                 foreach (var lag in lootActAbilityGroups)
                     pack.ActabilityGroups.Add(lag.GroupId, lag);
+            }
 
-            foreach (var loot in _lootsByPackId[lootPackId])
+            foreach (var loot in loots)
             {
                 if (!pack.LootsByGroupNo.ContainsKey(loot.Group))
-                    pack.LootsByGroupNo.Add(loot.Group, new List<Loot>());
+                    pack.LootsByGroupNo.Add(loot.Group, []);
 
                 pack.LootsByGroupNo[loot.Group].Add(loot);
 

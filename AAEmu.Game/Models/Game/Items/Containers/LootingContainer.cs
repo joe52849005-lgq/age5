@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -201,11 +201,12 @@ public class LootingContainer(IBaseUnit owner)
                 var lootPack = LootGameData.Instance.GetPack(lootPackDropping.LootPackId);
                 if (lootPack == null)
                     continue;
-                lootPackResults.AddRange(lootPack.GeneratePackNew(lootDropRate, lootGoldRate, killer as Character, ActabilityType.None, true));
+
+                lootPackResults.AddRange(lootPack.GeneratePackNew(lootDropRate, lootGoldRate, killer as Character, ActabilityType.None, true)); 
                 // var items = lootPack.GenerateNpcPackItems(ref baseId, killer, lootDropRate, lootGoldRate);
                 // RegisterItems(items);
             }
-
+            
             // Make Group list to enumerate with
             var groups = lootPackResults.GroupBy(x => x.lootGroupOrigin).Select(x => x.Key).ToList();
 
@@ -590,6 +591,7 @@ public class LootingContainer(IBaseUnit owner)
         var fullOldItemId = itemEntry.Item.Id;
 
         // var objId = (uint)(lootDropItem.Id >> 32);
+
         if (itemEntry.Item.TemplateId == (uint)ItemConstants.Coins)
         {
             player.AddMoney(SlotType.Bag, itemEntry.Item.Count);

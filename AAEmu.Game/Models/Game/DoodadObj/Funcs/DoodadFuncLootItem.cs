@@ -50,8 +50,7 @@ public class DoodadFuncLootItem : DoodadFuncTemplate
                 var item = ItemManager.Instance.Create(ItemId, count, 0);
                 if (character.Inventory.TakeoffBackpack(ItemTaskType.RecoverDoodadItem, true))
                 {
-                    res = character.Inventory.Equipment.AddOrMoveExistingItem(ItemTaskType.RecoverDoodadItem, item,
-                        (int)EquipmentItemSlot.Backpack);
+                    res = character.Inventory.Equipment.AddOrMoveExistingItem(ItemTaskType.RecoverDoodadItem, item, (int)EquipmentItemSlot.Backpack);
                 }
             }
             else

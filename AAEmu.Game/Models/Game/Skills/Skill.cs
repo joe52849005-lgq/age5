@@ -1256,14 +1256,25 @@ public class Skill
 
         if (caster is Character character)
         {
-            if (Template.ConsumeLaborPower > 0 && !Cancelled && character.LaborPower >= Template.ConsumeLaborPower)
+            var laborCost = Template.ConsumeLaborPower;
+            // Adjust labor cost if needed
+            if (character.Actability.Actabilities.TryGetValue((byte)Template.ActabilityGroupId, out var actAbility))
+            {
+                laborCost = (int)Math.Round(laborCost * actAbility.GetLaborCostMultiplier());
+            }
+
+            // Lower cap at 1
+            if (Template.ConsumeLaborPower > 0 && laborCost < 1)
+                laborCost = 1;
+
+            if (laborCost > 0 && !Cancelled && character.LaborPower >= laborCost)
             {
                 // Consume labor only if there is enough of it
-                character.ChangeLabor((short)-Template.ConsumeLaborPower, Template.ActabilityGroupId);
+                character.ChangeLabor((short)-laborCost, Template.ActabilityGroupId);
             }
 
             // Add vocation where needed
-            if ((Template.GainLifePoint > 0) && !Cancelled)
+            if (Template.GainLifePoint > 0 && !Cancelled)
             {
                 // We multiply the BASE value for server settings, not the total (although I don't think this would affect anything since we don't really have a +1 badge/action buff)
                 character.ChangeGamePoints(GamePointKind.Vocation, (int)Math.Ceiling(AppConfiguration.Instance.World.VocationRate * Template.GainLifePoint));

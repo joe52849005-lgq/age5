@@ -1352,8 +1352,11 @@ public partial class Character : Unit, ICharacter
     {
         var actabilityChange = 0;
         byte actabilityStep = 0;
+        var expMultiplier = 1f;
         if (actabilityId > 0)
         {
+            // Get multiplier before adding points
+            expMultiplier = Actability.Actabilities[(uint)actabilityId].GetExpMultiplier();
             actabilityChange = Math.Abs(change);
             actabilityStep = Actability.Actabilities[(uint)actabilityId].Step;
             actabilityChange = Actability.AddPoint((uint)actabilityId, actabilityChange);
@@ -1362,11 +1365,13 @@ public partial class Character : Unit, ICharacter
         // Only grant xp if consuming labor
         if (change < 0)
         {
-            var parameters = new Dictionary<string, double>();
-            parameters.Add("labor_power", -change);
-            parameters.Add("pc_level", Level);
+            var parameters = new Dictionary<string, double>
+            {
+                { "labor_power", -change },
+                { "pc_level", Level }
+            };
             var formula = FormulaManager.Instance.GetFormula((uint)FormulaKind.ExpByLaborPower);
-            var xpToAdd = (int)formula.Evaluate(parameters);
+            var xpToAdd = (int)(formula.Evaluate(parameters) * expMultiplier);
             AddExp(xpToAdd, true);
         }
 

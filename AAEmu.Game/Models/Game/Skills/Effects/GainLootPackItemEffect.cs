@@ -47,7 +47,7 @@ public class GainLootPackItemEffect : EffectTemplate
             // the tractor collects water
             character.Inventory.Bag.ConsumeItem(ItemTaskType.ConsumeSkillSource, ConsumeItemId, ConsumeCount, null);
             pack.GiveLootPack(character, actAbility, ItemTaskType.SkillEffectGainItem);
-            Logger.Debug($"GainLootPackItemEffect {LootPackId}");
+            Logger.Warn($"GainLootPackItemEffect: LootPackId={LootPackId}");
             return;
         }
 
@@ -74,7 +74,6 @@ public class GainLootPackItemEffect : EffectTemplate
 
         // Give the results
         pack.GiveLootPack(character, actAbility, ItemTaskType.SkillEffectGainItem);
-
-        Logger.Debug($"GainLootPackItemEffect {LootPackId}");
+        Logger.Warn($"GainLootPackItemEffect: LootPackId={LootPackId}");
     }
 }
