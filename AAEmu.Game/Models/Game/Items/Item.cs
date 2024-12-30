@@ -373,6 +373,12 @@ public class Item : PacketMarshaler, IComparable<Item>
             case ItemDetailType.Treasure:
             case ItemDetailType.Location: // нет в 1.2
                 mDetailLength = 25;
+                // Debug Hack
+                stream.Write(10810f);
+                stream.Write(10820f);
+                stream.Write(10830f);
+                stream.Write(10840f);
+                stream.Write(new byte[mDetailLength-16]);
                 break;
             case ItemDetailType.BigFish: // есть расшифровка в items/BigFish
             case ItemDetailType.Decoration:

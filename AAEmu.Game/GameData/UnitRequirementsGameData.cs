@@ -5,6 +5,7 @@ using System.Numerics;
 using AAEmu.Commons.Utils;
 using AAEmu.Game.GameData.Framework;
 using AAEmu.Game.Models.Game.Char;
+using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Quests;
 using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.Skills.Static;
@@ -12,6 +13,7 @@ using AAEmu.Game.Models.Game.Skills.Templates;
 using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Models.Game.Units.Static;
 using AAEmu.Game.Models.Spheres;
+using AAEmu.Game.Models.StaticValues;
 using AAEmu.Game.Utils.DB;
 
 using Microsoft.Data.Sqlite;
@@ -34,7 +36,7 @@ public class UnitRequirementsGameData : Singleton<UnitRequirementsGameData>, IGa
     /// owner_type, owner_id, unit_reqs
     /// </summary>
     private Dictionary<string, List<UnitReqs>> _unitReqsByOwnerType { get; set; }
-    
+
     public void Load(SqliteConnection connection, SqliteConnection connection2)
     {
         _unitReqs = new();
@@ -105,6 +107,24 @@ public class UnitRequirementsGameData : Singleton<UnitRequirementsGameData>, IGa
         return GetRequirement("ItemWeapon", weaponId).ToList();
     }
 
+    public TreasureMap GetTreasureMapWithCoordinatesNearbyItem(Character character, double maxRange)
+    {
+        if (character == null)
+            return null;
+        if (!character.Inventory.GetAllItemsByTemplate([SlotType.Bag], (uint)ItemConstants.TreasureMapWithCoordinates, -1, out var maps, out _))
+            return null;
+        foreach (var map in maps)
+        {
+            if (map is TreasureMap treasureMap)
+            {
+                var dist = character.Transform.World.Position - treasureMap.GetMapPosition(character.Transform.World.Position.Z);
+                if (dist.Length() <= maxRange)
+                    return treasureMap;
+            }
+        }
+        return null;
+    }
+
     public List<UnitReqs> GetQuestComponentRequirements(uint componentId)
     {
         return GetRequirement("QuestComponent", componentId).ToList();
@@ -123,8 +143,21 @@ public class UnitRequirementsGameData : Singleton<UnitRequirementsGameData>, IGa
     /// <returns></returns>
     public UnitReqsValidationResult CanUseSkill(SkillTemplate skillTemplate, BaseUnit ownerUnit, SkillCaster skillCaster)
     {
-        if (skillTemplate == null)
-            return new UnitReqsValidationResult(SkillResultKeys.skill_invalid_skill, 0, 0);
+        // Buried Treasure check, I can't seem to find any table that adds this requirement
+        // Note by ZeromusXYZ:
+        // I don't like putting the check here, but it feels like the best options since there does not seem to be
+        // any tables that could be used to identify that this skill needs a check
+        if (skillTemplate.Id == SkillsEnum.DigUpTreasureChestMarkedOnMap)
+        {
+            var treasureMap = GetTreasureMapWithCoordinatesNearbyItem(ownerUnit as Character, 5.0);
+            if (treasureMap == null)
+            {
+                return new UnitReqsValidationResult(SkillResultKeys.skill_urk_own_item, 0, (uint)ItemConstants.TreasureMapWithCoordinates);
+            }
+        }
+
+        // if (skillTemplate == null)
+        //     return new UnitReqsValidationResult(SkillResultKeys.skill_invalid_skill, 0, 0);
         var reqs = GetSkillRequirements(skillTemplate.Id);
         if (reqs.Count == 0)
             return new UnitReqsValidationResult(SkillResultKeys.ok, 0, 0); // SkillResult.Success; // No requirements, we're good
@@ -132,7 +165,7 @@ public class UnitRequirementsGameData : Singleton<UnitRequirementsGameData>, IGa
         // Used for special handling hack for AreaSphere requirement
         // Example QuestId: 5079 & 5080 - Guerilla Marketing
         var validQuestComponents = new List<uint>();
-        
+
         // For skill for "item use" for specific quests
         if ((skillCaster is SkillItem skillItem) && (ownerUnit is Character player))
         {
@@ -144,9 +177,9 @@ public class UnitRequirementsGameData : Singleton<UnitRequirementsGameData>, IGa
             }
         }
         // TODO: check if there are any other skill types that required to be used in a specific area of multiple quest spheres
-        
+
         var res = !skillTemplate.OrUnitReqs;
-        var lastFailedCheckResult = new UnitReqsValidationResult(SkillResultKeys.skill_failure,0,0);
+        var lastFailedCheckResult = new UnitReqsValidationResult(SkillResultKeys.skill_failure, 0, 0);
         foreach (var unitReq in reqs)
         {
             var reqRes = false;
@@ -167,7 +200,7 @@ public class UnitRequirementsGameData : Singleton<UnitRequirementsGameData>, IGa
             else
             {
                 var lastCheckResult = unitReq.Validate(ownerUnit);
-                reqRes = lastCheckResult.ResultKey == SkillResultKeys.ok;                
+                reqRes = lastCheckResult.ResultKey == SkillResultKeys.ok;
                 if (lastCheckResult.ResultKey != SkillResultKeys.ok)
                     lastFailedCheckResult = lastCheckResult;
             }
@@ -184,7 +217,7 @@ public class UnitRequirementsGameData : Singleton<UnitRequirementsGameData>, IGa
 
         return res ? new UnitReqsValidationResult(SkillResultKeys.ok, 0, 0) : lastFailedCheckResult;
     }
-    
+
     public bool CanTriggerSphere(Spheres sphere, BaseUnit ownerUnit)
     {
         var reqs = GetSphereRequirements(sphere.Id);
@@ -207,7 +240,7 @@ public class UnitRequirementsGameData : Singleton<UnitRequirementsGameData>, IGa
         }
         return res;
     }
-    
+
     public bool CanComponentRun(QuestComponentTemplate questComponent, BaseUnit ownerUnit)
     {
         var reqs = GetQuestComponentRequirements(questComponent.Id);
