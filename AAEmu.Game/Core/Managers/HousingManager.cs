@@ -14,7 +14,6 @@ using AAEmu.Game.Core.Managers.UnitManagers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Network.Connections;
 using AAEmu.Game.Core.Packets.G2C;
-using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.DoodadObj;
 using AAEmu.Game.Models.Game.DoodadObj.Static;
@@ -250,9 +249,9 @@ public class HousingManager : Singleton<HousingManager>
 
                         var template = new HousingBuildStep
                         {
-                            Id = reader.GetUInt32("id"), 
-                            HousingId = housingId, 
-                            Step = reader.GetInt16("step"), 
+                            Id = reader.GetUInt32("id"),
+                            HousingId = housingId,
+                            Step = reader.GetInt16("step"),
                             ModelId = reader.GetUInt32("model_id"),
                             SkillId = reader.GetUInt32("skill_id"),
                             NumActions = reader.GetInt32("num_actions")
@@ -535,7 +534,7 @@ public class HousingManager : Singleton<HousingManager>
         }
 
         // Logger.Debug($"SCHouseTaxInfoPacket; tlId:{house.TlId}, domTaxRate: 0, deposit: {depositTax}, taxDue:{totalTaxAmountDue}, protectEnd:{house.ProtectionEndDate}, isPaid:{requiresPayment}, weeksWithoutPay:{weeksWithoutPay}, isHeavy:{house.Template.HeavyTax}");
-        
+
         connection.SendPacket(
             new SCHouseTaxInfoPacket(
                 house.TlId,
@@ -692,7 +691,7 @@ public class HousingManager : Singleton<HousingManager>
 
         if (house.OwnerId != connection.ActiveChar.Id)
             return; // not the owner
-        
+
         house.Permission = permission;
         house.BroadcastPacket(new SCHousePermissionChangedPacket(tlId, (byte)permission), false);
     }
@@ -991,6 +990,10 @@ public class HousingManager : Singleton<HousingManager>
                 designItem.SlotType = SlotType.MailAttachment;
                 returnedItems.Add(designItem);
             }
+            else
+            {
+                Logger.Error($"Was unable to find design items for demolishing {house.Name} ({house.Id}). HouseTemplateId: {house.Template.Id}, DesignItemId: {designItemId}");
+            }
 
             // Return taxes
             if (!failedToPayTax)
@@ -1040,7 +1043,7 @@ public class HousingManager : Singleton<HousingManager>
                 f.ParentObjId = 0;
                 f.ParentObj = null;
                 f.OwnerDbId = 0;
-                Logger.Warn($"ReturnHouseItemsToOwner - Furniture doesn't have design info for Doodad Id:{f.ObjId} Template:{f.TemplateId}");
+                Logger.Warn($"ReturnHouseItemsToOwner - Furniture has a design, but couldn't find a item for it, DoodadObjId:{f.ObjId} Template:{f.TemplateId}, DesignId: {decoDesign.Id}");
                 continue;
             }
 
@@ -1173,13 +1176,13 @@ public class HousingManager : Singleton<HousingManager>
                     ReceiverName = NameManager.Instance.GetCharacterName(house.OwnerId), // Doesn't seem like this needs to be set
                     Header =
                     {
-                        ReceiverId = house.OwnerId, 
-                        SenderId = 0, 
-                        SenderName = ".houseDemolish", 
+                        ReceiverId = house.OwnerId,
+                        SenderId = 0,
+                        SenderName = ".houseDemolish",
                         Extra = house.Id
                     },
                     Title = "title",
-                    Body = { 
+                    Body = {
                         Text = "body", // Yes, that's indeed what it needs to be set to
                         SendDate = DateTime.UtcNow,
                         RecvDate = DateTime.UtcNow.AddHours(failedToPayTax ? HoursForFailedTaxToReturnHouse : 0)
@@ -1230,8 +1233,13 @@ public class HousingManager : Singleton<HousingManager>
     /// <returns></returns>
     private uint GetItemIdByDesign(uint designId)
     {
-        var design = _housingItemHousings.FirstOrDefault(h => h.Design_Id == designId);
-        return design?.Item_Id ?? 0;
+        var designs = _housingItemHousings.Where(h => h.Design_Id == designId);
+        foreach (var design in designs)
+        {
+            if (ItemManager.Instance.GetTemplate(design.Item_Id) != null)
+                return design.Item_Id;
+        }
+        return 0;
     }
 
     /// <summary>
@@ -1374,12 +1382,12 @@ public class HousingManager : Singleton<HousingManager>
                 // Mail container is set up to never update existing items, so we can discard that result
                 var mail = new BaseMail
                 {
-                    MailType = MailType.HousingSale, 
+                    MailType = MailType.HousingSale,
                     Header =
                     {
-                        ReceiverId = house.OwnerId, 
+                        ReceiverId = house.OwnerId,
                         SenderName = ".houseSellCancel"
-                    }, 
+                    },
                     ReceiverName = NameManager.Instance.GetCharacterName(house.OwnerId),
                     Title = "title(" + ZoneManager.Instance.GetZoneByKey(house.Transform.ZoneId)?.GroupId.ToString() + ",'" + house.Name + "')",
                     Body =
@@ -1490,12 +1498,12 @@ public class HousingManager : Singleton<HousingManager>
         // Mail confirmation mail to new owner
         var newOwnerMail = new BaseMail
         {
-            MailType = MailType.HousingSale, 
+            MailType = MailType.HousingSale,
             Header =
             {
-                ReceiverId = character.Id, 
+                ReceiverId = character.Id,
                 SenderName = ".houseBought"
-            }, 
+            },
             ReceiverName = character.Name,
             Title = "title(" + ZoneManager.Instance.GetZoneByKey(house.Transform.ZoneId)?.GroupId.ToString() + ",'" + house.Name + "')",
             Body =
@@ -1510,12 +1518,12 @@ public class HousingManager : Singleton<HousingManager>
         // Send sales money to previous owner
         var profitMail = new BaseMail
         {
-            MailType = MailType.HousingSale, 
+            MailType = MailType.HousingSale,
             Header =
             {
-                ReceiverId = previousOwner, 
+                ReceiverId = previousOwner,
                 SenderName = ".houseSold"
-            }, 
+            },
             ReceiverName = previousOwnerName,
             Title = "title('" + character.Name + "','" + house.Name + "')",
             Body =
