@@ -131,7 +131,7 @@ public enum ItemTaskType : byte
     ConvertItemLook = 122,          // convert_item_look
     RevertItemLook,                 // revert_item_look
     ChangeExpertLimit = 125,        // change-expert-limit
-    Sknize = 126,                   // sknize
+    Skinize = 126,                  // skinize
     ItemTaskThistimeUnpack,         // item-task-thistime-unpack
     BuyPremiumService,              // buy-premium-service-ingameshop
     BuyAaPoint,                     // buy-aa-point-ingameshop

@@ -76,7 +76,7 @@ public class Skinize : SpecialEffectAction
         itemToImage.SetFlag(ItemFlag.Skinized);
 
         // Send success packet to the client
-        character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Sknize,
+        character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Skinize,
             new List<ItemTask> { new ItemUpdateSecurity(itemToImage, 9, 1, false, false, false) },
             new List<ulong>(),
             1));
