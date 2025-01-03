@@ -11,6 +11,8 @@ namespace AAEmu.Game.Core.Packets.C2G
 
         public override void Read(PacketStream stream)
         {
+            Logger.Debug("Entering in CSPrepayHouseTaxPacket...");
+
             var tl = stream.ReadUInt16();
             var ausp = stream.ReadBoolean();
 

@@ -32,7 +32,7 @@ public class FeaturesManager : Singleton<FeaturesManager>
 //        Fsets.Set(Feature.allowFamilyChanges, true);
 
         // Disables Dwarf/Warborn character creation (0.5 only)
-        Fsets.Set(Feature.dwarfWarborn, true);
+        //Fsets.Set(Feature.dwarfWarborn, true);
 
         // Debug convenience flags, disables most of the sensitive operation stuff to do easier testing
 //        Fsets.Set(Feature.sensitiveOpeartion, false);

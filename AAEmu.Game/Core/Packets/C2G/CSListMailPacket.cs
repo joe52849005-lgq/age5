@@ -11,6 +11,8 @@ public class CSListMailPacket : GamePacket
 
     public override void Read(PacketStream stream)
     {
+        Logger.Debug("Entering in CSListMailPacket...");
+
         var mailBoxListKind = stream.ReadByte();
         var startIdx = stream.ReadInt32();
         var sentCnt = stream.ReadInt32();

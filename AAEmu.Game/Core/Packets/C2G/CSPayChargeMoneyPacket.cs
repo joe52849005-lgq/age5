@@ -12,11 +12,15 @@ public class CSPayChargeMoneyPacket : GamePacket
 
     public override void Read(PacketStream stream)
     {
+        Logger.Debug("Entering in CSPayChargeMoneyPacket...");
+
         var mailId = stream.ReadInt64();
         var autoUseAAPoint = stream.ReadBoolean();
 
         Logger.Debug("PayChargeMoney, mailId: {0}, autoUseAAPoint: {1}", mailId, autoUseAAPoint);
         if (!MailManager.Instance.PayChargeMoney(Connection.ActiveChar, mailId, autoUseAAPoint))
+        {
             Logger.Warn("PayChargeMoney failed, mailId: {0}, autoUseAAPoint: {1}", mailId, autoUseAAPoint);
+        }
     }
 }

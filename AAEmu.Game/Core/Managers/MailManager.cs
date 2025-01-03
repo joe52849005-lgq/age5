@@ -323,7 +323,7 @@ public class MailManager : Singleton<MailManager>
 
     public static bool NotifyDeleteMailByNameIfOnline(BaseMail m, string receiverName)
     {
-        Logger.Trace($"NotifyDeleteMailByNameIfOnline() - {receiverName}");
+        Logger.Debug($"NotifyDeleteMailByNameIfOnline() - {receiverName}");
         var player = WorldManager.Instance.GetCharacter(receiverName);
         if (player != null)
         {
@@ -395,32 +395,29 @@ public class MailManager : Singleton<MailManager>
                 character.SendErrorMessage(ErrorMessageType.MailNotEnoughMoneyToPayTaxes);
                 return false;
             }
-            else
+
+            var c = consumedCerts;
+            // Use Bound First
+            if (userBoundTaxCount > 0 && c > 0)
             {
-                var c = consumedCerts;
-                // Use Bound First
-                if (userBoundTaxCount > 0 && c > 0)
-                {
-                    if (c > userBoundTaxCount)
-                        c = userBoundTaxCount;
-                    character.Inventory.Bag.ConsumeItem(Models.Game.Items.Actions.ItemTaskType.Mail, (uint)ItemConstants.BoundTaxCertificate, c, null);
-                    consumedCerts -= c;
-                }
-                c = consumedCerts;
-                if (userTaxCount > 0 && c > 0)
-                {
-                    if (c > userTaxCount)
-                        c = userTaxCount;
-                    character.Inventory.Bag.ConsumeItem(Models.Game.Items.Actions.ItemTaskType.Mail, (uint)ItemConstants.TaxCertificate, c, null);
-                    consumedCerts -= c;
-                }
-
-                if (consumedCerts != 0)
-                    Logger.Error("Something went wrong when paying tax for mailId {0}", mail.Id);
-
-                mail.Body.BillingAmount = consumedCerts;
-
+                if (c > userBoundTaxCount)
+                    c = userBoundTaxCount;
+                character.Inventory.Bag.ConsumeItem(ItemTaskType.HousePayTax, (uint)ItemConstants.BoundTaxCertificate, c, null);
+                consumedCerts -= c;
             }
+            c = consumedCerts;
+            if (userTaxCount > 0 && c > 0)
+            {
+                if (c > userTaxCount)
+                    c = userTaxCount;
+                character.Inventory.Bag.ConsumeItem(ItemTaskType.HousePayTax, (uint)ItemConstants.TaxCertificate, c, null);
+                consumedCerts -= c;
+            }
+
+            if (consumedCerts != 0)
+                Logger.Error("Something went wrong when paying tax for mailId {0}", mail.Id);
+
+            mail.Body.BillingAmount = consumedCerts;
         }
         else
         {

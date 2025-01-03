@@ -13,6 +13,8 @@ public class CSConstructHouseTaxPacket : GamePacket
 
     public override void Read(PacketStream stream)
     {
+        Logger.Debug("Entering in CSConstructHouseTaxPacket...");
+
         var designId = stream.ReadUInt32(); // type(id)
         var x = Helpers.ConvertLongX(stream.ReadInt64());
         var y = Helpers.ConvertLongY(stream.ReadInt64());

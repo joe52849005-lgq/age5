@@ -34,14 +34,17 @@ public class CharacterMails
 
         var mailList = MailManager.Instance.GetCurrentMailList(Self).Values.ToList();
         var total = mailList.Count;
-
-        Self.SendPacket(new SCMailListPacket(true, total, mailList[SendMailIndex].Header, mailBoxListKind));
-        UnreadMailCount.UpdateSend(1);
-        SendMailIndex++;
-
-        if (SendMailIndex < total)
+        if (total > 0)
         {
-            return;
+
+            Self.SendPacket(new SCMailListPacket(true, total, mailList[SendMailIndex].Header, mailBoxListKind));
+            UnreadMailCount.UpdateSend(1);
+            SendMailIndex++;
+
+            if (SendMailIndex < total)
+            {
+                return;
+            }
         }
 
         Self.SendPacket(new SCMailListEndPacket((byte)total, UnreadMailCount));
@@ -85,7 +88,7 @@ public class CharacterMails
     {
         if (MailManager.Instance._allPlayerMails.TryGetValue(id, out var mail))
         {
-            if (mail.Header.Status == MailStatus.Unread && !isSent)
+            if (mail.Header.Status == MailStatus.Unread || mail.Header.Status == MailStatus.Unpaid && !isSent)
             {
                 UnreadMailCount.UpdateUnreadReceived(mail.MailType, -1);
                 mail.OpenDate = DateTime.UtcNow;

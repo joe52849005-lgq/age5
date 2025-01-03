@@ -12,6 +12,8 @@ public class CSRequestHouseTaxPacket : GamePacket
 
     public override void Read(PacketStream stream)
     {
+        Logger.Debug("Entering in CSRequestHouseTaxPacket...");
+
         var tl = stream.ReadUInt16(); // houseId
         var objId = stream.ReadBc();
 

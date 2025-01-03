@@ -11,6 +11,8 @@ public class CSReadMailPacket : GamePacket
 
     public override void Read(PacketStream stream)
     {
+        Logger.Debug("Entering in CSReadMailPacket...");
+
         var isSent = stream.ReadBoolean();
         var mailId = stream.ReadInt64();
 

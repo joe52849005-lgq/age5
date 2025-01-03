@@ -137,7 +137,7 @@ public enum ItemTaskType : byte
     BuyAaPoint,                     // buy-aa-point-ingameshop
     TakeScheduleItem,               // take-schedule-item
     ScaleCap = 131,                 // scale-cap
-    HousePayTax,                    // house-pay-tax
+    HousePayTax = 133,              // house-pay-tax
     BuyItemIngameshop = 134,        // buy-item-ingameshop
     ExchangeCashFromItem,           // exchange-cash-from-item
     RepairSlaveEquipment,           // repair-slave-equipment

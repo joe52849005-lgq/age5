@@ -45,10 +45,10 @@ public class MailForTax : BaseMail
             return false;
 
         // Set mail title
-        mail.Title = "title(" + zone.GroupId.ToString() + ")"; // Title calls a function to call zone group name
+        mail.Title = "title(" + zone.GroupId + ")"; // Title calls a function to call zone group name
 
         // Get Tax info
-        if (!HousingManager.Instance.CalculateBuildingTaxInfo(house.AccountId, house.Template, false, out var totalTaxAmountDue, out var heavyTaxHouseCount, out var normalTaxHouseCount, out var hostileTaxRate, out _))
+        if (!HousingManager.Instance.CalculateBuildingTaxInfo(house.AccountId, house.Template, false, out var totalTaxAmountDue, out var heavyTaxHouseCount, out var normalTaxHouseCount, out var hostileTaxRate, out var oneWeekTaxCount))
             return false;
 
         // Note: I'm sure this can be done better, but it works and displays correctly
@@ -60,20 +60,27 @@ public class MailForTax : BaseMail
             paymentDeadLine = house.ProtectionEndDate;
         }
 
-        //testmail 6 .houseTax title(25) "body('Test','1606565186','1607169986','1606565186','250000','50','3','0','500000','true','1')" 0 500000
-        mail.Body.Text = string.Format("body('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}')",
-            house.Name,                                 // House Name
-            Helpers.UnixTime(house.PlaceDate),          // Tax period start (this might need to be the same as tax due date)
-            Helpers.UnixTime(house.ProtectionEndDate),  // Tax period end
-            Helpers.UnixTime(paymentDeadLine),          // Tax Due Date
-            house.Template.Taxation.Tax,                // This house base tax rate
-            hostileTaxRate,                             // dominion tax rate (castle tax rate ?)
-            heavyTaxHouseCount,                         // number of heavy tax houses
-            lateFees,                                   // unpaid week count (listed as late fee)
-            totalTaxAmountDue,                          // amount to Pay (as gold reference)
-            house.Template.HeavyTax ? "true" : "false", // is this a heavy tax building
-            normalTaxHouseCount                         // number of tax-exempt houses
-            );
+        // for 1.2
+        //testmail 6 .houseTax title(25)
+        //"body('Test','1606565186','1607169986','1606565186','250000','50','3','0','500000','true','1')"
+        //0 500000
+        // for 5.0.7.0
+        // body('Фермерский дом','1726064262','1726669062','1726064262','150000','0','1','0','150000','true','0','0')
+        mail.Body.Text =
+            $"body('{house.Name}'," +
+            $" '{Helpers.UnixTime(house.ProtectionEndDate)}'," +
+            $" '{Helpers.UnixTime(house.PlaceDate)}'," +
+            //$" '{Helpers.UnixTime(house.PlaceDate)}'," +
+            //$" '{Helpers.UnixTime(house.ProtectionEndDate)}'," +
+            $" '{Helpers.UnixTime(paymentDeadLine)}'," +
+            $" '{house.Template.Taxation.Tax}'," +
+            $" '{hostileTaxRate}'," +
+            $" '{heavyTaxHouseCount}'," +
+            $" '{lateFees}'," +
+            $" '{totalTaxAmountDue}'," +
+            $" '{(house.Template.HeavyTax ? "true" : "false")}'," +
+            $" '{normalTaxHouseCount}'," +
+            $" '0')"; // added in 5070
         // In newer version this has a extra field at the end, which I assume is would be the hostile tax rate
 
         mail.Body.BillingAmount = totalTaxAmountDue;
