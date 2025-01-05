@@ -113,6 +113,10 @@ public class ResidentManager : Singleton<ResidentManager>
                 var residentMember = new ResidentMember(character);
                 resident.AddMember(residentMember);
             }
+
+            var houses = HousingManager.Instance.GetAllByCharacterId(character.Id);
+            character.SendPacket(new SCAddHousePacket(houses));
+
             character.SendPacket(new SCResidentMapPacket(resident.ZoneGroupId, Option.Insert));
         }
     }

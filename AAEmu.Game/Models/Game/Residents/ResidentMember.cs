@@ -8,6 +8,7 @@ public class ResidentMember : PacketMarshaler
     public uint Id { get; set; }
     public string Name { get; set; }
     public byte Level { get; set; }
+    public byte HeirLevel { get; set; }
     public uint Family { get; set; }
     public int ServicePoint { get; set; }
     public bool IsInParty { get; set; }
@@ -22,6 +23,7 @@ public class ResidentMember : PacketMarshaler
         Id = character.Id;
         Name = character.Name;
         Level = character.Level;
+        HeirLevel = character.HeirLevel;
         Family = character.Family;
         IsInParty = character.InParty;
         IsOnline = character.IsOnline;
@@ -32,6 +34,7 @@ public class ResidentMember : PacketMarshaler
         Id = character.Id;
         Name = character.Name;
         Level = character.Level;
+        HeirLevel = character.HeirLevel;
         Family = character.Family;
         IsInParty = character.InParty;
         IsOnline = character.IsOnline;
@@ -51,6 +54,7 @@ public class ResidentMember : PacketMarshaler
         stream.Write(Id);
         stream.Write(Name);
         stream.Write(Level);
+        stream.Write(HeirLevel);
         stream.Write(Family);
         stream.Write(IsOnline);
         stream.Write(IsInParty);

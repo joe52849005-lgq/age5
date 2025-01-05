@@ -53,7 +53,7 @@ public class TestMails : ICommand
             return;
         }
 
-        var mType = MailType.InvalidMailType;
+        var mType = MailType.Invalid;
         if (args.Length > 0)
         {
             var a0 = args[0].ToLower();
@@ -91,7 +91,7 @@ public class TestMails : ICommand
             }
         }
 
-        if (mType == MailType.InvalidMailType)
+        if (mType == MailType.Invalid)
         {
             CommandManager.SendErrorText(this, messageOutput, $"Invalid type: {mType}");
             return;

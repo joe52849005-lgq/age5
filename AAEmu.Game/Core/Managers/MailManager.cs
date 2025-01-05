@@ -17,6 +17,7 @@ using AAEmu.Game.Models.Game.Mails.Static;
 using AAEmu.Game.Models.Game.Quests;
 using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Tasks.Mails;
+using AAEmu.Game.Scripts.Commands;
 
 using MySql.Data.MySqlClient;
 
@@ -428,17 +429,17 @@ public class MailManager : Singleton<MailManager>
                 character.SendErrorMessage(ErrorMessageType.MailNotEnoughMoneyToPayTaxes);
                 return false;
             }
-            else
-            {
-                character.SubtractMoney(SlotType.Bag, mail.Body.BillingAmount);
-            }
+
+            character.SubtractMoney(SlotType.Bag, mail.Body.BillingAmount);
         }
 
         if (!HousingManager.PayWeeklyTax(house))
+        {
             Logger.Error("Could not update protection time when paying taxes, mailId {0}", mail.Id);
+        }
         else
         {
-            if (mail.Header.Status == MailStatus.Unread)
+            if (mail.Header.Status is MailStatus.Unread or MailStatus.Unpaid)
             {
                 mail.Header.Status = MailStatus.Read;
                 character.Mails.UnreadMailCount.UpdateReceived(mail.MailType, -1);
@@ -448,7 +449,6 @@ public class MailManager : Singleton<MailManager>
             character.SendPacket(new SCChargeMoneyPaidPacket(mail.Id));
             character.SendPacket(new SCMailDeletedPacket(false, mail.Id, false, character.Mails.UnreadMailCount));
             DeleteMail(mail);
-            character.Mails.SendUnreadMailCount();
         }
 
         return true;

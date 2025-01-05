@@ -247,7 +247,7 @@ public class GameNetwork : Singleton<GameNetwork>
         RegisterPacket(CSOffsets.CSDecorateHousePacket, 5, typeof(CSDecorateHousePacket));
         RegisterPacket(CSOffsets.CSSellHousePacket, 5, typeof(CSSellHousePacket));
         RegisterPacket(CSOffsets.CSBuyHousePacket, 5, typeof(CSBuyHousePacket));
-        //RegisterPacket(CSOffsets.CSRotateHousePacket, 5, typeof(CSRotateHousePacket));
+        RegisterPacket(CSOffsets.CSRotateHousePacket, 5, typeof(CSRotateHousePacket));
         RegisterPacket(CSOffsets.CSRemoveMatePacket, 5, typeof(CSRemoveMatePacket));
         RegisterPacket(CSOffsets.CSChangeMateTargetPacket, 5, typeof(CSChangeMateTargetPacket));
         RegisterPacket(CSOffsets.CSChangeMateUserStatePacket, 5, typeof(CSChangeMateUserStatePacket));

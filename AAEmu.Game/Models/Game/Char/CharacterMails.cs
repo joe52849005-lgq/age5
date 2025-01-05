@@ -171,7 +171,7 @@ public class CharacterMails
 
         if (MailManager.Instance._allPlayerMails.TryGetValue(mailId, out var thisMail))
         {
-            if (thisMail.MailType == MailType.AucOffSuccess && thisMail.Body.CopperCoins > 0 && takeMoney)
+            if (thisMail.MailType == MailType.AuctionOffSuccess && thisMail.Body.CopperCoins > 0 && takeMoney)
             {
                 if (Self.LaborPower < 1)
                 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using AAEmu.Commons.Network;
 using AAEmu.Game.Models.Game.Items;
 
@@ -32,7 +33,7 @@ public class MailBody : PacketMarshaler
     public MailBody(BaseMail parent)
     {
         _baseMail = parent;
-        Attachments = new List<Item>();
+        Attachments = [];
     }
 
     public override PacketStream Write(PacketStream stream)
@@ -50,7 +51,7 @@ public class MailBody : PacketMarshaler
         stream.Write(OpenDate);
         for (var i = 0; i < MaxMailAttachments; i++)
         {
-            if ((i >= Attachments.Count) || (Attachments[i] == null))
+            if (i >= Attachments.Count || Attachments[i] == null)
                 stream.Write(0);
             else
                 stream.Write(Attachments[i]);

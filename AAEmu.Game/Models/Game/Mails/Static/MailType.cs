@@ -2,7 +2,8 @@
 
 public enum MailType : byte
 {
-    InvalidMailType = 0,
+    // updated to version 5.0.7.0
+    Invalid = 0,
     Normal = 1,
     Express = 2,
     Registered = 3,
@@ -15,11 +16,11 @@ public enum MailType : byte
     Promotion = 10,
     MiaSend = 11,
     MiaRecv = 12,
-    AucOffCancel = 13,
-    AucOffSuccess = 14,
-    AucOffFail = 15,
-    AucBidWin = 16,
-    AucBidFail = 17,
+    AuctionOffCancel = 13,
+    AuctionOffSuccess = 14,
+    AuctionOffFail = 15,
+    AuctionBidWin = 16,
+    AucitonBidFail = 17,
     SysExpress = 18,
     SysSellBackpack = 19,
     DemolishWithPenalty = 20,
@@ -33,7 +34,7 @@ public enum MailType : byte
     HeroCandidateAlarm = 28,
     HeroElectionItem = 29,
     HousingRebuild = 30,
-    Demolish = 31,
+    HousingDemolish = 31,
     SiegeWinGiveItem = 32,
     SiegeLoseGiveItem = 33,
     TaxInKindReceipt = 34,
@@ -46,5 +47,7 @@ public enum MailType : byte
     NationRelationHostileReject = 41,
     SiegeAuctionStart = 42,
     ExpeditionImmigrationReject = 43,
-    ResidentBalance = 44
+    ResidentBalance = 44,
+    BattleFieldReward = 45,
+    CraftOrder = 46
 }

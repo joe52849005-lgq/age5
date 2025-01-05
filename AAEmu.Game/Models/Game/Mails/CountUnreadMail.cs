@@ -42,15 +42,27 @@ public class CountUnreadMail : PacketMarshaler
         if (mailType is MailType.Charged or MailType.Promotion)
         {
             TotalCommercialReceived += amount;
+            if (TotalCommercialReceived <= 0)
+            {
+                TotalCommercialReceived = 0;
+            }
         }
         else
         if (mailType == MailType.MiaRecv)
         {
             TotalMiaReceived += amount;
+            if (TotalMiaReceived <= 0)
+            {
+                TotalMiaReceived = 0;
+            }
         }
         else
         {
             TotalReceived += amount;
+            if (TotalReceived <= 0)
+            {
+                TotalReceived = 0;
+            }
         }
 
         Logger.Debug($"UpdateReceived: TotalCommercialReceived={TotalCommercialReceived}, TotalMiaReceived={TotalMiaReceived}, TotalReceived={TotalReceived}");
@@ -61,15 +73,27 @@ public class CountUnreadMail : PacketMarshaler
         if (mailType is MailType.Charged or MailType.Promotion)
         {
             UnreadCommercialReceived += amount;
+            if (UnreadCommercialReceived <= 0)
+            {
+                UnreadCommercialReceived = 0;
+            }
         }
         else
         if (mailType == MailType.MiaRecv)
         {
             UnreadMiaReceived += amount;
+            if (UnreadMiaReceived <= 0)
+            {
+                UnreadMiaReceived = 0;
+            }
         }
         else
         {
             UnreadReceived += amount;
+            if (UnreadReceived <= 0)
+            {
+                UnreadReceived = 0;
+            }
         }
         Logger.Debug($"UpdateUnreadReceived: UnreadCommercialReceived={UnreadCommercialReceived}, UnreadMiaReceived={UnreadMiaReceived}, UnreadReceived={UnreadReceived}");
     }
@@ -77,6 +101,10 @@ public class CountUnreadMail : PacketMarshaler
     public void UpdateSend(int amount)
     {
         TotalSent += amount;
+        if (TotalSent <= 0)
+        {
+            TotalSent = 0;
+        }
 
         Logger.Debug($"UpdateSend: TotalSent={TotalSent}");
     }

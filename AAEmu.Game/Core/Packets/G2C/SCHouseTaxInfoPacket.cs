@@ -13,12 +13,12 @@ public class SCHouseTaxInfoPacket : GamePacket
     private readonly int _moneyAmount2;
     private readonly DateTime _due;
     private readonly bool _isAlreadyPaid;
-    private readonly int _weeksWithoutPay;
-    private readonly int _weeksPrepay;
+    private readonly sbyte _weeksWithoutPay;
+    private readonly sbyte _weeksPrepay;
     private readonly bool _isHeavyTaxHouse;
 
     public SCHouseTaxInfoPacket(ushort tl, int dominionTaxRate, int hostileTaxRate, int moneyAmount, int moneyAmount2, DateTime due, bool isAlreadyPaid,
-        int weeksWithoutPay, int weeksPrepay,bool isHeavyTaxHouse) : base(SCOffsets.SCHouseTaxInfoPacket, 5)
+       sbyte weeksWithoutPay, sbyte weeksPrepay,bool isHeavyTaxHouse) : base(SCOffsets.SCHouseTaxInfoPacket, 5)
     {
         _tl = tl;
         _dominionTaxRate = dominionTaxRate;

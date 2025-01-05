@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using AAEmu.Commons.Network;
 using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers;
@@ -12,6 +13,7 @@ using AAEmu.Game.Models.Game.DoodadObj;
 using AAEmu.Game.Models.Game.DoodadObj.Static;
 using AAEmu.Game.Models.Game.Expeditions;
 using AAEmu.Game.Models.Game.Units;
+
 using MySql.Data.MySqlClient;
 
 namespace AAEmu.Game.Models.Game.Housing;
@@ -119,6 +121,7 @@ public sealed class House : Unit
         set { _permission = ((_template != null) && (_template.AlwaysPublic)) ? HousingPermission.Public : value; _isDirty = true; }
     }
 
+    public int PaidWeeks { get; set; } // оплаченные недели
     public DateTime PlaceDate { get => _placeDate; set { _placeDate = value; _isDirty = true; } }
     public DateTime ProtectionEndDate { get => _protectionEndDate; set { _protectionEndDate = value; _isDirty = true; } }
     public DateTime TaxDueDate { get => _protectionEndDate.AddDays(-7); }
@@ -132,9 +135,7 @@ public sealed class House : Unit
         get
         {
             var guildId = ExpeditionManager.Instance.GetExpeditionOfCharacter(OwnerId);
-            if (guildId == 0)
-                return null;
-            return ExpeditionManager.Instance.GetExpedition(guildId);
+            return guildId == 0 ? null : ExpeditionManager.Instance.GetExpedition(guildId);
         }
         set
         {
@@ -146,9 +147,10 @@ public sealed class House : Unit
     {
         Level = 1;
         ModelParams = new UnitCustomModelParams();
-        AttachedDoodads = new List<Doodad>();
+        AttachedDoodads = [];
         IsDirty = true;
         Events.OnDeath += OnDeath;
+        PaidWeeks = 0;
     }
 
     public void AddBuildAction()
@@ -339,6 +341,23 @@ public sealed class House : Unit
         stream.Write(Helpers.ConvertLongX(Transform.World.Position.X + 10));
         stream.Write(Helpers.ConvertLongY(Transform.World.Position.Y + 10));
         stream.Write(Transform.World.Position.Z);
+        return stream;
+    }
+    public PacketStream WriteInfo(PacketStream stream)
+    {
+        var ownerName = NameManager.Instance.GetCharacterName(OwnerId);
+
+        stream.Write(TlId);             // tl
+        stream.Write(OwnerId);          // type(id)
+        stream.WriteBc(ObjId);          // bc
+        stream.Write(AccountId);        // accountId
+        stream.Write(ownerName ?? "");
+        stream.Write(Helpers.ConvertLongX(Transform.World.Position.X));
+        stream.Write(Helpers.ConvertLongY(Transform.World.Position.Y));
+        stream.Write(Transform.World.Position.Z);
+        stream.Write(Template.MainModelId); // model_id (type) не точно!
+        stream.Write((byte)Permission);     // permission
+        stream.Write(Name);                 // house // TODO max length 128
         return stream;
     }
 

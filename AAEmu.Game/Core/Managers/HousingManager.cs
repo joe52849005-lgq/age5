@@ -54,11 +54,11 @@ public class HousingManager : Singleton<HousingManager>
     private static Logger Logger { get; } = LogManager.GetCurrentClassLogger();
 
     /// <summary>
-    /// Gets all houses for a given Account
+    /// Gets count all houses for a given Account
     /// </summary>
     /// <param name="values"></param>
     /// <param name="accountId"></param>
-    /// <returns></returns>
+    /// <returns>count all houses</returns>
     public int GetByAccountId(Dictionary<uint, House> values, ulong accountId)
     {
         foreach (var (id, house) in _houses)
@@ -68,17 +68,32 @@ public class HousingManager : Singleton<HousingManager>
     }
 
     /// <summary>
-    /// Gets all houses owned by Character
+    /// Gets count all houses owned by Character
     /// </summary>
     /// <param name="values"></param>
     /// <param name="characterId"></param>
-    /// <returns></returns>
+    /// <returns>count all houses</returns>
     public int GetByCharacterId(Dictionary<uint, House> values, uint characterId)
     {
         foreach (var (id, house) in _houses)
             if (house.OwnerId == characterId)
                 values.Add(id, house);
         return values.Count;
+    }
+
+    /// <summary>
+    /// Gets all houses owned by Character
+    /// </summary>
+    /// <param name="characterId"></param>
+    /// <returns>List all houses owned by Character</returns>
+    public List<House> GetAllByCharacterId(uint characterId)
+    {
+        List<House> values = [];
+        foreach (var (id, house) in _houses)
+            if (house.OwnerId == characterId)
+                values.Add(house);
+
+        return values;
     }
 
     /// <summary>
@@ -425,8 +440,7 @@ public class HousingManager : Singleton<HousingManager>
             if (protectionBuffTemplate != null)
             {
                 var casterObj = new SkillCasterUnit(house.ObjId);
-                house.Buffs.AddBuff(new Buff(house, house, casterObj,
-                    protectionBuffTemplate, null, DateTime.UtcNow));
+                house.Buffs.AddBuff(new Buff(house, house, casterObj, protectionBuffTemplate, null, DateTime.UtcNow));
             }
             else
             {
@@ -522,7 +536,7 @@ public class HousingManager : Singleton<HousingManager>
 
         // Note: I'm sure this can be done better, but it works and displays correctly
         var requiresPayment = false;
-        var weeksWithoutPay = -1;
+        sbyte weeksWithoutPay = 0;
         if (house.TaxDueDate <= DateTime.UtcNow)
         {
             requiresPayment = true;
@@ -534,7 +548,7 @@ public class HousingManager : Singleton<HousingManager>
             weeksWithoutPay = 1;
         }
 
-        // Logger.Debug($"SCHouseTaxInfoPacket; tlId:{house.TlId}, domTaxRate: 0, deposit: {depositTax}, taxDue:{totalTaxAmountDue}, protectEnd:{house.ProtectionEndDate}, isPaid:{requiresPayment}, weeksWithoutPay:{weeksWithoutPay}, isHeavy:{house.Template.HeavyTax}");
+        Logger.Debug($"SCHouseTaxInfoPacket; tlId:{house.TlId}, domTaxRate: 0, deposit: {depositTax}, taxDue:{totalTaxAmountDue}, protectEnd:{house.ProtectionEndDate}, isPaid:{requiresPayment}, weeksWithoutPay:{weeksWithoutPay}, isHeavy:{house.Template.HeavyTax}");
 
         connection.SendPacket(
             new SCHouseTaxInfoPacket(
@@ -544,9 +558,9 @@ public class HousingManager : Singleton<HousingManager>
                 depositTax, // this is used in the help text on (?) when you hover your mouse over it to display deposit tax for this building
                 totalTaxAmountDue, // Amount Due
                 house.ProtectionEndDate,
-                requiresPayment,
+                !requiresPayment,
                 weeksWithoutPay,  // TODO: do proper calculation ?
-                -1,
+                (sbyte)house.PaidWeeks,
                 house.Template.HeavyTax
             )
         );
@@ -582,7 +596,7 @@ public class HousingManager : Singleton<HousingManager>
         // var zoneId = WorldManager.Instance.GetZoneId(connection.ActiveChar.Transform.WorldId, posX, posY);
 
         var houseTemplate = _housingTemplates[designId];
-        CalculateBuildingTaxInfo(connection.ActiveChar.AccountId, houseTemplate, true, out var totalTaxAmountDue, out _, out _, out _, out _);
+        CalculateBuildingTaxInfo(connection.ActiveChar.AccountId, houseTemplate, true, out var totalTaxAmountDue, out _, out var normalHouseCount, out _, out _);
 
         if (FeaturesManager.Fsets.Check(Feature.taxItem))
         {
@@ -670,7 +684,11 @@ public class HousingManager : Singleton<HousingManager>
         house.ProtectionEndDate = DateTime.UtcNow.AddDays(TaxPaysForDays);
         _houses.Add(house.Id, house);
         _housesTl.Add(house.TlId, house);
+
+        //connection.ActiveChar.SendPacket(new SCAddHousePacket((byte)(normalHouseCount + 1), house));
+
         connection.ActiveChar.SendPacket(new SCHouseStatePacket(house));
+
         house.Spawn();
         UpdateTaxInfo(house);
         ResidentManager.Instance.AddResidenMemberInfo(connection.ActiveChar);
@@ -879,7 +897,7 @@ public class HousingManager : Singleton<HousingManager>
         else
         if (isTaxDue)
         {
-            // TODO: update corresponding mails if needed (like update weeks unpaid etc)
+            // TODO: update corresponding mails if needed (like update weeks unpaid etc.)
             var allMails = MailManager.Instance.GetMyHouseMails(house.Id);
 
             if (allMails.Count <= 0)
@@ -910,6 +928,105 @@ public class HousingManager : Singleton<HousingManager>
     {
         house.ProtectionEndDate = house.ProtectionEndDate.AddDays(TaxPaysForDays);
         return true;
+    }
+
+    public void PayingWeeklyTax(GameConnection connection, ushort tlId, bool ausp)
+    {
+        var house = GetHouseByTlId(tlId);
+
+        if (house == null)
+        {
+            return;
+        }
+
+        house.ProtectionEndDate = house.ProtectionEndDate.AddDays(TaxPaysForDays);
+        house.PaidWeeks++;
+
+        var houseTemplate = house.Template;
+        CalculateBuildingTaxInfo(connection.ActiveChar.AccountId, houseTemplate, false, out var totalTaxAmountDue, out var heavyTaxHouseCount, out var normalTaxHouseCount, out var hostileTaxRate, out var oneWeekTaxCount);
+
+        var baseTax = (int)(houseTemplate.Taxation?.Tax ?? 0);
+        var depositTax = baseTax * 2;
+
+        if (FeaturesManager.Fsets.Check(Feature.taxItem))
+        {
+            // Pay in Tax Certificate
+
+            var userTaxCount = connection.ActiveChar.Inventory.GetItemsCount(SlotType.Bag, (uint)ItemConstants.TaxCertificate);
+            var userBoundTaxCount = connection.ActiveChar.Inventory.GetItemsCount(SlotType.Bag, (uint)ItemConstants.BoundTaxCertificate);
+            var totalUserTaxCount = userTaxCount + userBoundTaxCount;
+            var totalCertsCost = (int)Math.Ceiling(totalTaxAmountDue / 10000f);
+
+            // Annoyingly complex item consumption, maybe we need a separate function in inventory to handle this kind of thing
+            var consumedCerts = totalCertsCost;
+            if (totalCertsCost > totalUserTaxCount)
+            {
+                connection.ActiveChar.SendErrorMessage(ErrorMessageType.MailNotEnoughMoneyToPayTaxes);
+                return;
+            }
+
+            var c = consumedCerts;
+            // Use Bound First
+            if (userBoundTaxCount > 0 && c > 0)
+            {
+                if (c > userBoundTaxCount)
+                    c = userBoundTaxCount;
+                connection.ActiveChar.Inventory.Bag.ConsumeItem(ItemTaskType.HousePayTax, (uint)ItemConstants.BoundTaxCertificate, c, null);
+                consumedCerts -= c;
+            }
+            c = consumedCerts;
+            if (userTaxCount > 0 && c > 0)
+            {
+                if (c > userTaxCount)
+                    c = userTaxCount;
+                connection.ActiveChar.Inventory.Bag.ConsumeItem(ItemTaskType.HousePayTax, (uint)ItemConstants.TaxCertificate, c, null);
+                consumedCerts -= c;
+            }
+
+            if (consumedCerts != 0)
+                Logger.Error($"Something went wrong when paying tax for new building for player {connection.ActiveChar.Name}");
+        }
+        else
+        {
+            // Pay in Gold
+            // TODO: test house with actual gold tax
+            if (totalTaxAmountDue > connection.ActiveChar.Money)
+            {
+                connection.ActiveChar.SendErrorMessage(ErrorMessageType.MailNotEnoughMoneyToPayTaxes);
+                return;
+            }
+            connection.ActiveChar.SubtractMoney(SlotType.Bag, totalTaxAmountDue, ItemTaskType.HousePayTax);
+        }
+        // Note: I'm sure this can be done better, but it works and displays correctly
+        var requiresPayment = false;
+        sbyte weeksWithoutPay = 0;
+        if (house.TaxDueDate <= DateTime.UtcNow)
+        {
+            requiresPayment = true;
+            weeksWithoutPay = 0;
+        }
+        else if (house.ProtectionEndDate <= DateTime.UtcNow)
+        {
+            requiresPayment = true;
+            weeksWithoutPay = 1;
+        }
+
+        Logger.Debug($"PayingWeeklyTax; tlId:{house.TlId}, domTaxRate: 0, deposit: {depositTax}, taxDue:{totalTaxAmountDue}, protectEnd:{house.ProtectionEndDate}, isPaid:{requiresPayment}, weeksWithoutPay:{weeksWithoutPay}, isHeavy:{house.Template.HeavyTax}");
+
+        connection.SendPacket(
+            new SCHouseTaxInfoPacket(
+                house.TlId,
+                0,  // TODO: implement when castles are added
+                0,
+                depositTax, // this is used in the help text on (?) when you hover your mouse over it to display deposit tax for this building
+                totalTaxAmountDue, // Amount Due
+                house.ProtectionEndDate,
+                !requiresPayment,
+                weeksWithoutPay,  // TODO: do proper calculation ?
+                (sbyte)house.PaidWeeks,
+                house.Template.HeavyTax
+            )
+        );
     }
 
     /// <summary>
@@ -1170,7 +1287,7 @@ public class HousingManager : Singleton<HousingManager>
                 // TODO: proper mail handler
                 newMail = new BaseMail
                 {
-                    MailType = MailType.Demolish,
+                    MailType = MailType.HousingDemolish,
                     ReceiverName = NameManager.Instance.GetCharacterName(house.OwnerId), // Doesn't seem like this needs to be set
                     Header =
                     {
@@ -1745,8 +1862,7 @@ public class HousingManager : Singleton<HousingManager>
         {
             var house = h.Value;
             var r = house.Template.GardenRadius;
-            var bounds = new RectangleF(house.Transform.World.Position.X - r, house.Transform.World.Position.Y - r,
-                r * 2f, r * 2f);
+            var bounds = new RectangleF(house.Transform.World.Position.X - r, house.Transform.World.Position.Y - r, r * 2f, r * 2f);
             if (bounds.Contains(x, y))
                 return house;
         }

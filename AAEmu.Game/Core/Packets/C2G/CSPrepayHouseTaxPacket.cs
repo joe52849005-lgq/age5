@@ -1,4 +1,5 @@
 ﻿using AAEmu.Commons.Network;
+using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Network.Game;
 
 namespace AAEmu.Game.Core.Packets.C2G
@@ -18,7 +19,7 @@ namespace AAEmu.Game.Core.Packets.C2G
 
             Logger.Debug("CSPrepayHouseTaxPacket, Tl: {0}, ausp: {1}", tl, ausp);
 
-            //TODO HousingManager.Instance.HouseTaxInfo(Connection, tl, ausp);
+            HousingManager.Instance.PayingWeeklyTax(Connection, tl, ausp);
         }
     }
 }

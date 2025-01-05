@@ -39,7 +39,7 @@ public class MailForAuction : BaseMail
         _itemName = LocalizationManager.Instance.Get("items", "name", _item.TemplateId, "Item:" + itemToSell.TemplateId.ToString());
 
         // Correct types and name will be set in finalize functions
-        MailType = MailType.InvalidMailType;
+        MailType = MailType.Invalid;
         Header.SenderId = (uint)SystemMailSenderKind.None;
         Header.SenderName = AuctionName; // Name changes depending on type of mail
 
@@ -66,7 +66,7 @@ public class MailForAuction : BaseMail
         _itemName = LocalizationManager.Instance.Get("items", "name", itemTemplateIdToSell, "Item:" + itemTemplateIdToSell.ToString());
 
         // Correct types and name will be set in finalize functions
-        MailType = MailType.InvalidMailType;
+        MailType = MailType.Invalid;
         Header.SenderId = (uint)SystemMailSenderKind.None;
         Header.SenderName = AuctionName; // Name changes depending on type of mail
 
@@ -90,7 +90,7 @@ public class MailForAuction : BaseMail
         Header.SenderName = ".auctionBidWin";
         ReceiverName = nameBuyer;
 
-        MailType = MailType.AucBidWin;
+        MailType = MailType.AuctionBidWin;
         Title = TitleBidWin;
         Header.ReceiverId = _buyerId;
 
@@ -120,7 +120,7 @@ public class MailForAuction : BaseMail
         Header.ReceiverId = _sellerId;
         ReceiverName = nameSeller;
 
-        MailType = MailType.AucOffSuccess;
+        MailType = MailType.AuctionOffSuccess;
         Title = TitleSold;
 
         Body.Text = string.Format("body('{0}', {1}, {2}, {3}, {4}, {5})",
@@ -147,7 +147,7 @@ public class MailForAuction : BaseMail
         Header.ReceiverId = _sellerId;
         ReceiverName = nameSeller;
 
-        MailType = MailType.AucOffCancel;
+        MailType = MailType.AuctionOffCancel;
         Title = TitleCancel;
 
         Body.Text = string.Format("body('{0}', {1})", _itemName, _item.Count);
@@ -174,7 +174,7 @@ public class MailForAuction : BaseMail
         Header.ReceiverId = _sellerId;
         ReceiverName = nameSeller;
 
-        MailType = MailType.AucOffFail;
+        MailType = MailType.AuctionOffFail;
         Title = TitleNotSold;
 
         Body.Text = string.Format("body('{0}', {1})", _itemName, _item.Count);
@@ -202,7 +202,7 @@ public class MailForAuction : BaseMail
         Header.ReceiverId = _buyerId;
         ReceiverName = nameBuyer;
 
-        MailType = MailType.AucOffFail;
+        MailType = MailType.AuctionOffFail;
         Title = TitleBidLost;
 
         Body.Text = string.Format("body('{0}')", _itemName);

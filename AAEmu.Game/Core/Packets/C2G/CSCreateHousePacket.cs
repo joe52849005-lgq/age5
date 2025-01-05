@@ -28,10 +28,6 @@ public class CSCreateHousePacket : GamePacket
 
         Logger.Debug($"CreateHouse, Id: {designId}, X: {x}, Y: {y}, Z: {z}, ZRot: {zRot}");
 
-        HousingManager.Instance.Build(
-            Connection,
-            designId, x, y, z, zRot,
-            itemId, moneyAmount, ht, autoUseAaPoint
-        );
+        HousingManager.Instance.Build(Connection, designId, x, y, z, zRot, itemId, moneyAmount, ht, autoUseAaPoint);
     }
 }
