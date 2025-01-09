@@ -332,8 +332,35 @@ public class MathUtil
         double dz = loc.Z - loc2.Z;
         return (float)(dx * dx + dy * dy + dz * dz);
     }
+    public static float DistanceSqVectors(WorldSpawnPosition loc, WorldSpawnPosition loc2, bool includeZAxis = false)
+    {
+        double dx = loc.X - loc2.X;
+        double dy = loc.Y - loc2.Y;
+
+        if (!includeZAxis)
+        {
+            return (float)(dx * dx + dy * dy);
+        }
+
+        double dz = loc.Z - loc2.Z;
+        return (float)(dx * dx + dy * dy + dz * dz);
+    }
 
     public static float CalculateDistance(Vector3 loc, Vector3 loc2, bool includeZAxis = false)
+    {
+        double dx = loc.X - loc2.X;
+        double dy = loc.Y - loc2.Y;
+
+        if (includeZAxis)
+        {
+            double dz = loc.Z - loc2.Z;
+            return (float)Math.Sqrt(dx * dx + dy * dy + dz * dz);
+        }
+
+        return (float)Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    public static float CalculateDistance(WorldSpawnPosition loc, WorldSpawnPosition loc2, bool includeZAxis = false)
     {
         double dx = loc.X - loc2.X;
         double dy = loc.Y - loc2.Y;

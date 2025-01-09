@@ -46,19 +46,21 @@ public class SchedulesGameData : Singleton<SchedulesGameData>, IGameDataLoader
                     template.StartTime = reader.GetInt32("start_time");
                     template.EndTime = reader.GetInt32("end_time");
                     template.StYear = reader.GetInt32("st_year");
-                    if (template.StYear < DateTime.UtcNow.Year)
-                    {
-                        template.StYear = DateTime.UtcNow.Year;
-                    }
+                    // TODO we will not change the data from the scheduler
+                    //if (template.StYear < DateTime.UtcNow.Year)
+                    //{
+                    //    template.StYear = DateTime.UtcNow.Year;
+                    //}
                     template.StMonth = reader.GetInt32("st_month");
                     template.StDay = reader.GetInt32("st_day");
                     template.StHour = reader.GetInt32("st_hour");
                     template.StMin = reader.GetInt32("st_min");
                     template.EdYear = reader.GetInt32("ed_year");
-                    if (template.EdYear < DateTime.UtcNow.Year)
-                    {
-                        template.EdYear = 9999;
-                    }
+                    // TODO we will not change the data from the scheduler
+                    //if (template.EdYear < DateTime.UtcNow.Year)
+                    //{
+                    //    template.EdYear = 9999;
+                    //}
                     template.EdMonth = reader.GetInt32("ed_month");
                     template.EdDay = reader.GetInt32("ed_day");
                     template.EdHour = reader.GetInt32("ed_hour");
