@@ -174,7 +174,7 @@
         public const ushort SCHouseDemolishedPacket = 0x200;
         public const ushort SCHouseRemovedPacket = 0x05E;
         public const ushort SCHouseFarmPacket = 0x1E3;
-        public const ushort SCToggleHousingRecoverPacket = 0x27B;
+        public const ushort SCHousingRecoverTogglePacket = 0x27B; // SCToggleHousingRecoverPacket
         public const ushort SCHouseResetForSalePacket = 0x313;
         public const ushort SCHouseSoldPacket = 0x1F5;
         public const ushort SCHouseOwnerNameChangedPacket = 0x044;
@@ -860,7 +860,7 @@
         public const ushort SCSkillUpgradedPacket = 0xFFF;
         public const ushort SCTrialCancledPacket = 0xFFF;
         //public const ushort SCAuctionCanceledPacket = 0xFFF;
-        public const ushort SCHousingRecoverTogglePacket = 0xFFF;
+        //public const ushort SCHousingRecoverTogglePacket = 0xFFF;
         //public const ushort SCMailFailedPacket = 0xFFF;
         public const ushort SCItemUccDataChangedPacket = 0xFFF;
         public const ushort SCMyHousePacket = 0x161; // SCHouseStatePacket
