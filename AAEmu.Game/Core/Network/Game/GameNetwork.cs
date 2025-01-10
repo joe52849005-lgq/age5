@@ -243,7 +243,7 @@ public class GameNetwork : Singleton<GameNetwork>
         RegisterPacket(CSOffsets.CSRequestHouseTaxPacket, 5, typeof(CSRequestHouseTaxPacket));
         RegisterPacket(CSOffsets.CSPrepayHouseTaxPacket, 5, typeof(CSPrepayHouseTaxPacket));
         RegisterPacket(CSOffsets.CSAllowRecoverPacket, 5, typeof(CSAllowHousingRecoverPacket)); // CSAllowRecoverPacket
-        RegisterPacket(CSOffsets.CSSellHouseCancelPacket, 5, typeof(CSSellHouseCancelPacket));
+        RegisterPacket(CSOffsets.CSRequestHousingRebuildingTaxInfoPacket, 5, typeof(CSRequestHousingRebuildingTaxInfoPacket));
         RegisterPacket(CSOffsets.CSDecorateHousePacket, 5, typeof(CSDecorateHousePacket));
         RegisterPacket(CSOffsets.CSSellHousePacket, 5, typeof(CSSellHousePacket));
         RegisterPacket(CSOffsets.CSBuyHousePacket, 5, typeof(CSBuyHousePacket));

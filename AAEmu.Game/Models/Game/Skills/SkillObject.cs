@@ -73,7 +73,7 @@ public class SkillObject : PacketMarshaler
                 obj = new SkillObjectItemGradeEnchantingSupport();
                 break;
             case SkillObjectType.Unk8:
-                obj = new SkillObjectUnk8(); // added in 3.5.0.3 NA
+                obj = new SkillObjectRebuildHousingSupport(); // added in 3.5.0.3 NA
                 break;
             case SkillObjectType.ItemEvolvingSupport:
                 obj = new SkillObjectItemEvolvingSupport(); // added in 3.5.0.3 NA
@@ -290,9 +290,9 @@ public class SkillObjectItemGradeEnchantingSupport : SkillObject
 }
 
 // all bottom added in 3+
-public class SkillObjectUnk8 : SkillObject
+public class SkillObjectRebuildHousingSupport : SkillObject
 {
-    public uint Type { get; set; }
+    public uint HousingId { get; set; }
     public float X { get; set; }
     public float Y { get; set; }
     public float Z { get; set; }
@@ -300,7 +300,7 @@ public class SkillObjectUnk8 : SkillObject
 
     public override void Read(PacketStream stream)
     {
-        Type = stream.ReadUInt32();
+        HousingId = stream.ReadUInt32();
         X = Helpers.ConvertLongX(stream.ReadInt64());
         Y = Helpers.ConvertLongX(stream.ReadInt64());
         Z = stream.ReadSingle();
@@ -311,7 +311,7 @@ public class SkillObjectUnk8 : SkillObject
     {
         base.Write(stream);
 
-        stream.Write(Type);
+        stream.Write(HousingId);
         stream.Write(Helpers.ConvertLongX(X));
         stream.Write(Helpers.ConvertLongX(Y));
         stream.Write(Z);

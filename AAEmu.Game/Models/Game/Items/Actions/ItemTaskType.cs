@@ -144,7 +144,7 @@ public enum ItemTaskType : byte
     RechargeSkill,                  // recharge-skill
     AchievementSupplyItems,         // achievement-supply-items
     TodayAssignmentUnlock,          // today-assignment-unlock
-    HouseRebuild,                   // house-rebuild
+    HouseRebuild = 140,             // house-rebuild
     ItemTaskResurrectionInPlace,    // item-task-resurrection-in-place
     TodayAssignmentSupplyItems,     // today-assignment-supply-items
     ItemTaskBattleCoin,             // item-task-battle-coin

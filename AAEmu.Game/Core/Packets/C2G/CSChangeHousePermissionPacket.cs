@@ -13,6 +13,8 @@ public class CSChangeHousePermissionPacket : GamePacket
 
     public override void Read(PacketStream stream)
     {
+        Logger.Debug("Entering in CSChangeHousePermissionPacket...");
+
         var tl = stream.ReadUInt16();
         var permission = stream.ReadByte();
 

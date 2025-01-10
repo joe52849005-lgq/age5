@@ -48,7 +48,7 @@ public class MailForAuction : BaseMail
     }
 
     /// <summary>
-    /// Please refactor AH to not use this fucntion, only finalize with FinalizeForBidFail() or face null exceptions
+    /// Please refactor AH to not use this function, only finalize with FinalizeForBidFail() or face null exceptions
     /// </summary>
     /// <param name="itemTemplateIdToSell"></param>
     /// <param name="sellerId"></param>

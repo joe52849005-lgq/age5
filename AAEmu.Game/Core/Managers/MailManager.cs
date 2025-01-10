@@ -17,7 +17,6 @@ using AAEmu.Game.Models.Game.Mails.Static;
 using AAEmu.Game.Models.Game.Quests;
 using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Tasks.Mails;
-using AAEmu.Game.Scripts.Commands;
 
 using MySql.Data.MySqlClient;
 
@@ -304,7 +303,9 @@ public class MailManager : Singleton<MailManager>
     {
         Logger.Debug($"NotifyNewMailByNameIfOnline() - {receiverName}");
         // If unread and ready to deliver
-        if ((m.Header.Status == MailStatus.Unread || m.Header.Status == MailStatus.Unpaid) && m.Body.RecvDate <= DateTime.UtcNow && m.IsDelivered == false)
+        if (m.Header.Status is MailStatus.Unread or MailStatus.Unpaid &&
+            m.Body.RecvDate <= DateTime.UtcNow &&
+            m.IsDelivered == false)
         {
             var player = WorldManager.Instance.GetCharacter(receiverName);
             if (player != null)
@@ -328,7 +329,7 @@ public class MailManager : Singleton<MailManager>
         var player = WorldManager.Instance.GetCharacter(receiverName);
         if (player != null)
         {
-            if (m.Header.Status == MailStatus.Unread)
+            if (m.Header.Status is MailStatus.Unread or MailStatus.Unpaid)
             {
                 player.Mails.UnreadMailCount.UpdateReceived(m.MailType, -1);
                 player.Mails.UnreadMailCount.UpdateUnreadReceived(m.MailType, -1);
@@ -442,10 +443,10 @@ public class MailManager : Singleton<MailManager>
             if (mail.Header.Status is MailStatus.Unread or MailStatus.Unpaid)
             {
                 mail.Header.Status = MailStatus.Read;
-                character.Mails.UnreadMailCount.UpdateReceived(mail.MailType, -1);
                 character.Mails.UnreadMailCount.UpdateUnreadReceived(mail.MailType, -1);
             }
 
+            character.Mails.UnreadMailCount.UpdateReceived(mail.MailType, -1);
             character.SendPacket(new SCChargeMoneyPaidPacket(mail.Id));
             character.SendPacket(new SCMailDeletedPacket(false, mail.Id, false, character.Mails.UnreadMailCount));
             DeleteMail(mail);
@@ -461,6 +462,30 @@ public class MailManager : Singleton<MailManager>
     }
 
     public void DeleteHouseMails(uint houseId)
+    {
+        var deleteList = new List<long>();
+        // Check which mails to remove
+        foreach (var m in _allPlayerMails)
+        {
+            if (m.Value.MailType == MailType.Billing)
+            {
+                ExtractExtraForHouse(m.Value.Header.Extra, out _, out var hId);
+                if (houseId == hId)
+                {
+                    deleteList.Add(m.Value.Id);
+                }
+            }
+        }
+        // Actually remove them by Id
+        foreach (var d in deleteList)
+        {
+            var mail = GetMailById(d);
+            NotifyDeleteMailByNameIfOnline(mail, mail.ReceiverName);
+            DeleteMail(mail);
+        }
+    }
+
+    public void RebuildHouseMails(uint houseId)
     {
         var deleteList = new List<long>();
         // Check which mails to remove
@@ -520,8 +545,7 @@ public class MailManager : Singleton<MailManager>
             if (item.GradeId > 0)
                 itemGrade = item.GradeId;
 
-            character.Inventory.MailAttachments.AcquireDefaultItemEx(ItemTaskType.Invalid, item.TemplateId, item.Count,
-                itemGrade, out var newItemsList, out _, 0, -1);
+            character.Inventory.MailAttachments.AcquireDefaultItemEx(ItemTaskType.Invalid, item.TemplateId, item.Count, itemGrade, out var newItemsList, out _, 0, -1);
 
             foreach (var newItem in newItemsList)
             {

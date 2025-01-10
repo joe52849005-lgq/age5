@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -22,6 +23,7 @@ using AAEmu.Game.Models.Game.Housing;
 using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Items.Actions;
 using AAEmu.Game.Models.Game.Mails;
+using AAEmu.Game.Models.Game.Mails.Static;
 using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.World.Transform;
 using AAEmu.Game.Models.StaticValues;
@@ -37,7 +39,6 @@ namespace AAEmu.Game.Core.Managers;
 
 public class HousingManager : Singleton<HousingManager>
 {
-    private const uint ForSaleMarkerDoodadId = 6760;
     private const int MaxHeavyTaxCounted = 10; // Maximum number of heavy tax buildings to take into account for tax calculation
     private const int HoursForFailedTaxToReturnHouse = 22;
     private const double CopperPerCertificate = 1000000.0; // For older versions of AA, 1 sale certificate / 100g
@@ -50,7 +51,8 @@ public class HousingManager : Singleton<HousingManager>
     private Dictionary<uint, HousingTemplate> _housingTemplates;
     private bool _isCheckingTaxTiming;
     private List<uint> _removedHousings;
-
+    private ConcurrentDictionary<int, HousingRebuilding> _housingRebuildings;
+    private ConcurrentDictionary<int, List<HousingRebuildingMaterial>> _housingRebuildingMaterials;
     private static Logger Logger { get; } = LogManager.GetCurrentClassLogger();
 
     /// <summary>
@@ -62,8 +64,13 @@ public class HousingManager : Singleton<HousingManager>
     public int GetByAccountId(Dictionary<uint, House> values, ulong accountId)
     {
         foreach (var (id, house) in _houses)
+        {
             if (house.AccountId == accountId)
+            {
                 values.Add(id, house);
+            }
+        }
+
         return values.Count;
     }
 
@@ -76,8 +83,13 @@ public class HousingManager : Singleton<HousingManager>
     public int GetByCharacterId(Dictionary<uint, House> values, uint characterId)
     {
         foreach (var (id, house) in _houses)
+        {
             if (house.OwnerId == characterId)
+            {
                 values.Add(id, house);
+            }
+        }
+
         return values.Count;
     }
 
@@ -90,10 +102,26 @@ public class HousingManager : Singleton<HousingManager>
     {
         List<House> values = [];
         foreach (var (id, house) in _houses)
+        {
             if (house.OwnerId == characterId)
+            {
                 values.Add(house);
+            }
+        }
 
         return values;
+    }
+
+    public int GetHousingRebuildingId(int skillId, int housingId)
+    {
+        int value;
+        return (from housingRebuilding in _housingRebuildings.Values
+                where housingRebuilding.SkillId == skillId && housingRebuilding.HousingId == housingId
+                select housingRebuilding.Id).FirstOrDefault();
+    }
+    public List<HousingRebuildingMaterial> GetMaterialsByHousingRebuildingId(int housingRebuildingId)
+    {
+        return _housingRebuildingMaterials.TryGetValue(housingRebuildingId, out var materials) ? materials : [];
     }
 
     /// <summary>
@@ -107,22 +135,24 @@ public class HousingManager : Singleton<HousingManager>
     private House Create(uint templateId, FactionsEnum factionId, uint objectId = 0, ushort tlId = 0)
     {
         if (!_housingTemplates.TryGetValue(templateId, out var template))
-            return null;
-
-        var house = new House
         {
-            TlId = tlId > 0 ? tlId : (ushort)HousingTldManager.Instance.GetNextId(),
-            ObjId = objectId > 0 ? objectId : ObjectIdManager.Instance.GetNextId(),
-            Template = template,
-            TemplateId = template.Id, // duplicate Id
-            Id = template.Id,
-            Faction = FactionManager.Instance.GetFaction(factionId),
-            Name = LocalizationManager.Instance.Get("housings", "name", template.Id)
-        };
+            return null;
+        }
+
+        var house = new House();
+        house.TlId = tlId > 0 ? tlId : (ushort)HousingTldManager.Instance.GetNextId();
+        house.ObjId = objectId > 0 ? objectId : ObjectIdManager.Instance.GetNextId();
+        house.Template = template;
+        house.TemplateId = template.Id; // duplicate Id
+        house.Id = template.Id;
+        house.Faction = FactionManager.Instance.GetFaction(factionId);
+        house.Name = LocalizationManager.Instance.Get("housings", "name", template.Id);
         house.Hp = house.MaxHp;
         // Force public on always public properties on create
         if (template.AlwaysPublic)
+        {
             house.Permission = HousingPermission.Public;
+        }
 
         SetUntouchable(house, true);
 
@@ -138,10 +168,12 @@ public class HousingManager : Singleton<HousingManager>
         _housingTemplates = new Dictionary<uint, HousingTemplate>();
         _houses = new Dictionary<uint, House>();
         _housesTl = new Dictionary<ushort, House>();
-        _removedHousings = new List<uint>();
-        _housingItemHousings = new List<HousingItemHousings>();
+        _removedHousings = [];
+        _housingItemHousings = [];
         _housingDecorations = new Dictionary<uint, HousingDecoration>();
-        _housingItemHousingDecorations = new List<ItemHousingDecoration>();
+        _housingItemHousingDecorations = [];
+        _housingRebuildings = new ConcurrentDictionary<int, HousingRebuilding>();
+        _housingRebuildingMaterials = new ConcurrentDictionary<int, List<HousingRebuildingMaterial>>();
 
         // var housingAreas = new Dictionary<uint, HousingAreas>();
         // var houseTaxes = new Dictionary<uint, HouseTax>();
@@ -154,16 +186,15 @@ public class HousingManager : Singleton<HousingManager>
             {
                 command.CommandText = "SELECT * FROM item_housings";
                 command.Prepare();
-                using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
+                using var reader = new SQLiteWrapperReader(command.ExecuteReader());
+                while (reader.Read())
                 {
-                    while (reader.Read())
-                    {
-                        var template = new HousingItemHousings();
-                        //template.Id = reader.GetUInt32("id"); // there is no such field in the database for version 3.0.3.0
-                        template.Item_Id = reader.GetUInt32("item_id");
-                        template.Design_Id = reader.GetUInt32("design_id");
-                        _housingItemHousings.Add(template);
-                    }
+                    var template = new HousingItemHousings();
+                    //template.Id = reader.GetUInt32("id"); // there is no such field in the database for version 3.0.3.0
+                    template.ItemId = reader.GetUInt32("item_id");
+                    template.Completion = reader.GetBoolean("completion", true);
+                    template.DesignId = reader.GetUInt32("design_id");
+                    _housingItemHousings.Add(template);
                 }
             }
 
@@ -172,80 +203,105 @@ public class HousingManager : Singleton<HousingManager>
             var filePath = Path.Combine(FileManager.AppPath, "Data", "housing_bindings.json");
             var contents = FileManager.GetFileContents(filePath);
             if (string.IsNullOrWhiteSpace(contents))
-                throw new IOException(
-                    $"File {filePath} doesn't exists or is empty.");
+            {
+                throw new IOException($"File {filePath} doesn't exists or is empty.");
+            }
 
             if (JsonHelper.TryDeserializeObject(contents, out List<HousingBindingTemplate> binding, out _))
+            {
                 Logger.Info("Housing bindings loaded...");
+            }
             else
+            {
                 Logger.Warn("Housing bindings not loaded...");
+            }
 
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = "SELECT * FROM housings";
                 command.Prepare();
-                using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
+                using var reader = new SQLiteWrapperReader(command.ExecuteReader());
+                while (reader.Read())
                 {
-                    while (reader.Read())
+                    var template = new HousingTemplate();
+                    template.Id = reader.GetUInt32("id");
+                    template.Name = LocalizationManager.Instance.Get("housings", "name", template.Id, reader.GetString("name"));
+                    template.CategoryId = reader.GetUInt32("category_id");
+                    template.MainModelId = reader.GetUInt32("main_model_id");
+                    template.DoorModelId = reader.GetUInt32("door_model_id", 0);
+                    template.StairModelId = reader.GetUInt32("stair_model_id", 0);
+                    template.AutoZ = reader.GetBoolean("auto_z", true);
+                    template.GateExists = reader.GetBoolean("gate_exists", true);
+                    template.Hp = reader.GetInt32("hp");
+                    template.RepairCost = reader.GetUInt32("repair_cost");
+                    //template.GardenRadius = reader.GetFloat("garden_radius"); // there is no such field in the database for version 3.0.3.0
+                    template.Family = reader.GetString("family");
+                    var taxationId = reader.GetUInt32("taxation_id");
+                    template.Taxation = TaxationsManager.Instance.taxations.ContainsKey(taxationId) ? TaxationsManager.Instance.taxations[taxationId] : null;
+                    template.GuardTowerSettingId = reader.GetUInt32("guard_tower_setting_id", 0);
+                    template.CinemaRadius = reader.GetFloat("cinema_radius");
+                    template.AutoZOffsetX = reader.GetFloat("auto_z_offset_x");
+                    template.AutoZOffsetY = reader.GetFloat("auto_z_offset_y");
+                    template.AutoZOffsetZ = reader.GetFloat("auto_z_offset_z");
+                    template.Alley = reader.GetFloat("alley");
+                    template.ExtraHeightAbove = reader.GetFloat("extra_height_above");
+                    template.ExtraHeightBelow = reader.GetFloat("extra_height_below");
+                    template.DecoLimit = reader.GetUInt32("deco_limit");
+                    template.AbsoluteDecoLimit = reader.GetUInt32("absolute_deco_limit");
+                    template.HousingDecoLimitId = reader.GetUInt32("housing_deco_limit_id", 0);
+                    template.IsSellable = reader.GetBoolean("is_sellable", true);
+                    template.HeavyTax = reader.GetBoolean("heavy_tax", true);
+                    template.AlwaysPublic = reader.GetBoolean("always_public", true);
+                    // updated to version 5.0.7.0
+                    template.CinemaId = reader.GetInt32("cinema_id");
+                    template.DecoExpandability = reader.GetBoolean("deco_expandability");
+                    template.DemolishRefundItemId = reader.GetInt32("demolish_refund_item_id");
+                    template.HousingRebuildingPackId = reader.GetInt32("housing_rebuilding_pack_id");
+                    template.HousingSizeId = reader.GetInt32("housing_size_id");
+                    template.HousingUccPackId = reader.GetInt32("housing_ucc_pack_id");
+                    template.PackageDemolishSealCount = reader.GetInt32("package_demolish_seal_count");
+                    template.RotateItemCount = reader.GetInt32("rotate_item_count");
+                    template.RotateItemId = reader.GetInt32("rotate_item_id");
+                    template.ServerTransferDemolishRefundItemId = reader.GetInt32("server_transfer_demolish_refund_item_id");
+                    template.TaxationId = reader.GetInt32("taxation_id");
+                    template.UccKindFloor = reader.GetInt32("ucc_kind_floor");
+                    template.UccKindOutwall = reader.GetInt32("ucc_kind_outwall");
+                    template.UccKindRoof = reader.GetInt32("ucc_kind_roof");
+                    template.UccKindTop = reader.GetInt32("ucc_kind_top");
+                    template.UccKindWall = reader.GetInt32("ucc_kind_wall");
+                    template.UccScaleFloor = reader.GetInt32("ucc_scale_floor");
+                    template.UccScaleOutwall = reader.GetInt32("ucc_scale_outwall");
+                    template.UccScaleRoof = reader.GetInt32("ucc_scale_roof");
+                    template.UccScaleTop = reader.GetInt32("ucc_scale_top");
+                    template.UccScaleWall = reader.GetInt32("ucc_scale_wall");
+
+                    _housingTemplates.Add(template.Id, template);
+
+                    var templateBindings = binding.Find(x => x.TemplateId.Contains(template.Id));
+                    using var command2 = connection.CreateCommand();
+                    command2.CommandText = "SELECT * FROM housing_binding_doodads WHERE housing_id=@housing_id";
+                    command2.Parameters.AddWithValue("housing_id", template.Id);
+                    command2.Prepare();
+                    using var reader2 = new SQLiteWrapperReader(command2.ExecuteReader());
+                    var doodads = new List<HousingBindingDoodad>();
+                    while (reader2.Read())
                     {
-                        var template = new HousingTemplate();
-                        template.Id = reader.GetUInt32("id");
-                        template.Name = LocalizationManager.Instance.Get("housings", "name", template.Id, reader.GetString("name"));
-                        template.CategoryId = reader.GetUInt32("category_id");
-                        template.MainModelId = reader.GetUInt32("main_model_id");
-                        template.DoorModelId = reader.GetUInt32("door_model_id", 0);
-                        template.StairModelId = reader.GetUInt32("stair_model_id", 0);
-                        template.AutoZ = reader.GetBoolean("auto_z", true);
-                        template.GateExists = reader.GetBoolean("gate_exists", true);
-                        template.Hp = reader.GetInt32("hp");
-                        template.RepairCost = reader.GetUInt32("repair_cost");
-                        //template.GardenRadius = reader.GetFloat("garden_radius"); // there is no such field in the database for version 3.0.3.0
-                        template.Family = reader.GetString("family");
-                        var taxationId = reader.GetUInt32("taxation_id");
-                        template.Taxation = TaxationsManager.Instance.taxations.ContainsKey(taxationId) ? TaxationsManager.Instance.taxations[taxationId] : null;
-                        template.GuardTowerSettingId = reader.GetUInt32("guard_tower_setting_id", 0);
-                        template.CinemaRadius = reader.GetFloat("cinema_radius");
-                        template.AutoZOffsetX = reader.GetFloat("auto_z_offset_x");
-                        template.AutoZOffsetY = reader.GetFloat("auto_z_offset_y");
-                        template.AutoZOffsetZ = reader.GetFloat("auto_z_offset_z");
-                        template.Alley = reader.GetFloat("alley");
-                        template.ExtraHeightAbove = reader.GetFloat("extra_height_above");
-                        template.ExtraHeightBelow = reader.GetFloat("extra_height_below");
-                        template.DecoLimit = reader.GetUInt32("deco_limit");
-                        template.AbsoluteDecoLimit = reader.GetUInt32("absolute_deco_limit");
-                        template.HousingDecoLimitId = reader.GetUInt32("housing_deco_limit_id", 0);
-                        template.IsSellable = reader.GetBoolean("is_sellable", true);
-                        template.HeavyTax = reader.GetBoolean("heavy_tax", true);
-                        template.AlwaysPublic = reader.GetBoolean("always_public", true);
-                        _housingTemplates.Add(template.Id, template);
+                        var bindingDoodad = new HousingBindingDoodad();
+                        bindingDoodad.AttachPointId = (AttachPointKind)reader2.GetUInt32("attach_point_id");
+                        bindingDoodad.DoodadId = reader2.GetUInt32("doodad_id");
+                        // updated to version 5.0.7.0
+                        bindingDoodad.ForceDbSave = reader2.GetBoolean("force_db_save", true);
+                        bindingDoodad.HousingId = reader2.GetInt32("housing_id");
 
-                        var templateBindings = binding.Find(x => x.TemplateId.Contains(template.Id));
-                        using (var command2 = connection.CreateCommand())
+                        if (templateBindings != null && templateBindings.AttachPointId.TryGetValue(bindingDoodad.AttachPointId, out var pos))
                         {
-                            command2.CommandText = "SELECT * FROM housing_binding_doodads WHERE housing_id=@housing_id";
-                            command2.Parameters.AddWithValue("housing_id", template.Id);
-                            command2.Prepare();
-                            using (var reader2 = new SQLiteWrapperReader(command2.ExecuteReader()))
-                            {
-                                var doodads = new List<HousingBindingDoodad>();
-                                while (reader2.Read())
-                                {
-                                    var bindingDoodad = new HousingBindingDoodad();
-                                    bindingDoodad.AttachPointId = (AttachPointKind)reader2.GetUInt32("attach_point_id");
-                                    bindingDoodad.DoodadId = reader2.GetUInt32("doodad_id");
-
-                                    if (templateBindings != null && templateBindings.AttachPointId.TryGetValue(bindingDoodad.AttachPointId, out var pos))
-                                        bindingDoodad.Position = pos.Clone();
-
-                                    bindingDoodad.Position ??= new WorldSpawnPosition();
-
-                                    doodads.Add(bindingDoodad);
-                                }
-
-                                template.HousingBindingDoodad = doodads.ToArray();
-                            }
+                            bindingDoodad.Position = pos.Clone();
                         }
+                        bindingDoodad.Position ??= new WorldSpawnPosition();
+
+                        doodads.Add(bindingDoodad);
                     }
+                    template.HousingBindingDoodad = doodads.ToArray();
                 }
             }
 
@@ -255,26 +311,23 @@ public class HousingManager : Singleton<HousingManager>
             {
                 command.CommandText = "SELECT * FROM housing_build_steps";
                 command.Prepare();
-                using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
+                using var reader = new SQLiteWrapperReader(command.ExecuteReader());
+                while (reader.Read())
                 {
-                    while (reader.Read())
+                    var housingId = reader.GetUInt32("housing_id");
+                    if (!_housingTemplates.ContainsKey(housingId))
                     {
-                        var housingId = reader.GetUInt32("housing_id");
-                        if (!_housingTemplates.ContainsKey(housingId))
-                            continue;
-
-                        var template = new HousingBuildStep
-                        {
-                            Id = reader.GetUInt32("id"),
-                            HousingId = housingId,
-                            Step = reader.GetInt16("step"),
-                            ModelId = reader.GetUInt32("model_id"),
-                            SkillId = reader.GetUInt32("skill_id"),
-                            NumActions = reader.GetInt32("num_actions")
-                        };
-
-                        _housingTemplates[housingId].BuildSteps.Add(template.Step, template);
+                        continue;
                     }
+                    var template = new HousingBuildStep();
+                    template.Id = reader.GetUInt32("id");
+                    template.HousingId = housingId;
+                    template.Step = reader.GetInt16("step");
+                    template.ModelId = reader.GetUInt32("model_id");
+                    template.SkillId = reader.GetUInt32("skill_id");
+                    template.NumActions = reader.GetInt32("num_actions");
+
+                    _housingTemplates[housingId].BuildSteps.Add(template.Step, template);
                 }
             }
 
@@ -284,25 +337,23 @@ public class HousingManager : Singleton<HousingManager>
             {
                 command.CommandText = "SELECT * FROM housing_decorations";
                 command.Prepare();
-                using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
+                using var reader = new SQLiteWrapperReader(command.ExecuteReader());
+                while (reader.Read())
                 {
-                    while (reader.Read())
-                    {
-                        var template = new HousingDecoration();
-                        template.Id = reader.GetUInt32("id");
-                        //template.Name = reader.GetString("name"); // there is no such field in the database for version 3.0.3.0
-                        template.AllowOnFloor = reader.GetBoolean("allow_on_floor", true);
-                        template.AllowOnWall = reader.GetBoolean("allow_on_wall", true);
-                        template.AllowOnCeiling = reader.GetBoolean("allow_on_ceiling", true);
-                        template.DoodadId = reader.GetUInt32("doodad_id");
-                        template.AllowPivotOnGarden = reader.GetBoolean("allow_pivot_on_garden", true);
-                        template.ActabilityGroupId = !reader.IsDBNull("actability_group_id") ? reader.GetUInt32("actability_group_id") : 0;
-                        template.ActabilityUp = !reader.IsDBNull("actability_up") ? reader.GetUInt32("actability_up") : 0;
-                        template.DecoActAbilityGroupId = !reader.IsDBNull("deco_actability_group_id") ? reader.GetUInt32("deco_actability_group_id") : 0;
-                        template.AllowMeshOnGarden = reader.GetBoolean("allow_mesh_on_garden", true);
+                    var template = new HousingDecoration();
+                    template.Id = reader.GetUInt32("id");
+                    //template.Name = reader.GetString("name"); // there is no such field in the database for version 3.0.3.0
+                    template.AllowOnFloor = reader.GetBoolean("allow_on_floor", true);
+                    template.AllowOnWall = reader.GetBoolean("allow_on_wall", true);
+                    template.AllowOnCeiling = reader.GetBoolean("allow_on_ceiling", true);
+                    template.DoodadId = reader.GetUInt32("doodad_id");
+                    template.AllowPivotOnGarden = reader.GetBoolean("allow_pivot_on_garden", true);
+                    template.ActabilityGroupId = !reader.IsDBNull("actability_group_id") ? reader.GetUInt32("actability_group_id") : 0;
+                    template.ActabilityUp = !reader.IsDBNull("actability_up") ? reader.GetUInt32("actability_up") : 0;
+                    template.DecoActAbilityGroupId = !reader.IsDBNull("deco_actability_group_id") ? reader.GetUInt32("deco_actability_group_id") : 0;
+                    template.AllowMeshOnGarden = reader.GetBoolean("allow_mesh_on_garden", true);
 
-                        _housingDecorations.Add(template.Id, template);
-                    }
+                    _housingDecorations.Add(template.Id, template);
                 }
             }
 
@@ -310,20 +361,61 @@ public class HousingManager : Singleton<HousingManager>
             {
                 command.CommandText = "SELECT * FROM item_housing_decorations";
                 command.Prepare();
-                using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
+                using var reader = new SQLiteWrapperReader(command.ExecuteReader());
+                while (reader.Read())
                 {
-                    while (reader.Read())
-                    {
-                        var template = new ItemHousingDecoration();
-                        //template.Id = reader.GetUInt32("id"); // there is no such field in the database for version 3.0.3.0
-                        template.ItemId = reader.GetUInt32("item_id");
-                        template.DesignId = reader.GetUInt32("design_id");
-                        template.Restore = reader.GetBoolean("restore", true);
+                    var template = new ItemHousingDecoration();
+                    //template.Id = reader.GetUInt32("id"); // there is no such field in the database for version 3.0.3.0
+                    template.ItemId = reader.GetUInt32("item_id");
+                    template.DesignId = reader.GetUInt32("design_id");
+                    template.Restore = reader.GetBoolean("restore", true);
 
-                        _housingItemHousingDecorations.Add(template);
-                    }
+                    _housingItemHousingDecorations.Add(template);
                 }
             }
+
+            Logger.Info("Loading housing rebuildings ...");
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM housing_rebuildings";
+                command.Prepare();
+                using var reader = new SQLiteWrapperReader(command.ExecuteReader());
+                while (reader.Read())
+                {
+                    var template = new HousingRebuilding();
+                    template.Id = reader.GetInt32("id");
+                    template.ActabilityGroupId = reader.GetInt32("actability_group_id");
+                    template.ChangePointDesc = reader.GetString("change_point_desc");
+                    template.HousingId = reader.GetInt32("housing_id");
+                    template.LaborPower = reader.GetInt32("labor_power");
+                    template.Name = reader.GetString("name");
+                    template.SkillId = reader.GetInt32("skill_id");
+
+                    _housingRebuildings.TryAdd(template.Id, template);
+                }
+            }
+            Logger.Info($"Loaded {_housingRebuildings.Count} housing rebuildings");
+
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM housing_rebuilding_materials";
+                command.Prepare();
+                using var reader = new SQLiteWrapperReader(command.ExecuteReader());
+                while (reader.Read())
+                {
+                    var template = new HousingRebuildingMaterial();
+                    template.Id = reader.GetInt32("id");
+                    template.Count = reader.GetInt32("count");
+                    template.HousingRebuildingId = reader.GetInt32("housing_rebuilding_id");
+                    template.ItemId = reader.GetInt32("item_id");
+
+                    if (!_housingRebuildingMaterials.ContainsKey(template.HousingRebuildingId))
+                        _housingRebuildingMaterials[template.HousingRebuildingId] = [];
+
+                    _housingRebuildingMaterials[template.HousingRebuildingId].Add(template);
+                }
+            }
+            Logger.Info($"Loaded {_housingRebuildingMaterials.Count} housing rebuilding materials");
         }
 
         Logger.Info("Loading Player Buildings ...");
@@ -333,41 +425,41 @@ public class HousingManager : Singleton<HousingManager>
             {
                 command.Connection = connection;
                 command.CommandText = "SELECT * FROM housings";
-                using (var reader = command.ExecuteReader())
+                using var reader = command.ExecuteReader();
+                while (reader.Read())
                 {
-                    while (reader.Read())
+                    var templateId = reader.GetUInt32("template_id");
+                    var factionId = (FactionsEnum)reader.GetUInt32("faction_id");
+                    var house = Create(templateId, factionId);
+                    house.Id = reader.GetUInt32("id");
+                    house.AccountId = reader.GetUInt64("account_id");
+                    house.OwnerId = reader.GetUInt32("owner");
+                    house.CoOwnerId = reader.GetUInt32("co_owner");
+                    house.Name = reader.GetString("name");
+                    house.Transform = new Transform(house, null,
+                        new Vector3(reader.GetFloat("x"), reader.GetFloat("y"), reader.GetFloat("z")),
+                        new Vector3(reader.GetFloat("roll"), reader.GetFloat("pitch"), reader.GetFloat("yaw"))
+                    );
+                    house.Transform.ZoneId = WorldManager.Instance.GetZoneId(house.Transform.WorldId, house.Transform.World.Position.X, house.Transform.World.Position.Y);
+                    house.CurrentStep = reader.GetInt32("current_step");
+                    house.NumAction = reader.GetInt32("current_action");
+                    house.Permission = (HousingPermission)reader.GetByte("permission");
+                    house.PlaceDate = reader.GetDateTime("place_date");
+                    house.ProtectionEndDate = reader.GetDateTime("protected_until");
+                    house.SellToPlayerId = reader.GetUInt32("sell_to");
+                    house.SellPrice = reader.GetUInt32("sell_price");
+                    house.AllowRecover = reader.GetBoolean("allow_recover");
+                    _houses.Add(house.Id, house);
+                    _housesTl.Add(house.TlId, house);
+
+                    // Manually placed houses (or after upgrading MySQL), will get 2 weeks for free as to not immediately trigger them into demolition
+                    if (house.PlaceDate == house.ProtectionEndDate)
                     {
-                        var templateId = reader.GetUInt32("template_id");
-                        var factionId = (FactionsEnum)reader.GetUInt32("faction_id");
-                        var house = Create(templateId, factionId);
-                        house.Id = reader.GetUInt32("id");
-                        house.AccountId = reader.GetUInt64("account_id");
-                        house.OwnerId = reader.GetUInt32("owner");
-                        house.CoOwnerId = reader.GetUInt32("co_owner");
-                        house.Name = reader.GetString("name");
-                        house.Transform = new Transform(house, null,
-                            new Vector3(reader.GetFloat("x"), reader.GetFloat("y"), reader.GetFloat("z")),
-                            new Vector3(reader.GetFloat("roll"), reader.GetFloat("pitch"), reader.GetFloat("yaw"))
-                        );
-                        house.Transform.ZoneId = WorldManager.Instance.GetZoneId(house.Transform.WorldId, house.Transform.World.Position.X, house.Transform.World.Position.Y);
-                        house.CurrentStep = reader.GetInt32("current_step");
-                        house.NumAction = reader.GetInt32("current_action");
-                        house.Permission = (HousingPermission)reader.GetByte("permission");
-                        house.PlaceDate = reader.GetDateTime("place_date");
-                        house.ProtectionEndDate = reader.GetDateTime("protected_until");
-                        house.SellToPlayerId = reader.GetUInt32("sell_to");
-                        house.SellPrice = reader.GetUInt32("sell_price");
-                        house.AllowRecover = reader.GetBoolean("allow_recover");
-                        _houses.Add(house.Id, house);
-                        _housesTl.Add(house.TlId, house);
-
-                        // Manually placed houses (or after upgrading MySQL), will get 2 weeks for free as to not immediately trigger them into demolition
-                        if (house.PlaceDate == house.ProtectionEndDate)
-                            house.ProtectionEndDate = house.PlaceDate.AddDays(14);
-
-                        UpdateTaxInfo(house);
-                        house.IsDirty = false;
+                        house.ProtectionEndDate = house.PlaceDate.AddDays(14);
                     }
+
+                    UpdateTaxInfo(house);
+                    house.IsDirty = false;
                 }
             }
         }
@@ -395,8 +487,7 @@ public class HousingManager : Singleton<HousingManager>
             {
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText =
-                        $"DELETE FROM housings WHERE id IN({string.Join(",", _removedHousings)})";
+                    command.CommandText = $"DELETE FROM housings WHERE id IN({string.Join(",", _removedHousings)})";
                     command.Prepare();
                     command.ExecuteNonQuery();
                     deleteCount++;
@@ -408,8 +499,12 @@ public class HousingManager : Singleton<HousingManager>
 
         var updateCount = 0;
         foreach (var house in _houses.Values)
+        {
             if (house.Save(connection, transaction))
+            {
                 updateCount++;
+            }
+        }
 
         return (updateCount, deleteCount);
     }
@@ -420,7 +515,9 @@ public class HousingManager : Singleton<HousingManager>
     public void SpawnAll()
     {
         foreach (var house in _houses.Values)
+        {
             house.Spawn();
+        }
     }
 
     /// <summary>
@@ -433,7 +530,9 @@ public class HousingManager : Singleton<HousingManager>
         if (isUntouchable)
         {
             if (house.Buffs.CheckBuff((uint)BuffConstants.Untouchable))
+            {
                 return;
+            }
 
             // Permanent Untouchable buff, should only be removed when failed tax payment, or demolishing by hand
             var protectionBuffTemplate = SkillManager.Instance.GetBuffTemplate((uint)BuffConstants.Untouchable);
@@ -451,7 +550,9 @@ public class HousingManager : Singleton<HousingManager>
         {
             // Remove Untouchable if it's enabled
             if (house.Buffs.CheckBuff((uint)BuffConstants.Untouchable))
+            {
                 house.Buffs.RemoveBuff((uint)BuffConstants.Untouchable);
+            }
         }
     }
 
@@ -484,7 +585,9 @@ public class HousingManager : Singleton<HousingManager>
         {
             // Remove Untouchable if it's enabled
             if (house.Buffs.CheckBuff((uint)BuffConstants.RemovalDebuff))
+            {
                 house.Buffs.RemoveBuff((uint)BuffConstants.RemovalDebuff);
+            }
         }
     }
 
@@ -527,7 +630,9 @@ public class HousingManager : Singleton<HousingManager>
     public void HouseTaxInfo(GameConnection connection, ushort tlId, uint objId)
     {
         if (!_housesTl.TryGetValue(tlId, out var house))
+        {
             return;
+        }
 
         CalculateBuildingTaxInfo(house.AccountId, house.Template, false, out var totalTaxAmountDue, out _, out _, out _, out _);
 
@@ -601,7 +706,6 @@ public class HousingManager : Singleton<HousingManager>
         if (FeaturesManager.Fsets.Check(Feature.taxItem))
         {
             // Pay in Tax Certificate
-
             var userTaxCount = connection.ActiveChar.Inventory.GetItemsCount(SlotType.Bag, (uint)ItemConstants.TaxCertificate);
             var userBoundTaxCount = connection.ActiveChar.Inventory.GetItemsCount(SlotType.Bag, (uint)ItemConstants.BoundTaxCertificate);
             var totalUserTaxCount = userTaxCount + userBoundTaxCount;
@@ -620,7 +724,10 @@ public class HousingManager : Singleton<HousingManager>
             if (userBoundTaxCount > 0 && c > 0)
             {
                 if (c > userBoundTaxCount)
+                {
                     c = userBoundTaxCount;
+                }
+
                 connection.ActiveChar.Inventory.Bag.ConsumeItem(ItemTaskType.HouseCreation, (uint)ItemConstants.BoundTaxCertificate, c, null);
                 consumedCerts -= c;
             }
@@ -628,13 +735,18 @@ public class HousingManager : Singleton<HousingManager>
             if (userTaxCount > 0 && c > 0)
             {
                 if (c > userTaxCount)
+                {
                     c = userTaxCount;
+                }
+
                 connection.ActiveChar.Inventory.Bag.ConsumeItem(ItemTaskType.HouseCreation, (uint)ItemConstants.TaxCertificate, c, null);
                 consumedCerts -= c;
             }
 
             if (consumedCerts != 0)
+            {
                 Logger.Error($"Something went wrong when paying tax for new building for player {connection.ActiveChar.Name}");
+            }
         }
         else
         {
@@ -662,7 +774,10 @@ public class HousingManager : Singleton<HousingManager>
         {
             var fakeLocalizedName = LocalizationManager.Instance.Get("items", "name", sourceDesignItem.Template.Id, houseTemplate.Name);
             if (fakeLocalizedName.EndsWith(" Design"))
+            {
                 fakeLocalizedName = fakeLocalizedName.Replace(" Design", "");
+            }
+
             house.Name = fakeLocalizedName;
         }
 
@@ -671,9 +786,14 @@ public class HousingManager : Singleton<HousingManager>
         house.Transform.Local.SetZRotation(zRot);
 
         if (house.Template.BuildSteps.Count > 0)
+        {
             house.CurrentStep = 0;
+        }
         else
+        {
             house.CurrentStep = -1;
+        }
+
         house.OwnerId = connection.ActiveChar.Id;
         house.CoOwnerId = connection.ActiveChar.Id;
         house.AccountId = connection.AccountId;
@@ -685,13 +805,146 @@ public class HousingManager : Singleton<HousingManager>
         _houses.Add(house.Id, house);
         _housesTl.Add(house.TlId, house);
 
-        //connection.ActiveChar.SendPacket(new SCAddHousePacket((byte)(normalHouseCount + 1), house));
-
         connection.ActiveChar.SendPacket(new SCHouseStatePacket(house));
 
         house.Spawn();
         UpdateTaxInfo(house);
         ResidentManager.Instance.AddResidenMemberInfo(connection.ActiveChar);
+    }
+
+    /// <summary>
+    /// Перестраиваем дом.
+    /// Start rebuilding a house at target location using design
+    /// </summary>
+    /// <param name="connection"></param>
+    /// <param name="designId"></param>
+    /// <param name="posX"></param>
+    /// <param name="posY"></param>
+    /// <param name="posZ"></param>
+    /// <param name="zRot"></param>
+    public House Rebuild(GameConnection connection, uint designId, float posX, float posY, float posZ, float zRot, string oldHouseName)
+    {
+        var houseTemplate = _housingTemplates[designId];
+        CalculateBuildingTaxInfo(connection.ActiveChar.AccountId, houseTemplate, true, out var totalTaxAmountDue, out _, out var normalHouseCount, out _, out _);
+
+        if (FeaturesManager.Fsets.Check(Feature.taxItem))
+        {
+            // Pay in Tax Certificate
+            var userTaxCount = connection.ActiveChar.Inventory.GetItemsCount(SlotType.Bag, (uint)ItemConstants.TaxCertificate);
+            var userBoundTaxCount = connection.ActiveChar.Inventory.GetItemsCount(SlotType.Bag, (uint)ItemConstants.BoundTaxCertificate);
+            var totalUserTaxCount = userTaxCount + userBoundTaxCount;
+            var totalCertsCost = (int)Math.Ceiling(totalTaxAmountDue / 10000f);
+
+            // Annoyingly complex item consumption, maybe we need a separate function in inventory to handle this kind of thing
+            var consumedCerts = totalCertsCost;
+            if (totalCertsCost > totalUserTaxCount)
+            {
+                connection.ActiveChar.SendErrorMessage(ErrorMessageType.MailNotEnoughMoneyToPayTaxes);
+                return null;
+            }
+
+            var c = consumedCerts;
+            // Use Bound First
+            if (userBoundTaxCount > 0 && c > 0)
+            {
+                if (c > userBoundTaxCount)
+                {
+                    c = userBoundTaxCount;
+                }
+
+                connection.ActiveChar.Inventory.Bag.ConsumeItem(ItemTaskType.HouseCreation, (uint)ItemConstants.BoundTaxCertificate, c, null);
+                consumedCerts -= c;
+            }
+            c = consumedCerts;
+            if (userTaxCount > 0 && c > 0)
+            {
+                if (c > userTaxCount)
+                {
+                    c = userTaxCount;
+                }
+
+                connection.ActiveChar.Inventory.Bag.ConsumeItem(ItemTaskType.HouseCreation, (uint)ItemConstants.TaxCertificate, c, null);
+                consumedCerts -= c;
+            }
+
+            if (consumedCerts != 0)
+            {
+                Logger.Error($"Something went wrong when paying tax for new building for player {connection.ActiveChar.Name}");
+            }
+        }
+        else
+        {
+            // Pay in Gold
+            // TODO: test house with actual gold tax
+            if (totalTaxAmountDue > connection.ActiveChar.Money)
+            {
+                connection.ActiveChar.SendErrorMessage(ErrorMessageType.MailNotEnoughMoneyToPayTaxes);
+                return null;
+            }
+            connection.ActiveChar.SubtractMoney(SlotType.Bag, totalTaxAmountDue, ItemTaskType.HouseCreation);
+        }
+
+        // Spawn the actual house
+        var house = Create(designId, connection.ActiveChar.Faction.Id);
+
+        // Fallback for un-translated buildings (en_us)
+        //if (house.Name == string.Empty)
+        //{
+        //    var fakeLocalizedName = LocalizationManager.Instance.Get("items", "name", sourceDesignItem.Template.Id, houseTemplate.Name);
+        //    if (fakeLocalizedName.EndsWith(" Design"))
+        //    {
+        //        fakeLocalizedName = fakeLocalizedName.Replace(" Design", "");
+        //    }
+
+        //    house.Name = fakeLocalizedName;
+        //}
+
+        house.Id = HousingIdManager.Instance.GetNextId();
+        house.Transform.Local.SetPosition(posX, posY, posZ);
+        house.Transform.Local.SetZRotation(zRot);
+
+        if (house.Template.BuildSteps.Count > 0)
+        {
+            house.CurrentStep = 0;
+        }
+        else
+        {
+            house.CurrentStep = -1;
+        }
+
+        house.OwnerId = connection.ActiveChar.Id;
+        house.CoOwnerId = connection.ActiveChar.Id;
+        house.AccountId = connection.AccountId;
+        house.Ht = 0; // ht
+        house.Permission = HousingPermission.Private;
+        house.AllowRecover = true;
+        house.PlaceDate = DateTime.UtcNow;
+        house.ProtectionEndDate = DateTime.UtcNow.AddDays(TaxPaysForDays);
+        _houses.Add(house.Id, house);
+        _housesTl.Add(house.TlId, house);
+
+        connection.ActiveChar.SendPacket(new SCHouseStatePacket(house));
+
+        house.Spawn();
+
+        UpdateTaxInfo(house);
+        // Return items to player by mail
+        ReturnHouseRefundToOwner(house, false, false, null, oldHouseName);
+
+        //// Create new Rebuild mail
+        //var newMail = new MailForRebuild(house);
+        //if (oldHouseName == "")
+        //{
+        //    oldHouseName = "Design";
+        //}
+
+        //newMail.FinalizeMail(oldHouseName);
+        //newMail.Send();
+        //Logger.Debug($"New Tax Mail sent for {house.Name} owned by {house.OwnerId}");
+
+        ResidentManager.Instance.AddResidenMemberInfo(connection.ActiveChar);
+
+        return house;
     }
 
     /// <summary>
@@ -703,10 +956,14 @@ public class HousingManager : Singleton<HousingManager>
     public void ChangeHousePermission(GameConnection connection, ushort tlId, HousingPermission permission)
     {
         if (!_housesTl.TryGetValue(tlId, out var house))
+        {
             return; // invalid house
+        }
 
         if (house.OwnerId != connection.ActiveChar.Id)
+        {
             return; // not the owner
+        }
 
         house.Permission = permission;
         house.BroadcastPacket(new SCHousePermissionChangedPacket(tlId, (byte)permission), false);
@@ -721,10 +978,14 @@ public class HousingManager : Singleton<HousingManager>
     public void ChangeHouseName(GameConnection connection, ushort tlId, string name)
     {
         if (!_housesTl.TryGetValue(tlId, out var house))
+        {
             return;
+        }
 
         if (house.OwnerId != connection.ActiveChar.Id)
+        {
             return;
+        }
 
         house.Name = name.NormalizeName();
         house.IsDirty = true; // Manually set the IsDirty on House level
@@ -773,9 +1034,11 @@ public class HousingManager : Singleton<HousingManager>
             house.SellPrice = 0;
             house.SellToPlayerId = 0;
             house.Permission = HousingPermission.Public;
-            house.BroadcastPacket(new SCHouseDemolishedPacket(house.TlId), false);
 
+            // TODO на aafree посылают два раза пакет SCHouseRemovedPacket
+            house.BroadcastPacket(new SCHouseDemolishedPacket(house.TlId), false);
             ownerChar?.SendPacket(new SCHouseRemovedPacket(house.TlId));
+
             // Make killable
             UpdateHouseFaction(house, FactionsEnum.Monstrosity);
             if (connection?.ActiveChar != null)
@@ -789,6 +1052,70 @@ public class HousingManager : Singleton<HousingManager>
 
             // TODO: better house killing handling
             _removedHousings.Add(house.Id);
+        }
+        else
+        {
+            // Non-owner should not be able to press demolish
+            connection.ActiveChar?.SendErrorMessage(ErrorMessageType.InvalidHouseInfo);
+        }
+    }
+
+    /// <summary>
+    /// Start rebuilding of a house
+    /// </summary>
+    /// <param name="connection"></param>
+    /// <param name="house"></param>
+    /// <param name="failedToPayTax"></param>
+    /// <param name="forceRestoreAllDecor"></param>
+    public void DemolishBeforeRebuilding(GameConnection connection, House house, bool failedToPayTax, bool forceRestoreAllDecor)
+    {
+        if (!_houses.ContainsKey(house.Id))
+        {
+            connection?.ActiveChar?.SendErrorMessage(ErrorMessageType.InvalidHouseInfo);
+            return;
+        }
+
+        // Check if owner
+        if (connection is null || house.OwnerId == connection.ActiveChar.Id)
+        {
+            var ownerChar = WorldManager.Instance.GetCharacterById(house.OwnerId);
+
+            // Mark it as expired protection
+            //house.ProtectionEndDate = DateTime.UtcNow.AddSeconds(-1);
+            // Make sure to call UpdateTaxInfo first to remove tax-rated mails of this house
+            //UpdateTaxInfo(house);
+            // Return items to player by mail
+            //ReturnHouseRefundToOwner(house, failedToPayTax, forceRestoreAllDecor, null);
+
+            // Remove owner
+            house.OwnerId = 0;
+            house.CoOwnerId = 0;
+            house.AccountId = 0;
+            house.SellPrice = 0;
+            house.SellToPlayerId = 0;
+            house.Permission = HousingPermission.Public;
+
+            // TODO на aafree посылают два раза пакет SCHouseRemovedPacket
+            //house.BroadcastPacket(new SCHouseDemolishedPacket(house.TlId), false);
+            ownerChar?.SendPacket(new SCHouseRemovedPacket(house.TlId));
+            ownerChar?.SendPacket(new SCHouseRemovedPacket(house.TlId));
+
+            // Make killable
+            //UpdateHouseFaction(house, FactionsEnum.Monstrosity);
+            if (connection?.ActiveChar != null)
+            {
+                ResidentManager.Instance.RemoveResidenMemberInfo(connection.ActiveChar);
+            }
+
+            ownerChar?.SendPacket(new SCHouseRemovedPacket(house.TlId));
+
+            //SetForSaleMarkers(house, false);
+
+            house.IsDirty = true;
+
+            // TODO: better house killing handling
+            _removedHousings.Add(house.Id);
+            RemoveDeadHouse(house);
         }
         else
         {
@@ -838,37 +1165,51 @@ public class HousingManager : Singleton<HousingManager>
 
         var userHouses = new Dictionary<uint, House>();
         if (GetByAccountId(userHouses, accountId) <= 0)
+        {
             return false;
+        }
 
         // Count the houses on this account
         foreach (var h in userHouses)
         {
             if (h.Value.Template.HeavyTax)
+            {
                 heavyHouseCount++;
+            }
             else
+            {
                 normalHouseCount++;
+            }
         }
 
         // If this is for a new building, add 1 to count
         if (buildingNewHouse)
         {
             if (newHouseTemplate.HeavyTax)
+            {
                 heavyHouseCount++;
+            }
             else
+            {
                 normalHouseCount++;
+            }
         }
 
         // Default Heavy Tax formula for 1.2
         var taxMultiplier = (heavyHouseCount < MaxHeavyTaxCounted ? heavyHouseCount : MaxHeavyTaxCounted) * 0.5f;
         // If less than 3 properties, or not a heavy tax property, no extra multiplier needed
         if (heavyHouseCount < 3 || newHouseTemplate.HeavyTax == false)
+        {
             taxMultiplier = 1f;
+        }
 
         totalTaxToPay = oneWeekTaxCount = (int)Math.Ceiling(newHouseTemplate.Taxation.Tax * taxMultiplier);
 
         // If this is a new house, add the deposit (base tax * 2)
         if (buildingNewHouse)
+        {
             totalTaxToPay += (int)(newHouseTemplate.Taxation.Tax * 2);
+        }
 
         return true;
     }
@@ -877,6 +1218,7 @@ public class HousingManager : Singleton<HousingManager>
     /// This function updates related tax mails of a house (if needed)
     /// </summary>
     /// <param name="house"></param>
+    /// <param name="isRebuilding"></param>
     public static void UpdateTaxInfo(House house)
     {
         var isDemolished = house.ProtectionEndDate <= DateTime.UtcNow;
@@ -887,15 +1229,16 @@ public class HousingManager : Singleton<HousingManager>
         SetRemovalDebuff(house, isDemolished);
 
         if (house.OwnerId <= 0)
+        {
             return;
+        }
 
         // If expired, start demolition debuffs
         if (isDemolished)
         {
             MailManager.Instance.DeleteHouseMails(house.Id);
         }
-        else
-        if (isTaxDue)
+        else if (isTaxDue)
         {
             // TODO: update corresponding mails if needed (like update weeks unpaid etc.)
             var allMails = MailManager.Instance.GetMyHouseMails(house.Id);
@@ -970,7 +1313,10 @@ public class HousingManager : Singleton<HousingManager>
             if (userBoundTaxCount > 0 && c > 0)
             {
                 if (c > userBoundTaxCount)
+                {
                     c = userBoundTaxCount;
+                }
+
                 connection.ActiveChar.Inventory.Bag.ConsumeItem(ItemTaskType.HousePayTax, (uint)ItemConstants.BoundTaxCertificate, c, null);
                 consumedCerts -= c;
             }
@@ -978,13 +1324,18 @@ public class HousingManager : Singleton<HousingManager>
             if (userTaxCount > 0 && c > 0)
             {
                 if (c > userTaxCount)
+                {
                     c = userTaxCount;
+                }
+
                 connection.ActiveChar.Inventory.Bag.ConsumeItem(ItemTaskType.HousePayTax, (uint)ItemConstants.TaxCertificate, c, null);
                 consumedCerts -= c;
             }
 
             if (consumedCerts != 0)
+            {
                 Logger.Error($"Something went wrong when paying tax for new building for player {connection.ActiveChar.Name}");
+            }
         }
         else
         {
@@ -1071,8 +1422,12 @@ public class HousingManager : Singleton<HousingManager>
         var myHouses = new Dictionary<uint, House>();
         GetByCharacterId(myHouses, characterId);
         foreach (var h in myHouses)
+        {
             if (h.Value.Faction == null || h.Value.Faction.Id != factionId)
+            {
                 UpdateHouseFaction(h.Value, factionId);
+            }
+        }
     }
 
     /// <summary>
@@ -1085,7 +1440,9 @@ public class HousingManager : Singleton<HousingManager>
     private void ReturnHouseItemsToOwner(House house, bool failedToPayTax, bool forceRestoreAllDecor, Character newOwner)
     {
         if (house.OwnerId <= 0)
+        {
             return;
+        }
 
         var returnedItems = new List<Item>();
         var returnedMoney = 0;
@@ -1132,11 +1489,15 @@ public class HousingManager : Singleton<HousingManager>
         {
             // Ignore attached objects (those are doors/windows etc)
             if (f.AttachPoint != AttachPointKind.None)
+            {
                 continue;
+            }
 
             // Ignore for sale signs
-            if (f.TemplateId == ForSaleMarkerDoodadId)
+            if (f.TemplateId == DoodadConstants.ForSaleMarkerDoodadId)
+            {
                 continue;
+            }
 
             var decoDesign = GetDecorationDesignFromDoodadId(f.TemplateId);
             if (decoDesign == null)
@@ -1172,7 +1533,9 @@ public class HousingManager : Singleton<HousingManager>
             {
                 var item = ItemManager.Instance.GetItemByItemId(f.ItemId);
                 if (item.ItemFlags.HasFlag(ItemFlag.SoulBound))
+                {
                     wantReturned = true;
+                }
             }
 
             // If this doodad is a Coffer and has a ItemContainer attached, also return all item of that container
@@ -1201,8 +1564,10 @@ public class HousingManager : Singleton<HousingManager>
                     // Just delete the doodad and attached item if no new owner
                     // Delete the attached item
                     if (f.ItemId != 0)
+                    {
                         thisDoodadsItem.HoldingContainer?.ConsumeItem(ItemTaskType.Invalid,
                             thisDoodadsItem.TemplateId, thisDoodadsItem.Count, thisDoodadsItem);
+                    }
 
                     // Is furniture, but doesn't restore, destroy it
                     f.Transform.DetachAll();
@@ -1266,7 +1631,9 @@ public class HousingManager : Singleton<HousingManager>
 
             // Set new doodad owner if needed
             if (newOwner != null)
+            {
                 f.OwnerId = newOwner.Id;
+            }
 
             if (newOwner == null || returnedThisItem)
             {
@@ -1285,48 +1652,299 @@ public class HousingManager : Singleton<HousingManager>
             if (i % 10 == 0)
             {
                 // TODO: proper mail handler
-                newMail = new BaseMail
-                {
-                    MailType = MailType.HousingDemolish,
-                    ReceiverName = NameManager.Instance.GetCharacterName(house.OwnerId), // Doesn't seem like this needs to be set
-                    Header =
-                    {
-                        ReceiverId = house.OwnerId,
-                        SenderId = 0,
-                        SenderName = ".houseDemolish",
-                        Extra = house.Id
-                    },
-                    Title = "title",
-                    Body = {
-                        Text = "body", // Yes, that's indeed what it needs to be set to
-                        SendDate = DateTime.UtcNow,
-                        RecvDate = DateTime.UtcNow.AddHours(failedToPayTax ? HoursForFailedTaxToReturnHouse : 0)
-                    }
-                };
+                newMail = new BaseMail();
+                newMail.MailType = MailType.HousingDemolish;
+                newMail.ReceiverName = NameManager.Instance.GetCharacterName(house.OwnerId); // Doesn't seem like this needs to be set
+                newMail.Header.ReceiverId = house.OwnerId;
+                newMail.Header.SenderId = 0;
+                newMail.Header.SenderName = ".houseDemolish";
+                newMail.Header.Extra = house.Id;
+                newMail.Title = "title";
+                newMail.Body.Text = "body"; // Yes, that's indeed what it needs to be set to
+                newMail.Body.SendDate = DateTime.UtcNow;
+                newMail.Body.RecvDate = DateTime.UtcNow.AddHours(failedToPayTax ? HoursForFailedTaxToReturnHouse : 0);
             }
             // Only attach money to first mail
             if (returnedMoney > 0 && i == 0)
+            {
                 newMail.AttachMoney(returnedMoney);
+            }
 
             // If player is loaded in at the moment (which he/she should be anyway), directly manipulate the inventory
             // If not, only change the container
             var onlineOwner = WorldManager.Instance.GetCharacterById((uint)returnedItems[i].OwnerId);
             if (onlineOwner != null)
+            {
                 onlineOwner.Inventory.MailAttachments.AddOrMoveExistingItem(ItemTaskType.Invalid, returnedItems[i]);
+            }
             else
+            {
                 returnedItems[i].SlotType = SlotType.MailAttachment;
+            }
 
             // Attach item
             newMail.Body.Attachments.Add(returnedItems[i]);
 
             // Send on last or 10th item of the mail
             if (i % 10 == 9 || i == returnedItems.Count - 1)
+            {
                 newMail.Send();
+            }
         }
 
         if (newMail != null)
         {
             Logger.Trace($"Demolition mail sent to {newMail.ReceiverName}");
+        }
+    }
+
+    private void ReturnHouseRefundToOwner(House house, bool failedToPayTax, bool forceRestoreAllDecor, Character newOwner, string originalHouseName = "")
+    {
+        if (house.OwnerId <= 0)
+        {
+            return;
+        }
+
+        var returnedItems = new List<Item>();
+        var returnedMoney = 0;
+
+        // If returning items because of a new House Owner, then don't include the design
+        if (newOwner == null)
+        {
+            // Return taxes
+            if (!failedToPayTax)
+            {
+                if (FeaturesManager.Fsets.Check(Feature.taxItem))
+                {
+                    var taxItem = ItemManager.Instance.Create((uint)ItemConstants.BoundTaxCertificate, (int)(house.Template.Taxation.Tax / 5000), 0);
+                    taxItem.OwnerId = house.OwnerId;
+                    taxItem.SlotType = SlotType.MailAttachment;
+                    returnedItems.Add(taxItem);
+                }
+                else
+                {
+                    returnedMoney = (int)(house.Template.Taxation.Tax * 2);
+                }
+            }
+        }
+
+        var furniture = WorldManager.Instance.GetDoodadByHouseDbId(house.Id);
+        foreach (var f in furniture)
+        {
+            // Ignore attached objects (those are doors/windows etc)
+            if (f.AttachPoint != AttachPointKind.None)
+            {
+                continue;
+            }
+
+            // Ignore for sale signs
+            if (f.TemplateId == DoodadConstants.ForSaleMarkerDoodadId)
+            {
+                continue;
+            }
+
+            var decoDesign = GetDecorationDesignFromDoodadId(f.TemplateId);
+            if (decoDesign == null)
+            {
+                // Is not furniture, probably plants or backpacks
+                f.Transform.DetachAll();
+                f.ParentObjId = 0;
+                f.ParentObj = null;
+                f.OwnerDbId = 0;
+                // TODO: probably needs to send a packet as well here
+                continue;
+            }
+
+            var decoInfo = _housingItemHousingDecorations.FirstOrDefault(x => x.DesignId == decoDesign.Id);
+            if (decoInfo == null)
+            {
+                // No design info for this item ? Just detach it for now
+                f.Transform.DetachAll();
+                f.ParentObjId = 0;
+                f.ParentObj = null;
+                f.OwnerDbId = 0;
+                Logger.Warn($"ReturnHouseItemsToOwner - Furniture has a design, but couldn't find a item for it, DoodadObjId:{f.ObjId} Template:{f.TemplateId}, DesignId: {decoDesign.Id}");
+                continue;
+            }
+
+            var thisDoodadsItem = ItemManager.Instance.GetItemByItemId(f.ItemId);
+            var returnedThisItem = false;
+
+            var wantReturned = (newOwner == null && decoInfo.Restore) || forceRestoreAllDecor;
+
+            // If item is bound, always return it owner
+            if (f.ItemId > 0)
+            {
+                var item = ItemManager.Instance.GetItemByItemId(f.ItemId);
+                if (item.ItemFlags.HasFlag(ItemFlag.SoulBound))
+                {
+                    wantReturned = true;
+                }
+            }
+
+            // If this doodad is a Coffer and has a ItemContainer attached, also return all item of that container
+            if (f is DoodadCoffer coffer && f.GetItemContainerId() > 0)
+            {
+                // TODO: Check if items should stay in the coffer when house is sold.
+                // Move it to new owner's SystemContainer first so they don't get destroyed
+                var ownerSystemContainer = ItemManager.Instance.GetItemContainerForCharacter(house.OwnerId, SlotType.Money, null, 0);
+                for (var i = coffer.ItemContainer.Items.Count - 1; i >= 0; i--)
+                {
+                    var cofferItem = coffer.ItemContainer.Items[i];
+                    //if (cofferItem.HasFlag(ItemFlag.SoulBound) || forceRestoreAllDecor)
+                    {
+                        ownerSystemContainer?.AddOrMoveExistingItem(ItemTaskType.Invalid, cofferItem);
+                        returnedItems.Add(cofferItem);
+                    }
+                }
+            }
+
+            // If the decoration item isn't marked as Restore, then just delete it (and it's possibly attached item)
+            if (!wantReturned)
+            {
+                // Non-restore-able item
+                if (newOwner == null)
+                {
+                    // Just delete the doodad and attached item if no new owner
+                    // Delete the attached item
+                    if (f.ItemId != 0)
+                    {
+                        thisDoodadsItem.HoldingContainer?.ConsumeItem(ItemTaskType.Invalid,
+                            thisDoodadsItem.TemplateId, thisDoodadsItem.Count, thisDoodadsItem);
+                    }
+
+                    // Is furniture, but doesn't restore, destroy it
+                    f.Transform.DetachAll();
+                    f.ItemId = 0;
+                    f.Delete();
+                }
+                else
+                {
+                    // Move the doodad and item to the new owner
+                    if (f.ItemId != 0)
+                    {
+                        // If a single item is attached, change it's owner and location
+                        var item = ItemManager.Instance.GetItemByItemId(f.ItemId);
+                        newOwner.Inventory.SystemContainer.AddOrMoveExistingItem(ItemTaskType.Invalid, item);
+                    }
+                    // Change doodad owner
+                    f.OwnerId = newOwner.Id;
+                }
+
+                continue;
+            }
+
+            // Item needs to be actually returned, so let's do that
+            if (f.ItemId > 0)
+            {
+                // Ignore if it's not in a System container for whatever reason
+                if (thisDoodadsItem is { SlotType: SlotType.Money })
+                {
+                    returnedItems.Add(thisDoodadsItem);
+                    returnedThisItem = true;
+                    f.ItemId = 0; // don't auto-delete
+                }
+            }
+            else
+            if (f.ItemTemplateId > 0)
+            {
+                // try to stack stackable items
+                var oldItem = returnedItems.FirstOrDefault(x => x.TemplateId == f.ItemTemplateId && x.Count < x.Template.MaxCount);
+
+                if (oldItem != null)
+                {
+                    oldItem.Count++;
+                }
+                else
+                {
+                    // It's a new one, add an item slot
+                    var furnitureItem = ItemManager.Instance.Create(f.ItemTemplateId, 1, 0);
+                    var furnitureTemplate = ItemManager.Instance.GetTemplate(f.ItemTemplateId);
+                    furnitureItem.Grade = furnitureTemplate.FixedGrade >= 0 ? (byte)furnitureTemplate.FixedGrade : (byte)0;
+                    furnitureItem.OwnerId = house.OwnerId;
+                    furnitureItem.SlotType = SlotType.MailAttachment;
+                    returnedItems.Add(furnitureItem);
+                }
+                returnedThisItem = true;
+            }
+            else
+            {
+                // Not sure what happened here, just ignore it
+                continue;
+            }
+
+            // Set new doodad owner if needed
+            if (newOwner != null)
+            {
+                f.OwnerId = newOwner.Id;
+            }
+
+            if (newOwner == null || returnedThisItem)
+            {
+                f.Transform.DetachAll();
+                f.Delete();
+            }
+        }
+
+        // TODO: Grab a list of items in chests
+
+        // TODO: Proper Mail handler
+        BaseMail newMail = null;
+        for (var i = 0; i < returnedItems.Count; i++)
+        {
+            // Split items into mails of maximum 10 attachments
+            if (i % 10 == 0)
+            {
+                // TODO: proper mail handler
+                newMail = new BaseMail();
+                newMail.MailType = MailType.HousingRebuild;
+                newMail.ReceiverName = NameManager.Instance.GetCharacterName(house.OwnerId); // Doesn't seem like this needs to be set
+                newMail.Header.ReceiverId = house.OwnerId;
+                newMail.Header.SenderId = 0;
+                newMail.Header.SenderName = ".houseRebuild";
+                newMail.Header.Status = MailStatus.Unpaid;
+                newMail.Header.Extra = house.Id;
+                newMail.Title = "title";
+                newMail.Body.Text = string.Format("body({0}, '{1}', '{2}')",
+                    (int)newMail.MailType,  // тип письма = HousingRebuild
+                    originalHouseName.Replace("'", ""),  // исходное имя дома
+                    house.Name.Replace("'", "")   // имя дома после перепланировки
+                );
+
+                newMail.Body.SendDate = DateTime.UtcNow;
+                newMail.Body.RecvDate = DateTime.UtcNow;
+            }
+            // Only attach money to first mail
+            if (returnedMoney > 0 && i == 0)
+            {
+                newMail.AttachMoney(returnedMoney);
+            }
+
+            // If player is loaded in at the moment (which he/she should be anyway), directly manipulate the inventory
+            // If not, only change the container
+            var onlineOwner = WorldManager.Instance.GetCharacterById((uint)returnedItems[i].OwnerId);
+            if (onlineOwner != null)
+            {
+                onlineOwner.Inventory.MailAttachments.AddOrMoveExistingItem(ItemTaskType.HouseRebuild, returnedItems[i]);
+            }
+            else
+            {
+                returnedItems[i].SlotType = SlotType.MailAttachment;
+            }
+
+            // Attach item
+            newMail.Body.Attachments.Add(returnedItems[i]);
+
+            // Send on last or 10th item of the mail
+            if (i % 10 == 9 || i == returnedItems.Count - 1)
+            {
+                newMail.Send();
+            }
+        }
+
+        if (newMail != null)
+        {
+            Logger.Debug($"Rebuild mail sent to {newMail.ReceiverName}");
         }
     }
 
@@ -1337,8 +1955,8 @@ public class HousingManager : Singleton<HousingManager>
     /// <returns></returns>
     private uint GetDesignByItemId(uint itemId)
     {
-        var design = _housingItemHousings.FirstOrDefault(h => h.Item_Id == itemId);
-        return design?.Design_Id ?? 0;
+        var design = _housingItemHousings.FirstOrDefault(h => h.ItemId == itemId);
+        return design?.DesignId ?? 0;
     }
 
     /// <summary>
@@ -1348,11 +1966,13 @@ public class HousingManager : Singleton<HousingManager>
     /// <returns></returns>
     private uint GetItemIdByDesign(uint designId)
     {
-        var designs = _housingItemHousings.Where(h => h.Design_Id == designId);
+        var designs = _housingItemHousings.Where(h => h.DesignId == designId);
         foreach (var design in designs)
         {
-            if (ItemManager.Instance.GetTemplate(design.Item_Id) != null)
-                return design.Item_Id;
+            if (ItemManager.Instance.GetTemplate(design.ItemId) != null)
+            {
+                return design.ItemId;
+            }
         }
         return 0;
     }
@@ -1369,7 +1989,10 @@ public class HousingManager : Singleton<HousingManager>
         // TODO: In later versions, this depends on the building-type/size
         var certAmount = (int)Math.Ceiling(salePrice / CopperPerCertificate);
         if (certAmount < 1)
+        {
             certAmount = 1;
+        }
+
         return certAmount;
     }
 
@@ -1388,7 +2011,7 @@ public class HousingManager : Singleton<HousingManager>
                 var yMultiplier = postId / 2 == 0 ? -1 : 1f;
                 var zRot = (135f + 90f * postId % 360).DegToRad();
 
-                var doodad = DoodadManager.Instance.Create(0, ForSaleMarkerDoodadId, null, true);
+                var doodad = DoodadManager.Instance.Create(0, DoodadConstants.ForSaleMarkerDoodadId, null, true);
                 // location
                 doodad.Transform.Local.SetPosition(
                     house.Template.GardenRadius * xMultiplier + house.Transform.World.Position.X,
@@ -1419,7 +2042,7 @@ public class HousingManager : Singleton<HousingManager>
             {
                 var doodad = thisHouseSalePosts[c];
                 // If it's a for sale sign, remove it
-                if (doodad.TemplateId == ForSaleMarkerDoodadId)
+                if (doodad.TemplateId == DoodadConstants.ForSaleMarkerDoodadId)
                 {
                     house.AttachedDoodads.Remove(doodad);
                     doodad.Delete();
@@ -1439,15 +2062,21 @@ public class HousingManager : Singleton<HousingManager>
     public static bool SetForSale(House house, uint price, uint buyerId, Character seller)
     {
         if (house == null)
+        {
             return false;
+        }
 
         if (!house.Template.IsSellable)
+        {
             return false;
+        }
 
         // Check if buyer exists (we just check if the name exists)
         var buyerName = NameManager.Instance.GetCharacterName(buyerId);
         if (buyerId != 0 && buyerName == null)
+        {
             return false;
+        }
 
         buyerName ??= "";
 
@@ -1482,7 +2111,10 @@ public class HousingManager : Singleton<HousingManager>
     public static bool CancelForSale(House house, bool returnCertificates = true)
     {
         if (house.SellPrice <= 0)
+        {
             return true;
+        }
+
         var certAmount = CalculateSaleCertifcates(house, house.SellPrice);
         var owner = WorldManager.Instance.GetCharacterById(house.OwnerId);
 
@@ -1495,21 +2127,13 @@ public class HousingManager : Singleton<HousingManager>
                     (uint)ItemConstants.AppraisalCertificate, certAmount, -1, out var addedItems, out _, 0))
             {
                 // Mail container is set up to never update existing items, so we can discard that result
-                var mail = new BaseMail
-                {
-                    MailType = MailType.HousingSale,
-                    Header =
-                    {
-                        ReceiverId = house.OwnerId,
-                        SenderName = ".houseSellCancel"
-                    },
-                    ReceiverName = NameManager.Instance.GetCharacterName(house.OwnerId),
-                    Title = "title(" + ZoneManager.Instance.GetZoneByKey(house.Transform.ZoneId)?.GroupId.ToString() + ",'" + house.Name + "')",
-                    Body =
-                    {
-                        Text = "body('" + house.Name + "', " + ItemConstants.AppraisalCertificate.ToString() + ", " + certAmount.ToString() + ")"
-                    }
-                };
+                var mail = new BaseMail();
+                mail.MailType = MailType.HousingSale;
+                mail.Header.ReceiverId = house.OwnerId;
+                mail.Header.SenderName = ".houseSellCancel";
+                mail.ReceiverName = NameManager.Instance.GetCharacterName(house.OwnerId);
+                mail.Title = "title(" + ZoneManager.Instance.GetZoneByKey(house.Transform.ZoneId)?.GroupId + ",'" + house.Name + "')";
+                mail.Body.Text = "body('" + house.Name + "', " + ItemConstants.AppraisalCertificate + ", " + certAmount + ")";
                 mail.Body.Attachments.AddRange(addedItems);
                 mail.Body.SendDate = DateTime.UtcNow;
                 mail.Body.RecvDate = DateTime.UtcNow.AddMilliseconds(1);
@@ -1544,7 +2168,10 @@ public class HousingManager : Singleton<HousingManager>
         foreach (var furniture in furnitureList)
         {
             if (furniture.AttachPoint != AttachPointKind.None)
+            {
                 continue;
+            }
+
             furniture.OwnerId = characterId;
             furniture.BroadcastPacket(new SCDoodadOriginatorPacket(furniture.ObjId, characterId, 0), true);
             res++;
@@ -1611,44 +2238,28 @@ public class HousingManager : Singleton<HousingManager>
         var previousOwnerName = NameManager.Instance.GetCharacterName(previousOwner);
 
         // Mail confirmation mail to new owner
-        var newOwnerMail = new BaseMail
-        {
-            MailType = MailType.HousingSale,
-            Header =
-            {
-                ReceiverId = character.Id,
-                SenderName = ".houseBought"
-            },
-            ReceiverName = character.Name,
-            Title = "title(" + ZoneManager.Instance.GetZoneByKey(house.Transform.ZoneId)?.GroupId.ToString() + ",'" + house.Name + "')",
-            Body =
-            {
-                Text = "body('" + previousOwnerName + "', '" + house.Name + "', " + house.SellPrice.ToString() + ")",
-                SendDate = DateTime.UtcNow,
-                RecvDate = DateTime.UtcNow.AddMilliseconds(1)
-            }
-        };
+        var newOwnerMail = new BaseMail();
+        newOwnerMail.MailType = MailType.HousingSale;
+        newOwnerMail.Header.ReceiverId = character.Id;
+        newOwnerMail.Header.SenderName = ".houseBought";
+        newOwnerMail.ReceiverName = character.Name;
+        newOwnerMail.Title = "title(" + ZoneManager.Instance.GetZoneByKey(house.Transform.ZoneId)?.GroupId + ",'" + house.Name + "')";
+        newOwnerMail.Body.Text = "body('" + previousOwnerName + "', '" + house.Name + "', " + house.SellPrice + ")";
+        newOwnerMail.Body.SendDate = DateTime.UtcNow;
+        newOwnerMail.Body.RecvDate = DateTime.UtcNow.AddMilliseconds(1);
         newOwnerMail.Send();
 
         // Send sales money to previous owner
-        var profitMail = new BaseMail
-        {
-            MailType = MailType.HousingSale,
-            Header =
-            {
-                ReceiverId = previousOwner,
-                SenderName = ".houseSold"
-            },
-            ReceiverName = previousOwnerName,
-            Title = "title('" + character.Name + "','" + house.Name + "')",
-            Body =
-            {
-                Text = "body('" + character.Name + "', '" + house.Name + "', " + house.SellPrice.ToString() + ")",
-                CopperCoins = (int)house.SellPrice, // add the money
-                SendDate = DateTime.UtcNow,
-                RecvDate = DateTime.UtcNow.AddMilliseconds(1)
-            }
-        };
+        var profitMail = new BaseMail();
+        profitMail.MailType = MailType.HousingSale;
+        profitMail.Header.ReceiverId = previousOwner;
+        profitMail.Header.SenderName = ".houseSold";
+        profitMail.ReceiverName = previousOwnerName;
+        profitMail.Title = "title('" + character.Name + "','" + house.Name + "')";
+        profitMail.Body.Text = "body('" + character.Name + "', '" + house.Name + "', " + house.SellPrice + ")";
+        profitMail.Body.CopperCoins = (int)house.SellPrice; // add the money
+        profitMail.Body.SendDate = DateTime.UtcNow;
+        profitMail.Body.RecvDate = DateTime.UtcNow.AddMilliseconds(1);
         profitMail.Send();
 
         ReturnHouseItemsToOwner(house, false, false, character);
@@ -1672,8 +2283,10 @@ public class HousingManager : Singleton<HousingManager>
 
         character.SendPacket(new SCHouseStatePacket(house));
         var oldOwner = WorldManager.Instance.GetCharacterById(previousOwner);
-        if (oldOwner != null && oldOwner.IsOnline)
+        if (oldOwner is { IsOnline: true })
+        {
             oldOwner.SendPacket(new SCHouseRemovedPacket(house.TlId));
+        }
 
         UpdateFurnitureOwner(house, character.Id);
         ResidentManager.Instance.RemoveResidenMemberInfo(oldOwner);
@@ -1690,7 +2303,10 @@ public class HousingManager : Singleton<HousingManager>
     public void CheckHousingTaxes()
     {
         if (_isCheckingTaxTiming)
+        {
             return;
+        }
+
         _isCheckingTaxTiming = true;
         try
         {
@@ -1699,7 +2315,10 @@ public class HousingManager : Singleton<HousingManager>
             foreach (var house in _houses)
             {
                 if (house.Value?.ProtectionEndDate <= DateTime.UtcNow && house.Value?.OwnerId > 0)
+                {
                     expiredHouseList.Add(house.Value);
+                }
+
                 UpdateTaxInfo(house.Value);
             }
             foreach (var house in expiredHouseList)
@@ -1751,7 +2370,9 @@ public class HousingManager : Singleton<HousingManager>
     {
         // Check Player
         if (player == null)
+        {
             return false;
+        }
 
         // Check Item
         var item = ItemManager.Instance.GetItemByItemId(itemId);
@@ -1841,9 +2462,15 @@ public class HousingManager : Singleton<HousingManager>
     {
         var house = GetHouseByTlId(houseTl);
         if (house == null)
+        {
             return;
+        }
+
         if (character.Id != house.OwnerId)
+        {
             return;
+        }
+
         house.AllowRecover = !house.AllowRecover;
         house.BroadcastPacket(new SCHousingRecoverTogglePacket(house.TlId, house.AllowRecover), false);
     }
@@ -1864,7 +2491,9 @@ public class HousingManager : Singleton<HousingManager>
             var r = house.Template.GardenRadius;
             var bounds = new RectangleF(house.Transform.World.Position.X - r, house.Transform.World.Position.Y - r, r * 2f, r * 2f);
             if (bounds.Contains(x, y))
+            {
                 return house;
+            }
         }
         return null;
     }

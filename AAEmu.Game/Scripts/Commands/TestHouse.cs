@@ -45,7 +45,7 @@ public class TestHouse : ICommand
         }
 
         House house = null;
-        if (character.CurrentTarget != null && character.CurrentTarget is House selectedHouse)
+        if (character.CurrentTarget is House selectedHouse)
         {
             house = selectedHouse;
         }
@@ -61,8 +61,7 @@ public class TestHouse : ICommand
             var a0 = args[0].ToLower();
             if (a0 == "info")
             {
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"ObjId: {house.ObjId} - TlId: {house.TlId} - HouseId: {house.Id} - TemplateId: {house.TemplateId} - ModelId: {house.ModelId} - {house.Name}");
+                CommandManager.SendNormalText(this, messageOutput, $"ObjId: {house.ObjId} - TlId: {house.TlId} - HouseId: {house.Id} - TemplateId: {house.TemplateId} - ModelId: {house.ModelId} - {house.Name}");
 
                 HousingManager.Instance.CalculateBuildingTaxInfo(house.AccountId, house.Template, false,
                     out var totalTaxAmountDue, out var heavyTaxHouseCount, out var normalTaxHouseCount,
@@ -70,13 +69,11 @@ public class TestHouse : ICommand
 
                 if (DateTime.UtcNow >= house.TaxDueDate)
                 {
-                    CommandManager.SendNormalText(this, messageOutput,
-                        $"Tax Due: {totalTaxAmountDue}{(house.Template.HeavyTax ? "" : "(no heavy tax)")} by {house.TaxDueDate}");
+                    CommandManager.SendNormalText(this, messageOutput, $"Tax Due: {totalTaxAmountDue}{(house.Template.HeavyTax ? "" : "(no heavy tax)")} by {house.TaxDueDate}");
                 }
                 else if (DateTime.UtcNow >= house.TaxDueDate.AddDays(7))
                 {
-                    CommandManager.SendNormalText(this, messageOutput,
-                        $"Tax Overdue: {totalTaxAmountDue * 2}{(house.Template.HeavyTax ? "" : "(no heavy tax)")}, demolition at {house.ProtectionEndDate}");
+                    CommandManager.SendNormalText(this, messageOutput, $"Tax Overdue: {totalTaxAmountDue * 2}{(house.Template.HeavyTax ? "" : "(no heavy tax)")}, demolition at {house.ProtectionEndDate}");
                 }
             }
             else if (a0 == "taxmail")
@@ -108,8 +105,7 @@ public class TestHouse : ICommand
             {
                 house.ProtectionEndDate = DateTime.UtcNow.AddSeconds(20);
                 HousingManager.UpdateTaxInfo(house);
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"Set {house.Name} to demolished in about 20 seconds");
+                CommandManager.SendNormalText(this, messageOutput, $"Set {house.Name} to demolished in about 20 seconds");
             }
             else if (a0 == "setforsale")
             {
@@ -155,15 +151,13 @@ public class TestHouse : ICommand
                     // Set for sale
                     if (house.SellPrice > 0)
                     {
-                        CommandManager.SendErrorText(this, messageOutput,
-                            $"Is already for sale, clear first to assign a new value");
+                        CommandManager.SendErrorText(this, messageOutput, $"Is already for sale, clear first to assign a new value");
                         return;
                     }
 
                     if (HousingManager.SetForSale(house, price, buyerId, null))
                     {
-                        CommandManager.SendNormalText(this, messageOutput,
-                            $"Setting {house.Name} for sale with a price of {price} to buy for {buyer}.");
+                        CommandManager.SendNormalText(this, messageOutput, $"Setting {house.Name} for sale with a price of {price} to buy for {buyer}.");
                     }
                     else
                     {

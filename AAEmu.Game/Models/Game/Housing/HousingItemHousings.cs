@@ -3,8 +3,9 @@
 public class HousingItemHousings
 {
     public uint Id { get; set; }
-    public uint Item_Id { get; set; }
-    public uint Design_Id { get; set; }
+    public uint ItemId { get; set; }
+    public bool Completion { get; set; }
+    public uint DesignId { get; set; }
 
     public HousingItemHousings()
     {

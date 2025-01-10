@@ -63,8 +63,7 @@ public class TestMails : ICommand
                     CommandManager.SendNormalText(this, messageOutput, $"List of Mails");
                     foreach (var m in MailManager.Instance.GetCurrentMailList(character))
                     {
-                        CommandManager.SendNormalText(this, messageOutput,
-                            $"{m.Value.Id} - {m.Value.MailType} - ({m.Value.Header.Status}) {m.Value.Title}");
+                        CommandManager.SendNormalText(this, messageOutput, $"{m.Value.Id} - {m.Value.MailType} - ({m.Value.Header.Status}) {m.Value.Title}");
                     }
 
                     CommandManager.SendNormalText(this, messageOutput, $"End of List");
@@ -206,8 +205,7 @@ public class TestMails : ICommand
                             newItem.SlotType = SlotType.MailAttachment;
                             mail.Body.Attachments.Add(newItem);
 
-                            CommandManager.SendNormalText(this, messageOutput,
-                                $"Attachment: @ITEM_NAME({itemId}) ({itemId}) x {itemCount}");
+                            CommandManager.SendNormalText(this, messageOutput, $"Attachment: @ITEM_NAME({itemId}) ({itemId}) x {itemCount}");
                         }
                         else
                         {

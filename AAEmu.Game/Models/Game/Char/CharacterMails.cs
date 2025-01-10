@@ -316,7 +316,7 @@ public class CharacterMails
                 return;
             }
 
-            if (MailManager.Instance._allPlayerMails[id].Header.Status == MailStatus.Unread)
+            if (MailManager.Instance._allPlayerMails[id].Header.Status == MailStatus.Unread || MailManager.Instance._allPlayerMails[id].Header.Status == MailStatus.Unpaid)
             {
                 UnreadMailCount.UpdateReceived(MailManager.Instance._allPlayerMails[id].MailType, -1);
                 UnreadMailCount.UpdateUnreadReceived(MailManager.Instance._allPlayerMails[id].MailType, -1);

@@ -258,7 +258,7 @@
         public const ushort CSRequestHouseTaxPacket = 0x177;
         public const ushort CSPrepayHouseTaxPacket = 0x17C;
         public const ushort CSAllowRecoverPacket = 0x097;
-        public const ushort CSSellHouseCancelPacket = 0x0A7;
+        public const ushort CSRequestHousingRebuildingTaxInfoPacket = 0x0A7;
         public const ushort CSDecorateHousePacket = 0x1D0;
         public const ushort CSSellHousePacket = 0x0B2;
         public const ushort CSBuyHousePacket = 0x0D0;
@@ -495,5 +495,6 @@
         public const ushort CSDominionUpdateNationalTaxRatePacket = 0xFFF;
         public const ushort CSSpecialtyCurrentLoadPacket = 0xFFF; // CSRequestSpecialtyCurrentPacket
         public const ushort CSPacketUnknown0x166Packet = 0xFFF;
+        public const ushort CSSellHouseCancelPacket = 0xFFF;
     }
 }

@@ -118,7 +118,7 @@ public sealed class House : Unit
     public HousingPermission Permission
     {
         get => _permission;
-        set { _permission = ((_template != null) && (_template.AlwaysPublic)) ? HousingPermission.Public : value; _isDirty = true; }
+        set { _permission = _template != null && _template.AlwaysPublic ? HousingPermission.Public : value; _isDirty = true; }
     }
 
     public int PaidWeeks { get; set; } // оплаченные недели
@@ -254,44 +254,42 @@ public sealed class House : Unit
     {
         if (!IsDirty)
             return false;
-        if ((AccountId <= 0) || (OwnerId <= 0))
+        if (AccountId <= 0 || OwnerId <= 0)
             return false; // recently destroyed/expired house
-        using (var command = connection.CreateCommand())
-        {
-            command.Connection = connection;
-            command.Transaction = transaction;
+        using var command = connection.CreateCommand();
+        command.Connection = connection;
+        command.Transaction = transaction;
 
-            command.CommandText =
-                "REPLACE INTO `housings` " +
-                "(`id`,`account_id`,`owner`,`co_owner`,`template_id`,`name`,`x`,`y`,`z`,`yaw`,`pitch`,`roll`,`current_step`,`current_action`,`permission`,`place_date`," +
-                "`protected_until`,`faction_id`,`sell_to`,`sell_price`, `allow_recover`) " +
-                "VALUES(@id,@account_id,@owner,@co_owner,@template_id,@name,@x,@y,@z,@yaw,@pitch,@roll,@current_step,@current_action,@permission,@placedate," +
-                "@protecteduntil,@factionid,@sellto,@sellprice,@allowrecover)";
+        command.CommandText =
+            "REPLACE INTO `housings` " +
+            "(`id`,`account_id`,`owner`,`co_owner`,`template_id`,`name`,`x`,`y`,`z`,`yaw`,`pitch`,`roll`,`current_step`,`current_action`,`permission`,`place_date`," +
+            "`protected_until`,`faction_id`,`sell_to`,`sell_price`, `allow_recover`) " +
+            "VALUES(@id,@account_id,@owner,@co_owner,@template_id,@name,@x,@y,@z,@yaw,@pitch,@roll,@current_step,@current_action,@permission,@placedate," +
+            "@protecteduntil,@factionid,@sellto,@sellprice,@allowrecover)";
 
-            command.Parameters.AddWithValue("@id", Id);
-            command.Parameters.AddWithValue("@account_id", AccountId);
-            command.Parameters.AddWithValue("@owner", OwnerId);
-            command.Parameters.AddWithValue("@co_owner", CoOwnerId);
-            command.Parameters.AddWithValue("@template_id", TemplateId);
-            command.Parameters.AddWithValue("@name", Name);
-            command.Parameters.AddWithValue("@x", Transform.World.Position.X);
-            command.Parameters.AddWithValue("@y", Transform.World.Position.Y);
-            command.Parameters.AddWithValue("@z", Transform.World.Position.Z);
-            command.Parameters.AddWithValue("@roll", Transform.World.Rotation.X);
-            command.Parameters.AddWithValue("@pitch", Transform.World.Rotation.Y);
-            command.Parameters.AddWithValue("@yaw", Transform.World.Rotation.Z);
-            command.Parameters.AddWithValue("@current_step", CurrentStep);
-            command.Parameters.AddWithValue("@current_action", NumAction);
-            command.Parameters.AddWithValue("@permission", (byte)Permission);
-            command.Parameters.AddWithValue("@placedate", PlaceDate);
-            command.Parameters.AddWithValue("@protecteduntil", ProtectionEndDate);
-            command.Parameters.AddWithValue("@factionid", Faction.Id);
-            command.Parameters.AddWithValue("@sellto", SellToPlayerId);
-            command.Parameters.AddWithValue("@sellprice", SellPrice);
-            command.Parameters.AddWithValue("@allowrecover", AllowRecover);
-            command.Prepare();
-            command.ExecuteNonQuery();
-        }
+        command.Parameters.AddWithValue("@id", Id);
+        command.Parameters.AddWithValue("@account_id", AccountId);
+        command.Parameters.AddWithValue("@owner", OwnerId);
+        command.Parameters.AddWithValue("@co_owner", CoOwnerId);
+        command.Parameters.AddWithValue("@template_id", TemplateId);
+        command.Parameters.AddWithValue("@name", Name);
+        command.Parameters.AddWithValue("@x", Transform.World.Position.X);
+        command.Parameters.AddWithValue("@y", Transform.World.Position.Y);
+        command.Parameters.AddWithValue("@z", Transform.World.Position.Z);
+        command.Parameters.AddWithValue("@roll", Transform.World.Rotation.X);
+        command.Parameters.AddWithValue("@pitch", Transform.World.Rotation.Y);
+        command.Parameters.AddWithValue("@yaw", Transform.World.Rotation.Z);
+        command.Parameters.AddWithValue("@current_step", CurrentStep);
+        command.Parameters.AddWithValue("@current_action", NumAction);
+        command.Parameters.AddWithValue("@permission", (byte)Permission);
+        command.Parameters.AddWithValue("@placedate", PlaceDate);
+        command.Parameters.AddWithValue("@protecteduntil", ProtectionEndDate);
+        command.Parameters.AddWithValue("@factionid", Faction.Id);
+        command.Parameters.AddWithValue("@sellto", SellToPlayerId);
+        command.Parameters.AddWithValue("@sellprice", SellPrice);
+        command.Parameters.AddWithValue("@allowrecover", AllowRecover);
+        command.Prepare();
+        command.ExecuteNonQuery();
 
         IsDirty = false;
         return true;
@@ -330,10 +328,10 @@ public sealed class House : Unit
         // add in 5+
         for (var i = 0; i < 5; i++)
         {
-            stream.Write(0u);               // houseId
-            stream.Write(0L);               // type
-            stream.Write(0);               // ucc_kind
-            stream.Write(0);               // ucc_positon
+            stream.Write(0u);                 // houseId
+            stream.Write(0L);                 // type
+            stream.Write(0);                  // ucc_kind
+            stream.Write(0);                  // ucc_positon
         }
         stream.Write(Helpers.ConvertLongX(Transform.World.Position.X - 10));
         stream.Write(Helpers.ConvertLongY(Transform.World.Position.Y - 10));
@@ -347,10 +345,10 @@ public sealed class House : Unit
     {
         var ownerName = NameManager.Instance.GetCharacterName(OwnerId);
 
-        stream.Write(TlId);             // tl
-        stream.Write(OwnerId);          // type(id)
-        stream.WriteBc(ObjId);          // bc
-        stream.Write(AccountId);        // accountId
+        stream.Write(TlId);                // tl
+        stream.Write(OwnerId);             // type(id)
+        stream.WriteBc(ObjId);             // bc
+        stream.Write(AccountId);           // accountId
         stream.Write(ownerName ?? "");
         stream.Write(Helpers.ConvertLongX(Transform.World.Position.X));
         stream.Write(Helpers.ConvertLongY(Transform.World.Position.Y));
@@ -379,10 +377,10 @@ public sealed class House : Unit
                 if (player.Id == OwnerId)
                     return base.AllowedToInteract(player);
                 var ownerAccount = NameManager.Instance.GetCharaterAccount(OwnerId);
-                return (player.AccountId == ownerAccount) && base.AllowedToInteract(player);
-            case HousingPermission.Family when (player.Family > 0):
+                return player.AccountId == ownerAccount && base.AllowedToInteract(player);
+            case HousingPermission.Family when player.Family > 0:
                 return FamilyManager.Instance.GetFamily(player.Family).Members.Any(x => x.Id == OwnerId);
-            case HousingPermission.Guild when (player.Expedition?.Id > 0):
+            case HousingPermission.Guild when player.Expedition?.Id > 0:
                 return player.Expedition.Members.Any(x => x.CharacterId == OwnerId);
             case HousingPermission.Public:
             default:

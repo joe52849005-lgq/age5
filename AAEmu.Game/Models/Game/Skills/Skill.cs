@@ -15,6 +15,7 @@ using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.DoodadObj;
 using AAEmu.Game.Models.Game.DoodadObj.Static;
 using AAEmu.Game.Models.Game.Faction;
+using AAEmu.Game.Models.Game.Housing;
 using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Items.Actions;
 using AAEmu.Game.Models.Game.Items.Templates;
@@ -200,7 +201,10 @@ public class Skill
         // Check if target is within range
         var skillRange = caster.ApplySkillModifiers(this, SkillAttribute.Range, Template.MaxRange);
         var targetDist = unit.GetDistanceTo(target, true);
-
+        if (target is House)
+        {
+            skillRange = targetDist; // HACKFIX for house
+        }
         var minRangeCheck = Template.MinRange * 1.0;
         var maxRangeCheck = skillRange;
 
