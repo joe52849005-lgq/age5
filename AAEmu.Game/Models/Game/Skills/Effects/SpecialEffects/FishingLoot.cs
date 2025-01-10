@@ -47,6 +47,8 @@ public class FishingLoot : SpecialEffectAction
         if (pack is null || pack.Loots.Count <= 0)
         {
             Logger.Warn($"FishingLoot: {character.Name} loot tables are missing required LootPackId={lootTableId}");
+            character.SendMessage($"LootPackId={lootTableId}");
+
             return;
         }
 
