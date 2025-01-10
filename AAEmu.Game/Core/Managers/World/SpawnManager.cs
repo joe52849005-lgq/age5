@@ -307,7 +307,7 @@ public class SpawnManager : Singleton<SpawnManager>
                                         //&& Math.Abs(spawner.Position.Z - npcSpawnerFromFile.Position.Z) < TOLERANCE
                                         ))
                     {
-                        Logger.Warn($"Duplicate NPC spawner found in {jsonFileName} (UnitId: {npcSpawnerFromFile.UnitId}, Position: {npcSpawnerFromFile.Position})");
+                        Logger.Trace($"Duplicate NPC spawner found in {jsonFileName} (UnitId: {npcSpawnerFromFile.UnitId}, Position: {npcSpawnerFromFile.Position})");
                         continue;
                     }
                     if (!NpcManager.Instance.Exist(npcSpawnerFromFile.UnitId))
@@ -390,12 +390,12 @@ public class SpawnManager : Singleton<SpawnManager>
                                                 // && Math.Abs(existingSpawner.Position.Z - spawner.Position.Z) < TOLERANCE
                                                 ))
                     {
-                        Logger.Warn($"Duplicate Doodad spawner found in {jsonFileName} (UnitId: {spawner.UnitId}, Position: {spawner.Position})");
+                        Logger.Trace($"Duplicate Doodad spawner found in {jsonFileName} (UnitId: {spawner.UnitId}, Position: {spawner.Position})");
                         continue;
                     }
                     if (!DoodadManager.Instance.Exist(spawner.UnitId))
                     {
-                        Logger.Warn($"Doodad Template {spawner.UnitId} (file entry {entry}) doesn't exist - {jsonFileName}");
+                        Logger.Trace($"Doodad Template {spawner.UnitId} (file entry {entry}) doesn't exist - {jsonFileName}");
                         continue;
                     }
                     spawner.Id = _nextId;

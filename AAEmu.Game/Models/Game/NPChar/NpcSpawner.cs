@@ -379,18 +379,18 @@ public class NpcSpawner : Spawner<Npc>
                         // no entries found for this unit in Game_Schedule table
                         // Тем не менее, мы будем спавнить Npc, так как в планировщике не было никаких записей
                         notFoundInScheduler = true;
-                        Logger.Warn($"DoSpawnSchedule: Npc was not found in the schedule, we will spawn it templateId={UnitId} from spawnerId={Template.Id}");
+                        Logger.Trace($"DoSpawnSchedule: Npc was not found in the schedule, we will spawn it templateId={UnitId} from spawnerId={Template.Id}");
                     }
                     else if (status.NotStarted)
                     {
-                        Logger.Warn("Период еще не начался.");
+                        Logger.Trace("Период еще не начался.");
                         // есть в расписании, надо запланировать спавн
                         // is on the schedule, needs to be scheduled
                         var cronExpression = GameScheduleManager.Instance.GetCronRemainingTime((int)UnitId, true);
                         if (cronExpression is "" or "0 0 0 0 0 ?")
                         {
-                            Logger.Warn($"DoSpawnSchedule: Can't schedule spawn Npc templateId={UnitId} from spawnerId={Template.Id}");
-                            Logger.Warn($"DoSpawnSchedule: cronExpression {cronExpression}");
+                            Logger.Trace($"DoSpawnSchedule: Can't schedule spawn Npc templateId={UnitId} from spawnerId={Template.Id}");
+                            Logger.Trace($"DoSpawnSchedule: cronExpression {cronExpression}");
                             _isScheduled = false;
                             return false;
                         }
@@ -398,14 +398,14 @@ public class NpcSpawner : Spawner<Npc>
                         try
                         {
                             TaskManager.Instance.CronSchedule(new NpcSpawnerDoSpawnTask(this), cronExpression);
-                            Logger.Warn($"DoSpawnSchedule: Schedule the spawn of Npc templateId={UnitId} from spawnerId={Template.Id}");
-                            Logger.Warn($"DoSpawnSchedule: cronExpression {cronExpression}");
+                            Logger.Trace($"DoSpawnSchedule: Schedule the spawn of Npc templateId={UnitId} from spawnerId={Template.Id}");
+                            Logger.Trace($"DoSpawnSchedule: cronExpression {cronExpression}");
                             return true; // Reschedule when OK
                         }
                         catch (Exception)
                         {
-                            Logger.Warn($"DoSpawnSchedule: Can't schedule spawn Npc templateId={UnitId} from spawnerId={Template.Id}");
-                            Logger.Warn($"DoSpawnSchedule: cronExpression {cronExpression}");
+                            Logger.Trace($"DoSpawnSchedule: Can't schedule spawn Npc templateId={UnitId} from spawnerId={Template.Id}");
+                            Logger.Trace($"DoSpawnSchedule: cronExpression {cronExpression}");
                             _isScheduled = false;
                             return false;
                         }
@@ -414,14 +414,14 @@ public class NpcSpawner : Spawner<Npc>
                     {
                         // период уже начался, нужно спавнить
                         // period has already started
-                        Logger.Warn($"DoSpawnSchedule: Can spawn. The period is already underway. Npc templateId={UnitId} from spawnerId={Template.Id}");
+                        Logger.Trace($"DoSpawnSchedule: Can spawn. The period is already underway. Npc templateId={UnitId} from spawnerId={Template.Id}");
                     }
                     else if (status.Ended)
                     {
                         // период уже закончился, не нужно спавнить
                         // period has already ended, no need to spawn
                         //Logger.Warn("Период завершился.");
-                        Logger.Warn($"DoSpawnSchedule: Can't spawn. The period has ended. Npc templateId={UnitId} from spawnerId={Template.Id}");
+                        Logger.Trace($"DoSpawnSchedule: Can't spawn. The period has ended. Npc templateId={UnitId} from spawnerId={Template.Id}");
                         _isScheduled = false;
                         return false;
                     }
@@ -494,11 +494,11 @@ public class NpcSpawner : Spawner<Npc>
                         // All the same, we will be despawn Npc, since there was no record in Scheduler
                         // Тем не менее, мы будем деспавнить Npc, так как в планировщике не было никаких записей
                         notFoundInScheduler = true;
-                        Logger.Warn($"DoDespawnSchedule: Npc was not found in the schedule, we will despawn it templateId={UnitId} from spawnerId {Template.Id}");
+                        Logger.Trace($"DoDespawnSchedule: Npc was not found in the schedule, we will despawn it templateId={UnitId} from spawnerId {Template.Id}");
                     }
                     else if (status.NotStarted)
                     {
-                        Logger.Warn($"DoDespawnSchedule: The period has not yet begun. Can despawn Npc templateId={UnitId} from spawnerId {Template.Id}");
+                        Logger.Trace($"DoDespawnSchedule: The period has not yet begun. Can despawn Npc templateId={UnitId} from spawnerId {Template.Id}");
                     }
                     else if (status.InProgress)
                     {
@@ -507,21 +507,21 @@ public class NpcSpawner : Spawner<Npc>
                         var cronExpression = GameScheduleManager.Instance.GetCronRemainingTime((int)Template.Id, false);
                         if (cronExpression is "" or "0 0 0 0 0 ?")
                         {
-                            Logger.Warn($"DoDespawnSchedule: Can't schedule despawn Npc templateId={UnitId} from spawnerId {Template.Id}");
-                            Logger.Warn($"DoDespawnSchedule: cronExpression {cronExpression}");
+                            Logger.Trace($"DoDespawnSchedule: Can't schedule despawn Npc templateId={UnitId} from spawnerId {Template.Id}");
+                            Logger.Trace($"DoDespawnSchedule: cronExpression {cronExpression}");
                             return;
                         }
                         try
                         {
                             TaskManager.Instance.CronSchedule(new NpcSpawnerDoDespawnTask(npc), cronExpression);
-                            Logger.Warn($"DoDespawnSchedule: Schedule the despawn of Npc templateId={UnitId} from spawnerId {Template.Id}");
-                            Logger.Warn($"DoDespawnSchedule: cronExpression {cronExpression}");
+                            Logger.Trace($"DoDespawnSchedule: Schedule the despawn of Npc templateId={UnitId} from spawnerId {Template.Id}");
+                            Logger.Trace($"DoDespawnSchedule: cronExpression {cronExpression}");
                             return; // Reschedule when OK
                         }
                         catch (Exception)
                         {
-                            Logger.Warn($"DoDespawnSchedule: Can't schedule despawn Npc templateId={UnitId} from spawnerId {Template.Id}");
-                            Logger.Warn($"DoDespawnSchedule: cronExpression {cronExpression}");
+                            Logger.Trace($"DoDespawnSchedule: Can't schedule despawn Npc templateId={UnitId} from spawnerId {Template.Id}");
+                            Logger.Trace($"DoDespawnSchedule: cronExpression {cronExpression}");
                             return;
                         }
                     }
@@ -529,7 +529,7 @@ public class NpcSpawner : Spawner<Npc>
                     {
                         // период уже закончился, нужно деспавнить
                         // period has already ended, no need to despawn
-                        Logger.Warn($"DoDespawnSchedule: The period has ended. Can despawn Npc templateId={UnitId} from spawnerId {Template.Id}");
+                        Logger.Trace($"DoDespawnSchedule: The period has ended. Can despawn Npc templateId={UnitId} from spawnerId {Template.Id}");
                     }
                 }
             }
