@@ -94,7 +94,7 @@ public class MailForAuction : BaseMail
         Title = TitleBidWin;
         Header.ReceiverId = _buyerId;
 
-        Body.Text = string.Format("body('{0}', {1}, {2})", _itemName, _item.Count, _itemBuyoutPrice);
+        Body.Text = string.Format("body('{0}', {1}, {2})", _itemName.Replace("'", ""), _item.Count, _itemBuyoutPrice);
         _item.OwnerId = _buyerId;
         _item.SlotType = SlotType.MailAttachment;
         Body.Attachments.Add(_item);
@@ -124,7 +124,7 @@ public class MailForAuction : BaseMail
         Title = TitleSold;
 
         Body.Text = string.Format("body('{0}', {1}, {2}, {3}, {4}, {5})",
-            _itemName, _item.Count, _sellerShare, _itemBuyoutPrice, _tradeTaxFee, _listingFee);
+            _itemName.Replace("'", ""), _item.Count, _sellerShare, _itemBuyoutPrice, _tradeTaxFee, _listingFee);
 
         AttachMoney(sellerShare);
 
@@ -150,7 +150,7 @@ public class MailForAuction : BaseMail
         MailType = MailType.AuctionOffCancel;
         Title = TitleCancel;
 
-        Body.Text = string.Format("body('{0}', {1})", _itemName, _item.Count);
+        Body.Text = string.Format("body('{0}', {1})", _itemName.Replace("'", ""), _item.Count);
         _item.OwnerId = _sellerId;
         _item.SlotType = SlotType.MailAttachment;
         Body.Attachments.Add(_item);
@@ -177,7 +177,7 @@ public class MailForAuction : BaseMail
         MailType = MailType.AuctionOffFail;
         Title = TitleNotSold;
 
-        Body.Text = string.Format("body('{0}', {1})", _itemName, _item.Count);
+        Body.Text = string.Format("body('{0}', {1})", _itemName.Replace("'", ""), _item.Count);
         _item.OwnerId = _sellerId;
         _item.SlotType = SlotType.MailAttachment;
         Body.Attachments.Add(_item);
@@ -205,7 +205,7 @@ public class MailForAuction : BaseMail
         MailType = MailType.AuctionOffFail;
         Title = TitleBidLost;
 
-        Body.Text = string.Format("body('{0}')", _itemName);
+        Body.Text = string.Format("body('{0}')", _itemName.Replace("'", ""));
 
         AttachMoney(previousBid);
 

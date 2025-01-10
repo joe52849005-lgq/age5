@@ -102,13 +102,6 @@ public class GameScheduleManager : Singleton<GameScheduleManager>
         return res;
     }
 
-    //public bool CheckQuestInGameSchedules(uint questId)
-    //{
-    //    if (!GetGameScheduleQuestsData(questId)) { return false; }
-    //    var res = CheckScheduler();
-    //    return res.Contains(true);
-    //}
-
     private bool CheckSpawnerScheduler(int spawnerId)
     {
         var res = false;
@@ -136,25 +129,6 @@ public class GameScheduleManager : Singleton<GameScheduleManager>
 
         return res;
     }
-
-    //private List<bool> CheckDoodadScheduler(int doodadId)
-    //{
-    //    if (!_gameScheduleDoodadIds.ContainsKey(doodadId))
-    //    {
-    //        return new List<bool>();
-    //    }
-
-    //    var res = new List<bool>();
-    //    foreach (var gameScheduleId in _gameScheduleDoodadIds[doodadId])
-    //    {
-    //        if (_gameSchedules.TryGetValue(gameScheduleId, out var gs))
-    //        {
-    //            res.Add(CheckData(gs));
-    //        }
-    //    }
-
-    //    return res;
-    //}
 
     /// <summary>
     /// Возвращает кортеж, который показывает общий статус периодов для всех GameSchedules, связанных с spawnerId.
@@ -459,6 +433,50 @@ public class GameScheduleManager : Singleton<GameScheduleManager>
         var currentTime = now.TimeOfDay;
         var currentDate = now.Date;
 
+        // Преобразуем стандартный DayOfWeek в ваш кастомный DayOfWeek
+        var currentDayOfWeek = (DayOfWeek)((int)now.DayOfWeek + 1);
+
+        // Проверка на нулевые дату и месяц
+        var startDate = value is { StYear: > 0, StMonth: > 0, StDay: > 0 }
+            ? new DateTime(value.StYear, value.StMonth, value.StDay)
+            : DateTime.MinValue;
+
+        var endDate = value is { EdYear: > 0, EdMonth: > 0, EdDay: > 0 }
+            ? new DateTime(value.EdYear, value.EdMonth, value.EdDay)
+            : DateTime.MaxValue;
+
+        var startTime = new TimeSpan(value.StartTime, value.StartTimeMin, 0);
+        var endTime = new TimeSpan(value.EndTime, value.EndTimeMin, 0);
+
+        var hasStarted = false;
+        var hasEnded = false;
+
+        // Проверка на попадание в период по дате и времени
+        if ((startDate == DateTime.MinValue || currentDate > startDate || (currentDate == startDate && currentTime >= startTime)) &&
+            (endDate == DateTime.MaxValue || currentDate < endDate || (currentDate == endDate && currentTime <= endTime)))
+        {
+            // Проверка на попадание в период по дню недели
+            if (currentDayOfWeek == value.DayOfWeekId || value.DayOfWeekId == DayOfWeek.Invalid)
+            {
+                hasStarted = true;
+            }
+        }
+
+        // Проверка на окончание периода
+        if (endDate != DateTime.MaxValue && (currentDate > endDate || (currentDate == endDate && currentTime >= endTime)))
+        {
+            hasEnded = true;
+        }
+
+        return (hasStarted, hasEnded);
+    }
+
+    private static (bool hasStarted, bool hasEnded) CheckData0(GameSchedules value)
+    {
+        var now = DateTime.UtcNow;
+        var currentTime = now.TimeOfDay;
+        var currentDate = now.Date;
+
         var startDate = new DateTime(value.StYear, value.StMonth, value.StDay);
         var endDate = new DateTime(value.EdYear, value.EdMonth, value.EdDay);
         var startTime = new TimeSpan(value.StartTime, value.StartTimeMin, 0);
@@ -539,119 +557,6 @@ public class GameScheduleManager : Singleton<GameScheduleManager>
             return false;
         }
     }
-
-    //private static bool CheckData1(GameSchedules value)
-    //{
-    //    var now = DateTime.UtcNow;
-    //    var currentTime = now.TimeOfDay;
-    //    var currentDate = now.Date;
-    //    var curDayOfWeek = (DayOfWeek)DateTime.UtcNow.DayOfWeek + 1;
-
-    //    var startDate = new DateTime(value.StYear, value.StMonth, value.StDay);
-    //    var endDate = new DateTime(value.EdYear, value.EdMonth, value.EdDay);
-    //    var startTime = new TimeSpan(value.StartTime, 0, 0);
-    //    var endTime = new TimeSpan(value.EndTime, value.EndTimeMin, 0);
-
-    //    if (value.DayOfWeekId == DayOfWeek.Invalid)
-    //    {
-    //        return CheckCommonConditions();
-    //    }
-
-    //    if (curDayOfWeek == value.DayOfWeekId)
-    //    {
-    //        return CheckCommonConditions();
-    //    }
-
-    //    return false;
-
-    //    // Локальная функция для проверки общих условий
-    //    bool CheckCommonConditions()
-    //    {
-    //        if (value is { EndTime: 0, StMonth: 0, StDay: 0, StHour: 0 })
-    //        {
-    //            return true;
-    //        }
-
-    //        if (value.EndTime == 0 &&
-    //            currentDate >= startDate &&
-    //            currentDate <= endDate &&
-    //            currentTime.Hours >= value.StHour &&
-    //            currentTime.Hours <= value.EdHour)
-    //        {
-    //            return true;
-    //        }
-
-    //        if (currentTime >= startTime &&
-    //            currentTime <= endTime &&
-    //            value is { StMonth: 0, StDay: 0, StHour: 0 })
-    //        {
-    //            return true;
-    //        }
-
-    //        if (currentTime >= startTime &&
-    //            currentTime <= endTime &&
-    //            currentDate >= startDate &&
-    //            currentDate <= endDate)
-    //        {
-    //            return true;
-    //        }
-
-    //        return false;
-    //    }
-    //}
-
-    //private static bool CheckData0(GameSchedules value)
-    //{
-    //    var curHours = DateTime.UtcNow.TimeOfDay.Hours;
-    //    var curMinutes = DateTime.UtcNow.TimeOfDay.Minutes;
-    //    var curDay = DateTime.UtcNow.Day;
-    //    var curMonth = DateTime.UtcNow.Month;
-    //    var curYear = DateTime.UtcNow.Year;
-    //    var curDayOfWeek = (DayOfWeek)DateTime.UtcNow.DayOfWeek + 1;
-
-    //    if (value.DayOfWeekId == DayOfWeek.Invalid)
-    //    {
-    //        if (value is { EndTime: 0, StMonth: 0, StDay: 0, StHour: 0 })
-    //        {
-    //            return true;
-    //        }
-    //        if (value.EndTime == 0 && curMonth >= value.StMonth && curDay >= value.StDay && curHours >= value.StHour && curMonth <= value.EdMonth && curDay <= value.EdDay && curHours <= value.EdHour)
-    //        {
-    //            return true;
-    //        }
-    //        if (curHours >= value.StartTime && curHours <= value.EndTime && curMinutes <= value.EndTimeMin && value is { StMonth: 0, StDay: 0, StHour: 0 })
-    //        {
-    //            return true;
-    //        }
-    //        if (curHours >= value.StartTime && curHours <= value.EndTime && curMinutes <= value.EndTimeMin && curMonth >= value.StMonth && curDay >= value.StDay && curMonth <= value.EdMonth && curDay <= value.EdDay)
-    //        {
-    //            return true;
-    //        }
-    //    }
-    //    else
-    //    {
-    //        if (curDayOfWeek == value.DayOfWeekId)
-    //        {
-    //            if (value is { EndTime: 0, StMonth: 0, StDay: 0, StHour: 0 })
-    //            {
-    //                return true;
-    //            }
-    //            if (value.EndTime == 0 && curMonth >= value.StMonth && curDay >= value.StDay && curHours >= value.StHour && curMonth <= value.EdMonth && curDay <= value.EdDay && curHours <= value.EdHour)
-    //            {
-    //                return true;
-    //            }
-    //            if (curHours >= value.StartTime && curHours <= value.EndTime && curMinutes <= value.EndTimeMin && value is { StMonth: 0, StDay: 0, StHour: 0 })
-    //            {
-    //                return true;
-    //            }
-    //            if (curHours >= value.StartTime && curHours <= value.EndTime && curMinutes <= value.EndTimeMin && curMonth >= value.StMonth && curDay >= value.StDay && curMonth <= value.EdMonth && curDay <= value.EdDay)
-    //            {
-    //                return true;
-    //            }
-    //        }
-    //    }
-    //    return false;
-    //}
 
     private static TimeSpan GetRemainingTimeStart(GameSchedules value)
     {

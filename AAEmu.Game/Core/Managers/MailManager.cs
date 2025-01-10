@@ -66,12 +66,12 @@ public class MailManager : Singleton<MailManager>
         var targetId = NameManager.Instance.GetCharacterId(mail.Header.ReceiverName);
         if (!string.Equals(targetName, mail.Header.ReceiverName, StringComparison.InvariantCultureIgnoreCase))
         {
-            Logger.Debug("Send() - Failed to verify receiver name {0} != {1}", targetName, mail.Header.ReceiverName);
+            Logger.Trace("Send() - Failed to verify receiver name {0} != {1}", targetName, mail.Header.ReceiverName);
             return false; // Name mismatch
         }
         if (targetId != mail.Header.ReceiverId)
         {
-            Logger.Debug("Send() - Failed to verify receiver id {0} != {1}", targetId, mail.Header.ReceiverId);
+            Logger.Trace("Send() - Failed to verify receiver id {0} != {1}", targetId, mail.Header.ReceiverId);
             return false; // Id mismatch
         }
 
@@ -301,7 +301,7 @@ public class MailManager : Singleton<MailManager>
 
     public static bool NotifyNewMailByNameIfOnline(BaseMail m, string receiverName)
     {
-        Logger.Debug($"NotifyNewMailByNameIfOnline() - {receiverName}");
+        Logger.Trace($"NotifyNewMailByNameIfOnline() - {receiverName}");
         // If unread and ready to deliver
         if (m.Header.Status is MailStatus.Unread or MailStatus.Unpaid &&
             m.Body.RecvDate <= DateTime.UtcNow &&
@@ -325,7 +325,7 @@ public class MailManager : Singleton<MailManager>
 
     public static bool NotifyDeleteMailByNameIfOnline(BaseMail m, string receiverName)
     {
-        Logger.Debug($"NotifyDeleteMailByNameIfOnline() - {receiverName}");
+        Logger.Trace($"NotifyDeleteMailByNameIfOnline() - {receiverName}");
         var player = WorldManager.Instance.GetCharacter(receiverName);
         if (player != null)
         {
@@ -351,7 +351,7 @@ public class MailManager : Singleton<MailManager>
             if (NotifyNewMailByNameIfOnline(mail.Value, mail.Value.Header.ReceiverName))
                 delivered++;
         if (delivered > 0)
-            Logger.Debug($"{delivered}/{undeliveredMails.Count} mail(s) delivered");
+            Logger.Trace($"{delivered}/{undeliveredMails.Count} mail(s) delivered");
 
         // TODO: Return expired mails back to owner if undelivered/unread
     }
