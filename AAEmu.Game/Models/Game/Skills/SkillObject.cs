@@ -14,7 +14,7 @@ public enum SkillObjectType
     Unk6 = 6,
     ItemGradeEnchantingSupport = 7,
     // added in 3+
-    Unk8 = 8,
+    RebuildHousingSupport = 8,
     ItemEvolvingSupport = 9,
     Unk10 = 10,
     AddSocketingSupport = 11,
@@ -72,7 +72,7 @@ public class SkillObject : PacketMarshaler
             case SkillObjectType.ItemGradeEnchantingSupport:
                 obj = new SkillObjectItemGradeEnchantingSupport();
                 break;
-            case SkillObjectType.Unk8:
+            case SkillObjectType.RebuildHousingSupport:
                 obj = new SkillObjectRebuildHousingSupport(); // added in 3.5.0.3 NA
                 break;
             case SkillObjectType.ItemEvolvingSupport:
