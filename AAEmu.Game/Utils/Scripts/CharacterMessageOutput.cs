@@ -21,7 +21,7 @@ public class CharacterMessageOutput : IMessageOutput
         _character = character;
     }
 
-    public void SendMessage(string message) => SendMessage(ChatType.System, message, null);
+    public void SendMessage(string message) => SendMessage(ChatType.General, message, null);
 
     public void SendMessage(ChatType chatType, string message, Color? color = null)
     {

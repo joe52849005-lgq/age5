@@ -273,7 +273,7 @@ public abstract class SubCommandBase : ICommandV2
     /// <param name="message">Message to send to the character</param>
     protected void SendColorMessage(IMessageOutput messageOutput, Color color, string message)
     {
-        messageOutput.SendMessage(ChatType.System, $"{Title} {message}", color);
+        messageOutput.SendMessage(ChatType.General, $"{Title} {message}", color);
     }
 
     protected static string GetOptionalArgumentValue(string[] args, string argumentName, string defaultArgumentValue)

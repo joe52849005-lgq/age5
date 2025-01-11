@@ -125,7 +125,7 @@ public class AddKit : ICommand
             var itemTemplate = ItemManager.Instance.GetTemplate(kit.itemId);
             if (itemTemplate == null)
             {
-                character.SendMessage(ChatType.System, $"Item could not be created, ID: {kit.itemId} !");
+                character.SendMessage(ChatType.General, $"Item could not be created, ID: {kit.itemId} !");
                 Logger.Error($"itemId not found: {kit.itemId}");
                 continue;
             }
@@ -134,7 +134,7 @@ public class AddKit : ICommand
                 if (!targetPlayer.Inventory.Bag.AcquireDefaultItem(ItemTaskType.Gm, kit.itemId, kit.itemCount,
                         kit.itemGrade))
                 {
-                    character.SendMessage(ChatType.System, "Item could not be created!", Color.Red);
+                    character.SendMessage(ChatType.General, "Item could not be created!", Color.Red);
                     continue;
                 }
 

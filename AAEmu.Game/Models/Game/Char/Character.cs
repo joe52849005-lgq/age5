@@ -1499,7 +1499,7 @@ public partial class Character : Unit, ICharacter
 
         // Send extra info to player if we are still in a real but unreleased zone (not null), this is not retail behaviour!
         if (newZone != null)
-            SendMessage(ChatType.System, $"You have entered a closed zone ({newZone.ZoneKey} - {newZone.Name})!\nPlease leave immediately!", Color.Red);
+            SendMessage(ChatType.General, $"You have entered a closed zone ({newZone.ZoneKey} - {newZone.Name})!\nPlease leave immediately!", Color.Red);
 
         var characterAccessLevel = CharacterManager.Instance.GetEffectiveAccessLevel(this);
         if (characterAccessLevel < 100)
@@ -1649,7 +1649,7 @@ public partial class Character : Unit, ICharacter
         SendPacket(new SCChatMessagePacket(type, message));
     }
 
-    public void SendMessage(string message) => SendMessage(ChatType.System, message, null);
+    public void SendMessage(string message) => SendMessage(ChatType.General, message, null);
 
     public void SendErrorMessage(ErrorMessageType errorMsgType, uint type = 0, bool isNotify = true)
     {

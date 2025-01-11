@@ -18,7 +18,7 @@ public class ChatManager : Singleton<ChatManager>
     /// <summary>
     /// nullChannel is used as a fallback channel, do not use directly
     /// </summary>
-    private ChatChannel nullChannel = new() { ChatType = ChatType.White, Faction = 0, InternalName = "Null" };
+    private ChatChannel nullChannel = new() { ChatType = ChatType.General, Faction = 0, InternalName = "Null" };
     private ConcurrentDictionary<FactionsEnum, ChatChannel> _factionChannels = new();
     private ConcurrentDictionary<long, ChatChannel> _nationChannels = new();
     private ConcurrentDictionary<long, ChatChannel> _zoneChannels = new();
@@ -121,7 +121,7 @@ public class ChatManager : Singleton<ChatManager>
 
     private bool AddFactionChannel(FactionsEnum factionId, string name)
     {
-        var channel = new ChatChannel() { ChatType = ChatType.Ally, Faction = factionId, InternalId = (uint)factionId, InternalName = name };
+        var channel = new ChatChannel() { ChatType = ChatType.Races, Faction = factionId, InternalId = (uint)factionId, InternalName = name };
         return _factionChannels.TryAdd(factionId, channel);
     }
 
@@ -141,7 +141,7 @@ public class ChatManager : Singleton<ChatManager>
     private bool AddNationChannel(Race race, FactionsEnum factionDisplayId, string name)
     {
         var mRace = (((byte)race - 1) & 0xFC);
-        var channel = new ChatChannel() { ChatType = ChatType.Region, Faction = factionDisplayId, InternalId = mRace, InternalName = name };
+        var channel = new ChatChannel() { ChatType = ChatType.Forces, Faction = factionDisplayId, InternalId = mRace, InternalName = name };
         return _nationChannels.TryAdd(mRace, channel);
     }
 
@@ -193,7 +193,7 @@ public class ChatManager : Singleton<ChatManager>
 
     private bool AddGuildChannel(Expedition guild)
     {
-        var channel = new ChatChannel() { ChatType = ChatType.Clan, SubType = (short)guild.Id, InternalId = (uint)guild.Id, InternalName = guild.Name };
+        var channel = new ChatChannel() { ChatType = ChatType.Expeditions, SubType = (short)guild.Id, InternalId = (uint)guild.Id, InternalName = guild.Name };
         return _guildChannels.TryAdd(guild.Id, channel);
     }
 
@@ -245,7 +245,7 @@ public class ChatManager : Singleton<ChatManager>
 
     private bool AddPartyChannel(uint partyId)
     {
-        var channel = new ChatChannel() { ChatType = ChatType.Party, SubType = (short)partyId, InternalId = partyId, InternalName = "Party(" + partyId.ToString() + ")" };
+        var channel = new ChatChannel() { ChatType = ChatType.Parties, SubType = (short)partyId, InternalId = partyId, InternalName = "Party(" + partyId.ToString() + ")" };
         return _partyChannels.TryAdd(partyId, channel);
     }
 

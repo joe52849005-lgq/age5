@@ -17,7 +17,7 @@ public class ChatChannel
 
     public ChatChannel()
     {
-        ChatType = ChatType.White;
+        ChatType = ChatType.General;
         SubType = 0;
         Faction = 0;
         Members = [];
@@ -33,7 +33,7 @@ public class ChatChannel
         if (Members.Contains(character))
             return false;
 
-        // character.SendMessage(ChatType.System, "ChatManager.JoinChannel {0} - {1} - {2}", chatType, internalId, internalName);
+        // character.SendMessage(ChatType.General, "ChatManager.JoinChannel {0} - {1} - {2}", chatType, internalId, internalName);
         Members.Add(character);
         character.SendPacket(new SCJoinedChatChannelPacket(ChatType, SubType, Faction));
 
@@ -44,7 +44,7 @@ public class ChatChannel
     {
         if (character == null)
             return false;
-        // character.SendMessage(ChatType.System, "ChatManager.LeaveChannel {0} - {1} - {2}", chatType, internalId, internalName);
+        // character.SendMessage(ChatType.General, "ChatManager.LeaveChannel {0} - {1} - {2}", chatType, internalId, internalName);
         if (Members.Remove(character))
         {
             character.SendPacket(new SCLeavedChatChannelPacket(ChatType, SubType, Faction));

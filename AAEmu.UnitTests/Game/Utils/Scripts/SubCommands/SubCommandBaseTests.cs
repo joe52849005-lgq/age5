@@ -319,7 +319,7 @@ public class SubCommandBaseTests
         subCommand.BaseSendHelpMessage(new CharacterMessageOutput(mockCharacter.Object));
 
         // Assert
-        mockCharacter.Verify(c => c.SendMessage(ChatType.System, It.Is<string>(call => call.Contains(expectedCallExample)), It.IsAny<Color?>()), Times.Once);
+        mockCharacter.Verify(c => c.SendMessage(ChatType.General, It.Is<string>(call => call.Contains(expectedCallExample)), It.IsAny<Color?>()), Times.Once);
     }
 
     [Theory]
@@ -339,7 +339,7 @@ public class SubCommandBaseTests
         subCommand.BaseSendHelpMessage(new CharacterMessageOutput(mockCharacter.Object));
 
         // Assert
-        mockCharacter.Verify(c => c.SendMessage(ChatType.System, It.Is<string>(call => call.Contains(expectedCallExample)), It.IsAny<Color?>()), Times.Once);
+        mockCharacter.Verify(c => c.SendMessage(ChatType.General, It.Is<string>(call => call.Contains(expectedCallExample)), It.IsAny<Color?>()), Times.Once);
     }
 
     [Theory]
