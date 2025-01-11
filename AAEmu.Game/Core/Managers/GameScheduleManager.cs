@@ -130,77 +130,51 @@ public class GameScheduleManager : Singleton<GameScheduleManager>
         return res;
     }
 
-    /// <summary>
-    /// Возвращает кортеж, который показывает общий статус периодов для всех GameSchedules, связанных с spawnerId.
-    /// </summary>
-    /// <param name="spawnerId">Идентификатор Npc</param>
-    /// <returns>Кортеж (bool, bool, bool), где:
-    /// - Первый элемент указывает, что период еще не начался (ни один период не начался).
-    /// - Второй элемент указывает, что период уже идет (хотя бы один период начался, но еще не завершился).
-    /// - Третий элемент указывает, что период завершился (хотя бы один период завершился).
-    /// Возможные возвращаемые значения.
-    /// - (true, false, false) Ни один период не начался.
-    /// - (false, true, false) Хотя бы один период начался, но еще не завершился.
-    /// - (false, false, true) Хотя бы один период завершился.
-    /// - (true, true, true) Если spawnerId не найден.
-    /// </returns>
-    public (bool NotStarted, bool InProgress, bool Ended) GetPeriodStatusNpc(int spawnerId)
+    public enum PeriodStatus
     {
-        var hasNotStarted = true; // Предполагаем, что ни один период не начался
-        var hasInProgress = false; // Предполагаем, что ни один период не в процессе
-        var hasEnded = false; // Предполагаем, что ни один период не завершился
-
-        if (!_gameScheduleSpawnerIds.TryGetValue(spawnerId, out var ids))
-        {
-            return (true, true, true); // Если doodadId не найден
-        }
-
-        foreach (var gameScheduleId in ids)
-        {
-            if (_gameSchedules.TryGetValue(gameScheduleId, out var gs))
-            {
-                var (started, ended) = CheckData(gs);
-
-                if (started && !ended)
-                {
-                    hasInProgress = true; // Период начался, но еще не завершился
-                    hasNotStarted = false; // Хотя бы один период начался, поэтому "не начался" = false
-                }
-                else if (ended)
-                {
-                    hasEnded = true; // Хотя бы один период завершился
-                    hasNotStarted = false; // Хотя бы один период завершился, поэтому "не начался" = false
-                }
-            }
-        }
-
-        return (hasNotStarted, hasInProgress, hasEnded);
+        NotFound,   // If doodadId or spawnerId not found
+        NotStarted, // The period has not started
+        InProgress, // Period in progress
+        Ended       // The period has ended
     }
 
     /// <summary>
-    /// Возвращает кортеж, который показывает общий статус периодов для всех GameSchedules, связанных с doodadId.
+    /// Returns enum that shows the overall period status for all GameSchedules associated with spawnerId.
     /// </summary>
-    /// <param name="doodadId">Идентификатор doodad</param>
-    /// <returns>Кортеж (bool, bool, bool), где:
-    /// - Первый элемент указывает, что период еще не начался (ни один период не начался).
-    /// - Второй элемент указывает, что период уже идет (хотя бы один период начался, но еще не завершился).
-    /// - Третий элемент указывает, что период завершился (хотя бы один период завершился).
-    /// Возможные возвращаемые значения.
-    /// - (true, false, false) Ни один период не начался.
-    /// - (false, true, false) Хотя бы один период начался, но еще не завершился.
-    /// - (false, false, true) Хотя бы один период завершился.
-    /// - (true, true, true) Если doodadId не найден.
-    /// </returns>
-    public (bool NotStarted, bool InProgress, bool Ended) GetPeriodStatus(int doodadId)
+    /// <param name="spawnerId"></param>
+    /// <returns></returns>
+    public PeriodStatus GetPeriodStatusNpc(int spawnerId)
     {
-        var hasNotStarted = true; // Предполагаем, что ни один период не начался
-        var hasInProgress = false; // Предполагаем, что ни один период не в процессе
-        var hasEnded = false; // Предполагаем, что ни один период не завершился
+        if (!_gameScheduleSpawnerIds.TryGetValue(spawnerId, out var ids))
+            return PeriodStatus.NotFound; // If spawnerId is not found
 
+        return CheckPeriodStatus(ids);
+    }
+
+    /// <summary>
+    /// Returns an enum that shows the overall period status for all GameSchedules associated with the specified doodadId.
+    /// If the doodadId is not found, returns <see cref="PeriodStatus.NotFound"/>.
+    /// </summary>
+    /// <param name="doodadId">The ID of the doodad to check.</param>
+    /// <returns>The overall period status.</returns>
+    public PeriodStatus GetPeriodStatus(int doodadId)
+    {
         if (!_gameScheduleDoodadIds.TryGetValue(doodadId, out var ids))
-        {
-            return (true, true, true); // Если doodadId не найден
-        }
+            return PeriodStatus.NotFound; // If doodadId is not found
+
+        return CheckPeriodStatus(ids);
+    }
+
+    /// <summary>
+    /// Checks the period status for a list of game schedule IDs.
+    /// </summary>
+    /// <param name="ids">The list of game schedule IDs to check.</param>
+    /// <returns>The overall period status.</returns>
+    private PeriodStatus CheckPeriodStatus(List<int> ids)
+    {
+        var hasNotStarted = true;  // Assume that no period has started
+        var hasInProgress = false; // Assume that no period is in progress
+        var hasEnded = false;      // Assume that no period has ended
 
         foreach (var gameScheduleId in ids)
         {
@@ -210,18 +184,23 @@ public class GameScheduleManager : Singleton<GameScheduleManager>
 
                 if (started && !ended)
                 {
-                    hasInProgress = true; // Период начался, но еще не завершился
-                    hasNotStarted = false; // Хотя бы один период начался, поэтому "не начался" = false
+                    hasInProgress = true;  // The period has started, but has not yet ended
+                    hasNotStarted = false; // At least one period has started, so "hasn't started" = false
                 }
                 else if (ended)
                 {
-                    hasEnded = true; // Хотя бы один период завершился
-                    hasNotStarted = false; // Хотя бы один период завершился, поэтому "не начался" = false
+                    hasEnded = true;       // At least one period has ended
+                    hasNotStarted = false; // At least one period has ended, so "hasn't started" = false
                 }
             }
         }
 
-        return (hasNotStarted, hasInProgress, hasEnded);
+        // Determine the final status
+        if (hasInProgress)
+            return PeriodStatus.InProgress;
+        if (hasEnded)
+            return PeriodStatus.Ended;
+        return PeriodStatus.NotStarted;
     }
 
     /// <summary>

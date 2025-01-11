@@ -6,6 +6,7 @@ using System.Linq;
 using AAEmu.Commons.Utils;
 using AAEmu.Game.Models.Game.AI.Enums;
 using AAEmu.Game.Models.Game.Char;
+using AAEmu.Game.Models.Game.DoodadObj.Details;
 using AAEmu.Game.Models.Game.NPChar;
 using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.Skills.Buffs;
@@ -17,6 +18,8 @@ using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Models.Game.World;
 using AAEmu.Game.Models.StaticValues;
 using AAEmu.Game.Utils.DB;
+
+using Microsoft.Data.Sqlite;
 
 using Newtonsoft.Json.Linq;
 
@@ -49,6 +52,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
     private Dictionary<uint, SkillReagent> _skillReagents;
     private Dictionary<uint, SkillProduct> _skillProducts;
     private DynamicEffects _dynamicEffects;
+
     // private HashSet<ushort> _skillIds = new();
     // private ushort _skillIdIndex = 1;
 
@@ -2121,6 +2125,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
         return null;
     }
 
+    /// <summary>
     /// Gets the related ActAbility to a skill
     /// </summary>
     /// <param name="skillId"></param>

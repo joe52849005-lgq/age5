@@ -1506,6 +1506,43 @@ public class DoodadManager : Singleton<DoodadManager>
                 }
             }
 
+            // doodad_func_item_changers
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM doodad_func_item_changers";
+                command.Prepare();
+                using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
+                {
+                    while (reader.Read())
+                    {
+                        var func = new DoodadFuncItemChanger();
+                        func.Id = reader.GetUInt32("id");
+                        func.ItemCount = reader.GetInt32("item_count");
+                        func.ItemId = reader.GetInt32("item_id");
+                        func.NextPhase = reader.GetInt32("next_phase", -1) >= 0 ? reader.GetInt32("next_phase") : -1;
+                        func.SkillId = reader.GetInt32("skill_id");
+
+                        _phaseFuncTemplates["DoodadFuncItemChanger"].Add(func.Id, func);
+                    }
+                }
+            }
+            // doodad_func_item_changers
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM doodad_func_item_changers";
+                command.Prepare();
+                using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
+                {
+                    while (reader.Read())
+                    {
+                        var func = new DoodadFuncItemChangerUiOpen();
+                        func.Id = reader.GetUInt32("id");
+
+                        _funcTemplates["DoodadFuncItemChangerUiOpen"].Add(func.Id, func);
+                    }
+                }
+            }
+
             // doodad_func_Logics
             using (var command = connection.CreateCommand())
             {

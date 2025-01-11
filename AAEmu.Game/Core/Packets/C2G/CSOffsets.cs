@@ -318,7 +318,7 @@
         public const ushort CSChangeDoodadDataPacket = 0x143;
         public const ushort off_39EC35CC = 0x180;
         public const ushort off_39EC35DC = 0x1CB;
-        public const ushort off_39EC35EC = 0x0D7;
+        public const ushort CSRequestPlantingPacket = 0x0D7; // off_39EC35EC
         public const ushort CSUnitAttachedPacket = 0x1AC; //off_39EC3600
         public const ushort CSInteractNPCPacket = 0x0AE;
         public const ushort CSInteractNPCEndPacket = 0x0CF;
