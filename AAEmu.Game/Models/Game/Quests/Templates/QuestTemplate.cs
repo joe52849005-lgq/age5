@@ -14,7 +14,7 @@ public class QuestTemplate : IQuestTemplate
     public bool RestartOnFail { get; set; }
     public uint ChapterIdx { get; set; }
     public uint QuestIdx { get; set; }
-    public uint MilestoneId { get; set; }
+    //public uint MilestoneId { get; set; }
     public bool LetItDone { get; set; }
     public QuestDetail DetailId { get; set; }
     public uint ZoneId { get; set; }
@@ -25,6 +25,12 @@ public class QuestTemplate : IQuestTemplate
     public bool UseAcceptMessage { get; set; }
     public bool UseCompleteMessage { get; set; }
     public uint GradeId { get; set; }
+    // added in 5.0.7.0
+    public int MaxLevel { get; set; }
+    public int MinLevel { get; set; }
+    public string Name { get; set; }
+    public int Priority { get; set; }
+    public int Race { get; set; }
     public IDictionary<uint, QuestComponentTemplate> Components { get; set; }
 
     public QuestTemplate()

@@ -22,6 +22,8 @@ using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Models.StaticValues;
 using AAEmu.Game.Utils.DB;
 
+using Microsoft.Data.Sqlite;
+
 using NLog;
 
 namespace AAEmu.Game.Core.Managers.UnitManagers;
@@ -439,6 +441,9 @@ public class NpcManager : Singleton<NpcManager>
                         custom.FaceFixedDecalAsset5Weight = reader.GetFloat("face_fixed_decal_asset_5_weight");
                         custom.FaceNormalMapWeight = reader.GetFloat("face_normal_map_weight");
                         custom.DecoColor = reader.GetUInt32("deco_color");
+                        // added in 5.0.7.0
+                        custom.DisplayOrder = reader.GetInt32("display_order");
+                        custom.IconPath = reader.GetString("icon_path");
 
                         custom.Name = reader.GetString("name");
                         custom.NpcOnly = reader.GetBoolean("npcOnly", true);
@@ -484,6 +489,29 @@ public class NpcManager : Singleton<NpcManager>
                         bp.ModelId = reader.GetUInt32("model_id", 0);
                         bp.NpcOnly = reader.GetBoolean("npc_only", true);
                         bp.SlotTypeId = reader.GetUInt32("slot_type_id");
+                        // added in 5.0.7.0
+                        bp.Asset1Id = reader.GetInt32("asset_1_id");
+                        bp.Asset2Id = reader.GetInt32("asset_2_id");
+                        bp.Asset3Id = reader.GetInt32("asset_3_id");
+                        bp.Asset4Id = reader.GetInt32("asset_4_id");
+                        bp.AssetId = reader.GetInt32("asset_id");
+                        bp.CustomTextureId = reader.GetInt32("custom_texture_id");
+                        bp.CustomTexture1Id = reader.GetInt32("custom_texture_1_id");
+                        bp.CustomTexture2Id = reader.GetInt32("custom_texture_2_id");
+                        bp.CustomTexture3Id = reader.GetInt32("custom_texture_3_id");
+                        bp.CustomTexture4Id = reader.GetInt32("custom_texture_4_id");
+                        bp.FaceMask = reader.GetString("face_mask");
+                        bp.HairBase = reader.GetString("hair_base");
+                        bp.LeftEyeHeight = reader.GetInt32("left_eye_height");
+                        bp.LeftEyeWidth = reader.GetInt32("left_eye_width");
+                        bp.LeftEyeX = reader.GetInt32("left_eye_x");
+                        bp.LeftEyeY = reader.GetInt32("left_eye_y");
+                        bp.OddEye = reader.GetBoolean("odd_eye");
+                        bp.RightEyeHeight = reader.GetInt32("right_eye_height");
+                        bp.RightEyeWidth = reader.GetInt32("right_eye_width");
+                        bp.RightEyeX = reader.GetInt32("right_eye_x");
+                        bp.RightEyeY = reader.GetInt32("right_eye_y");
+
                         bodyParts.Add(bp);
 
                         if (!slotBodyParts.ContainsKey(bp.SlotTypeId))
@@ -537,7 +565,7 @@ public class NpcManager : Singleton<NpcManager>
                         template.NpcTemplateId = (NpcTemplateType)reader.GetByte("npc_template_id");
                         template.ModelId = reader.GetUInt32("model_id");
                         template.FactionId = (FactionsEnum)reader.GetUInt32("faction_id");
-                        //template.HeirLevel = reader.GetUInt32("heir_level"); // there is no such field in the database for version 3.0.3.0
+                        template.HeirLevel = reader.GetUInt32("heir_level");
                         template.SkillTrainer = reader.GetBoolean("skill_trainer", true);
                         template.AiFileId = reader.GetInt32("ai_file_id");
                         template.Merchant = reader.GetBoolean("merchant", true);
@@ -597,6 +625,36 @@ public class NpcManager : Singleton<NpcManager>
                         template.LookConverter = reader.GetBoolean("look_converter", true);
                         template.UseDDCMSMountSkill = reader.GetBoolean("use_ddcms_mount_skill", true);
                         template.CrowdEffect = reader.GetBoolean("crowd_effect", true);
+
+                        template.BattleFieldRecruiter = reader.GetBoolean("battle_field_recruiter");
+                        template.CheckBackpack = reader.GetBoolean("check_backpack");
+                        template.CheckTargetUnderTerrain = reader.GetBoolean("check_target_under_terrain");
+                        template.DecayingSecAfterLooted = reader.GetInt32("decaying_sec_after_looted");
+                        template.DontPushableLikeGhost = reader.GetBoolean("dont_pushable_like_ghost");
+                        //template.EquipClothsId = reader.GetInt32("equip_cloths_id");
+                        //template.EquipWeaponsId = reader.GetInt32("equip_weapons_id");
+                        template.ForceTargetMeOnAttack = reader.GetBoolean("force_target_me_on_attack");
+                        template.FriendlyNearQuestId = reader.GetInt32("friendly_near_quest_id");
+                        template.MateReviveDelay = reader.GetInt32("mate_revive_delay");
+                        template.MateReviveHpPercent = reader.GetInt32("mate_revive_hp_percent");
+                        template.MateReviveMpPercent = reader.GetInt32("mate_revive_mp_percent");
+                        template.MultiJump = reader.GetInt32("multi_jump");
+                        template.MultiJumpPowY = reader.GetFloat("multi_jump_pow_y");
+                        template.MultiJumpPowZ = reader.GetFloat("multi_jump_pow_z");
+                        template.NationRelationVote = reader.GetBoolean("nation_relation_vote");
+                        template.NoPenalty = reader.GetBoolean("no_penalty");
+                        template.NpcAiClientParamId = reader.GetInt32("npc_ai_client_param_id");
+                        template.NpcStrafeParamId = reader.GetInt32("npc_strafe_param_id");
+                        template.RagdollAfterDeathAnim = reader.GetBoolean("ragdoll_after_death_anim");
+                        template.RunAwayThreshold = reader.GetFloat("run_away_threshold");
+                        template.ShowFactionTag = reader.GetBoolean("show_faction_tag");
+                        template.ShowOnBossTelescope = reader.GetBoolean("show_on_boss_telescope");
+                        template.SoState = reader.GetString("so_state");
+                        template.SoundPackId = reader.GetInt32("sound_pack_id");
+                        template.TradegoodBuy = reader.GetBoolean("tradegood_buy");
+                        template.UseDdcmsMountSkill = reader.GetBoolean("use_ddcms_mount_skill");
+                        template.UseModelCameraDistance = reader.GetBoolean("use_model_camera_distance");
+
 
                         //var bodyPack = reader.GetInt32("equip_bodies_id", 0); // there is no such field in the database for version 3.0.3.0
                         var clothPack = reader.GetInt32("equip_cloths_id", 0);
@@ -876,6 +934,10 @@ public class NpcManager : Singleton<NpcManager>
                         template.ItemId = reader.GetUInt32("item_id");
                         template.GradeId = reader.GetByte("grade_id");
                         template.KindId = reader.GetByte("kind_id");
+                        // added in 5.0.7.0
+                        template.ItemPointId = reader.GetInt32("item_point_id");
+                        template.ItemPointIcon = reader.GetString("item_point_icon");
+                        template.ItemPointIconKey = reader.GetString("item_point_icon_key");
 
                         if (_merchantGoods.ContainsKey(template.NpcId))
                             _merchantGoods[template.NpcId].Add(template);
@@ -898,6 +960,11 @@ public class NpcManager : Singleton<NpcManager>
                         template.ItemId = reader.GetUInt32("item_id");
                         template.GradeId = reader.GetByte("grade_id");
                         template.KindId = reader.GetByte("kind_id");
+
+                        // added in 5.0.7.0
+                        template.ItemPointId = reader.GetInt32("item_point_id");
+                        template.ItemPointIcon = reader.GetString("item_point_icon");
+                        template.ItemPointIconKey = reader.GetString("item_point_icon_key");
 
                         if (_merchantPackGoods.ContainsKey(id))
                             _merchantPackGoods[id].Add(template);

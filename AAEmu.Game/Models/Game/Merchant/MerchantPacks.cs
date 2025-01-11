@@ -8,6 +8,10 @@ public class MerchantPacks
     public uint ItemId { get; set; }
     public uint GradeId { get; set; }
     public uint KindId { get; set; }
+    // added in 5.0.7.0
+    public int ItemPointId { get; set; }
+    public string ItemPointIcon { get; set; }
+    public string ItemPointIconKey { get; set; }
 
     public List<MerchantGoodsItem> Items { get; set; } // npcId, list <MerchantGoodsItem>
 

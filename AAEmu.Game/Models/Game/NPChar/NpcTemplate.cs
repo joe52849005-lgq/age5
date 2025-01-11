@@ -99,6 +99,36 @@ public class NpcTemplate
     public List<NpcPassiveBuff> PassiveBuffs { get; set; }
     public uint TotalCustomId { get; set; }
 
+    // added in 5.0.7.0
+    public bool BattleFieldRecruiter { get; set; }
+    public bool CheckBackpack { get; set; }
+    public bool CheckTargetUnderTerrain { get; set; }
+    public int DecayingSecAfterLooted { get; set; }
+    public bool DontPushableLikeGhost { get; set; }
+    //public int EquipClothsId { get; set; }
+    //public int EquipWeaponsId { get; set; }
+    public bool ForceTargetMeOnAttack { get; set; }
+    public int FriendlyNearQuestId { get; set; }
+    public int MateReviveDelay { get; set; }
+    public int MateReviveHpPercent { get; set; }
+    public int MateReviveMpPercent { get; set; }
+    public int MultiJump { get; set; }
+    public float MultiJumpPowY { get; set; }
+    public float MultiJumpPowZ { get; set; }
+    public bool NationRelationVote { get; set; }
+    public bool NoPenalty { get; set; }
+    public int NpcAiClientParamId { get; set; }
+    public int NpcStrafeParamId { get; set; }
+    public bool RagdollAfterDeathAnim { get; set; }
+    public float RunAwayThreshold { get; set; }
+    public bool ShowFactionTag { get; set; }
+    public bool ShowOnBossTelescope { get; set; }
+    public string SoState { get; set; }
+    public int SoundPackId { get; set; }
+    public bool TradegoodBuy { get; set; }
+    public bool UseDdcmsMountSkill { get; set; }
+    public bool UseModelCameraDistance { get; set; }
+
     public NpcTemplate()
     {
         HairId = 0;

@@ -46,6 +46,9 @@ public class TotalCharacterCustom
     public float FaceFixedDecalAsset5Weight { get; set; }
     public float FaceNormalMapWeight { get; set; }
     public uint DecoColor { get; set; }
+    // added in 5.0.7.0
+    public int DisplayOrder { get; set; }
+    public string IconPath { get; set; }
 
     public TotalCharacterCustom()
     {

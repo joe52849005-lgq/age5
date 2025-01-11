@@ -506,6 +506,13 @@ public partial class QuestManager : Singleton<QuestManager>, IQuestManager
             template.UseAcceptMessage = reader.GetBoolean("use_accept_message", true);
             template.UseCompleteMessage = reader.GetBoolean("use_complete_message", true);
             template.GradeId = reader.GetUInt32("grade_id", 0);
+            // added in 5.0.7.0
+            template.MaxLevel = reader.GetInt32("max_level");
+            template.MinLevel = reader.GetInt32("min_level");
+            template.Name = reader.GetString("name");
+            template.Priority = reader.GetInt32("priority");
+            template.Race = reader.GetInt32("race");
+
             _questTemplates.Add(template.Id, template);
         }
     }
@@ -1098,6 +1105,29 @@ public partial class QuestManager : Singleton<QuestManager>, IQuestManager
                     template.CinemaId = reader.GetUInt32("cinema_id");
                     template.UseAlias = reader.GetBoolean("use_alias", true);
                     template.QuestActObjAliasId = reader.GetUInt32("quest_act_obj_alias_id", 0);
+                    AddActTemplate(template);
+                }
+            }
+        }
+
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText = "SELECT * FROM quest_act_obj_complete_quest_groups";
+            command.Prepare();
+            using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
+            {
+                while (reader.Read())
+                {
+                    var actId = reader.GetUInt32("id");
+                    var parentComponent = GetComponentByActTemplate("QuestActObjCompleteQuestGroup", actId);
+                    if (parentComponent == null)
+                        continue;
+                    var template = new QuestActObjCompleteQuestGroup(parentComponent);
+                    template.DetailId = actId;
+                    template.AcceptWith = reader.GetBoolean("accept_with", true);
+                    template.QuestActObjAliasId = reader.GetUInt32("quest_act_obj_alias_id", 0);
+                    template.QuestContextGroupId = reader.GetUInt32("quest_context_group_id");
+                    template.UseAlias = reader.GetBoolean("use_alias", true);
                     AddActTemplate(template);
                 }
             }

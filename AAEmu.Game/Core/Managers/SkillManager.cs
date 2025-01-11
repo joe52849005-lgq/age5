@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -30,9 +31,11 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
 
     private Dictionary<uint, SkillTemplate> _skills;
     private Dictionary<uint, DefaultSkill> _defaultSkills;
+    private Dictionary<int, List<CharacterDefaultSkill>> _characterDefaultSkills;
     private List<uint> _commonSkills;
     private Dictionary<AbilityType, List<SkillTemplate>> _startAbilitySkills;
     private Dictionary<uint, PassiveBuffTemplate> _passiveBuffs;
+    private Dictionary<int, BuffPassiveBuffTemplate> _buffPassiveBuffs;
     private Dictionary<uint, EffectType> _types;
     private Dictionary<string, Dictionary<uint, EffectTemplate>> _effects;
     private Dictionary<uint, BuffTemplate> _buffs;
@@ -278,9 +281,11 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
 
         _skills = new Dictionary<uint, SkillTemplate>();
         _defaultSkills = new Dictionary<uint, DefaultSkill>();
+        _characterDefaultSkills = new Dictionary<int, List<CharacterDefaultSkill>>();
         _commonSkills = [];
         _startAbilitySkills = new Dictionary<AbilityType, List<SkillTemplate>>();
         _passiveBuffs = new Dictionary<uint, PassiveBuffTemplate>();
+        _buffPassiveBuffs = new Dictionary<int, BuffPassiveBuffTemplate>();
         _types = new Dictionary<uint, EffectType>();
         _effects = new Dictionary<string, Dictionary<uint, EffectTemplate>>();
         _dynamicEffects = new DynamicEffects();
@@ -440,22 +445,19 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         template.DefaultGcd = reader.GetBoolean("default_gcd", true);
                         template.KeepManaRegen = reader.GetBoolean("keep_mana_regen", true);
                         template.CrimePoint = reader.GetInt32("crime_point");
-                        template.LevelRuleNoConsideration =
-                            reader.GetBoolean("level_rule_no_consideration", true);
+                        template.LevelRuleNoConsideration = reader.GetBoolean("level_rule_no_consideration", true);
                         template.UseWeaponCooldownTime = reader.GetBoolean("use_weapon_cooldown_time", true);
                         template.CombatDiceId = reader.GetInt32("combat_dice_id");
                         template.CustomGcd = reader.GetInt32("custom_gcd");
                         template.CancelOngoingBuffs = reader.GetBoolean("cancel_ongoing_buffs", true);
                         template.CancelOngoingBuffExceptionTagId = reader.GetUInt32("cancel_ongoing_buff_exception_tag_id", 0);
-                        template.SourceCannotUseWhileWalk =
-                            reader.GetBoolean("source_cannot_use_while_walk", true);
+                        template.SourceCannotUseWhileWalk = reader.GetBoolean("source_cannot_use_while_walk", true);
                         template.SourceMountMate = reader.GetBoolean("source_mount_mate", true);
                         template.CheckTerrain = reader.GetBoolean("check_terrain", true);
                         template.TargetOnlyWater = reader.GetBoolean("target_only_water", true);
                         template.SourceNotSwim = reader.GetBoolean("source_not_swim", true);
                         template.TargetPreoccupied = reader.GetBoolean("target_preoccupied", true);
-                        template.StopChannelingOnStartSkill =
-                            reader.GetBoolean("stop_channeling_on_start_skill", true);
+                        template.StopChannelingOnStartSkill = reader.GetBoolean("stop_channeling_on_start_skill", true);
                         template.StopCastingByTurn = reader.GetBoolean("stop_casting_by_turn", true);
                         template.TargetMyNpc = reader.GetBoolean("target_my_npc", true);
                         template.GainLifePoint = reader.GetInt32("gain_life_point");
@@ -467,6 +469,73 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         template.SkillPoints = reader.GetInt32("skill_points");
                         template.DoodadHitFamily = reader.GetInt32("doodad_hit_family");
                         template.FirstReagentOnly = reader.GetBoolean("first_reagent_only", true);
+                        // added in 5.0.7.0
+                        template.AccountCooldown = reader.GetBoolean("account_cooldown");
+                        template.AutoFire = reader.GetBoolean("auto_fire");
+                        template.AutoReuse = reader.GetBoolean("auto_reuse");
+                        template.AutoReuseDelay = reader.GetInt32("auto_reuse_delay");
+                        template.CalcUserLevel = reader.GetBoolean("calc_user_level");
+                        template.CameraAcceleration = reader.GetFloat("camera_acceleration");
+                        template.CameraDuration = reader.GetFloat("camera_duration");
+                        template.CameraHoldZ = reader.GetBoolean("camera_hold_z");
+                        template.CameraMaxDistance = reader.GetFloat("camera_max_distance");
+                        template.CameraSlowDownDistance = reader.GetFloat("camera_slow_down_distance");
+                        template.CameraSpeed = reader.GetFloat("camera_speed");
+                        template.CanActiveWeaponWithoutAnim = reader.GetBoolean("can_active_weapon_without_anim");
+                        template.CastingUseable = reader.GetBoolean("casting_useable");
+                        template.CategoryId = reader.GetInt32("category_id");
+                        template.ChannelingAnimId = reader.GetInt32("channeling_anim_id");
+                        template.CharRaceId = reader.GetInt32("char_race_id");
+                        template.CheckObstacle = reader.GetBoolean("check_obstacle");
+                        template.ConsumeLp = reader.GetInt32("consume_lp");
+                        template.ControllerCamera = reader.GetBoolean("controller_camera");
+                        template.ControllerCameraSpeed = reader.GetInt32("controller_camera_speed");
+                        template.Desc = reader.GetString("desc");
+                        template.DoodadBundleId = reader.GetInt32("doodad_bundle_id");
+                        template.DualWieldFireAnimId = reader.GetInt32("dual_wield_fire_anim_id");
+                        template.FxGroupId = reader.GetInt32("fx_group_id");
+                        template.HighAbilityId = reader.GetInt32("high_ability_id");
+                        template.IconId = reader.GetInt32("icon_id");
+//                        template.LinkBackpackTypeId = reader.GetInt32("link_backpack_type_id");
+                        template.LinkEquipSlotId = reader.GetInt32("link_equip_slot_id");
+                        template.MatchAnimationCount = reader.GetBoolean("match_animation_count");
+                        template.MaxHighAbilityResource = reader.GetInt32("max_high_ability_resource");
+                        template.MinHighAbilityResource = reader.GetInt32("min_high_ability_resource");
+                        template.Name = reader.GetString("name");
+                        template.PercussionInstrumentFireAnimId = reader.GetInt32("percussion_instrument_fire_anim_id");
+                        template.PercussionInstrumentStartAnimId = reader.GetInt32("percussion_instrument_start_anim_id");
+                        template.PitchAngle = reader.GetFloat("pitch_angle");
+                        template.PlotId = reader.GetInt32("plot_id");
+                        template.ProjectileId = reader.GetInt32("projectile_id");
+                        template.SecondCooldownTagId = reader.GetInt32("second_cooldown_tag_id");
+                        template.SensitiveOperation = reader.GetBoolean("sensitive_operation");
+                        template.ShowTargetCastingTime = reader.GetBoolean("show_target_casting_time");
+                        template.SkipQuestApplyUseItem = reader.GetBoolean("skip_quest_apply_use_item");
+                        template.SkipValidateSource = reader.GetBoolean("skip_validate_source");
+                        template.SourceAlive = reader.GetBoolean("source_alive");
+                        template.SourceShouldSwim = reader.GetBoolean("source_should_swim");
+                        template.StartAnimId = reader.GetInt32("start_anim_id");
+                        template.StartAutoattack = reader.GetBoolean("start_autoattack");
+                        template.StopAutoattack = reader.GetBoolean("stop_autoattack");
+                        template.StringInstrumentFireAnimId = reader.GetInt32("string_instrument_fire_anim_id");
+                        template.StringInstrumentStartAnimId = reader.GetInt32("string_instrument_start_anim_id");
+                        template.SwitchToSkillCooldown = reader.GetBoolean("switch_to_skill_cooldown");
+                        template.SynergyIcon1Buffkind = reader.GetBoolean("synergy_icon1_buffkind");
+                        template.SynergyIcon1Id = reader.GetInt32("synergy_icon1_id");
+                        template.SynergyIcon2Buffkind = reader.GetBoolean("synergy_icon2_buffkind");
+                        template.SynergyIcon2Id = reader.GetInt32("synergy_icon2_id");
+                        template.TargetDecalRadius = reader.GetInt32("target_decal_radius");
+                        template.TargetRelationId = reader.GetInt32("target_relation_id");
+                        template.TargetSelectionId = reader.GetInt32("target_selection_id");
+                        template.TargetTypeId = reader.GetInt32("target_type_id");
+                        template.ThirdCooldownTagId = reader.GetInt32("third_cooldown_tag_id");
+                        template.TubeInstrumentFireAnimId = reader.GetInt32("tube_instrument_fire_anim_id");
+                        template.TubeInstrumentStartAnimId = reader.GetInt32("tube_instrument_start_anim_id");
+                        template.TwohandFireAnimId = reader.GetInt32("twohand_fire_anim_id");
+                        template.UseSkillCamera = reader.GetBoolean("use_skill_camera");
+                        template.ValidHeightEdgeToEdge = reader.GetBoolean("valid_height_edge_to_edge");
+                        template.WeaponSlotForAutoattackId = reader.GetInt32("weapon_slot_for_autoattack_id");
+
                         _skills.Add(template.Id, template);
                     }
                 }
@@ -488,12 +557,38 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         {
                             Template = _skills[id],
                             Slot = reader.GetByte("slot_index"),
-                            AddToSlot = reader.GetBoolean("add_to_slot", true)
+                            AddToSlot = reader.GetBoolean("add_to_slot", true),
+                            // added in 5.0.7.0
+                            SkillActiveTypeId = reader.GetInt32("skill_active_type_id"),
+                            SkillBookCategoryId = reader.GetInt32("skill_book_category_id"),
+                            SkillId = reader.GetInt32("skill_id"),
                         };
                         _defaultSkills.TryAdd(skill.Template.Id, skill);
                     }
                 }
             }
+
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM character_default_skills";
+                command.Prepare();
+                using (var sqliteReader = command.ExecuteReader())
+                using (var reader = new SQLiteWrapperReader(sqliteReader))
+                {
+                    while (reader.Read())
+                    {
+                        var characterDefaultSkill = new CharacterDefaultSkill();
+                        characterDefaultSkill.CharacterId = reader.GetInt32("character_id");
+                        characterDefaultSkill.DefaultSkillId = reader.GetInt32("default_skill_id");
+
+                        if (!_characterDefaultSkills.ContainsKey(characterDefaultSkill.CharacterId))
+                            _characterDefaultSkills[characterDefaultSkill.CharacterId] = new List<CharacterDefaultSkill>();
+                        _characterDefaultSkills[characterDefaultSkill.CharacterId].Add(characterDefaultSkill);
+                    }
+                }
+            }
+
+            Logger.Info("Loading skill effects/buffs...");
 
             using (var command = connection.CreateCommand())
             {
@@ -511,14 +606,35 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                             Level = reader.GetByte("level"),
                             BuffId = reader.GetUInt32("buff_id"),
                             ReqPoints = reader.GetInt32("req_points"),
-                            Active = reader.GetBoolean("active", true)
+                            Active = reader.GetBoolean("active", true),
+                            // added in 5.0.7.0
+                            HighAbilityId = reader.GetInt32("high_ability_id"),
+                            SkillPoints = reader.GetInt32("skill_points")
                         };
                         _passiveBuffs.Add(template.Id, template);
                     }
                 }
             }
 
-            Logger.Info("Loading skill effects/buffs...");
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM buff_passive_buffs";
+                command.Prepare();
+                using (var sqliteReader = command.ExecuteReader())
+                using (var reader = new SQLiteWrapperReader(sqliteReader))
+                {
+                    while (reader.Read())
+                    {
+                        var template = new BuffPassiveBuffTemplate
+                        {
+                            Id = reader.GetInt32("id"),
+                            BuffId = reader.GetInt32("buff_id"),
+                            PassiveBuffId = reader.GetInt32("passive_buff_id")
+                        };
+                        _buffPassiveBuffs.Add(template.Id, template);
+                    }
+                }
+            }
 
             using (var command = connection.CreateCommand())
             {
@@ -606,31 +722,6 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         template.GlidingRotateSpeed = reader.GetInt32("gliding_rotate_speed");
                         template.Knockdown = reader.GetBoolean("knock_down", true);
                         template.TickAreaExcludeSource = reader.GetBoolean("tick_area_exclude_source", true);
-                        // TODO 
-                        /*
-                            string_instrument_start_anim_id INT,
-                            percussion_instrument_start_anim_id INT,
-                            tube_instrument_start_anim_id INT,
-                            string_instrument_tick_anim_id INT,
-                            percussion_instrument_tick_anim_id INT,
-                            tube_instrument_tick_anim_id INT,
-                            gliding_startup_time REAL,
-                            gliding_startup_speed REAL,
-                            gliding_fall_speed_slow REAL,
-                            gliding_fall_speed_normal REAL,
-                            gliding_fall_speed_fast REAL,
-                            gliding_smooth_time REAL,
-                            gliding_lift_count INT,
-                            gliding_lift_height REAL,
-                            gliding_lift_valid_time REAL,
-                            gliding_lift_duration REAL,
-                            gliding_lift_speed REAL,
-                            gliding_land_height REAL,
-                            gliding_sliding_time REAL,
-                            gliding_move_speed_slow REAL,
-                            gliding_move_speed_normal REAL,
-                            gliding_move_speed_fast REAL,
-                         */
                         template.FallDamageImmune = reader.GetBoolean("fall_damage_immune", true);
                         template.Kind = (BuffKind)reader.GetInt32("kind_id");
                         template.TransformBuffId = reader.GetUInt32("transform_buff_id", 0);
@@ -698,6 +789,89 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         template.FreezeShip = reader.GetBoolean("freeze_ship", true);
                         template.CrowdFriendly = reader.GetBoolean("crowd_friendly", true);
                         template.CrowdHostile = reader.GetBoolean("crowd_hostile", true);
+                        // added in 5.0.7.0
+                        template.AddDurationBuffMul = reader.GetInt32("add_duration_buff_mul");
+                        template.AddDurationBuffId = reader.GetInt32("add_duration_buff_id");
+                        template.AgStance = reader.GetString("ag_stance");
+                        template.AuraCreatorOnly = reader.GetBoolean("aura_creator_only");
+                        template.BalanceLevel = reader.GetInt32("balance_level");
+                        template.BossTelescopeRange = reader.GetFloat("boss_telescope_range");
+                        template.CannotJump = reader.GetBoolean("cannot_jump");
+                        template.CombatTextEnd = reader.GetBoolean("combat_text_end");
+                        template.CombatTextStart = reader.GetBoolean("combat_text_start");
+                        template.Crippled = reader.GetBoolean("crippled");
+                        template.CustomDualMaterialFadeTime = reader.GetFloat("custom_dual_material_fade_time");
+                        template.CustomDualMaterialId = reader.GetInt32("custom_dual_material_id");
+                        template.Desc = reader.GetString("desc");
+                        template.DisarmamentMainHand = reader.GetBoolean("disarmament_main_hand");
+                        template.DisarmamentMusical = reader.GetBoolean("disarmament_musical");
+                        template.DisarmamentOffHand = reader.GetBoolean("disarmament_off_hand");
+                        template.DisarmamentRanged = reader.GetBoolean("disarmament_ranged");
+//                        template.ExtraEffects = reader.GetString("extra_effects");
+                        template.FallDamageImmortality = reader.GetBoolean("fall_damage_immortality");
+                        template.FixAbilityLevelToOne = reader.GetBoolean("fix_ability_level_to_one");
+                        template.Framehold = reader.GetBoolean("framehold");
+                        template.FxGroupId = reader.GetInt32("fx_group_id");
+                        template.GlidingFallSpeedFast = reader.GetFloat("gliding_fall_speed_fast");
+                        template.GlidingFallSpeedNormal = reader.GetFloat("gliding_fall_speed_normal");
+                        template.GlidingFallSpeedSlow = reader.GetFloat("gliding_fall_speed_slow");
+                        template.GlidingLandHeight = reader.GetFloat("gliding_land_height");
+                        template.GlidingLiftCount = reader.GetInt32("gliding_lift_count");
+                        template.GlidingLiftDuration = reader.GetFloat("gliding_lift_duration");
+                        template.GlidingLiftHeight = reader.GetFloat("gliding_lift_height");
+                        template.GlidingLiftSpeed = reader.GetFloat("gliding_lift_speed");
+                        template.GlidingLiftValidTime = reader.GetFloat("gliding_lift_valid_time");
+                        template.GlidingMoveSpeedFast = reader.GetFloat("gliding_move_speed_fast");
+                        template.GlidingMoveSpeedNormal = reader.GetFloat("gliding_move_speed_normal");
+                        template.GlidingMoveSpeedSlow = reader.GetFloat("gliding_move_speed_slow");
+                        template.GlidingSlidingTime = reader.GetFloat("gliding_sliding_time");
+                        template.GlidingSmoothTime = reader.GetFloat("gliding_smooth_time");
+                        template.GlidingStartupSpeed = reader.GetFloat("gliding_startup_speed");
+                        template.GlidingStartupTime = reader.GetFloat("gliding_startup_time");
+                        template.HeadScale = reader.GetFloat("head_scale");
+                        template.IconId = reader.GetInt32("icon_id");
+                        template.IdleAnim = reader.GetString("idle_anim");
+                        template.ImmuneExceptCreatorRelationId = reader.GetInt32("immune_except_creator_relation_id");
+                        template.ImmuneExceptCreatorRelationCheck = reader.GetBoolean("immune_except_creator_relation_check");
+                        template.ImmuneHealth = reader.GetFloat("immune_health");
+                        template.ImpossibleChangeTargeting = reader.GetBoolean("impossible_change_targeting");
+                        template.ImpossibleRotate = reader.GetBoolean("impossible_rotate");
+                        template.ImpossibleTargeting = reader.GetBoolean("impossible_targeting");
+                        template.KindId = reader.GetInt32("kind_id");
+                        template.KnockDown = reader.GetBoolean("knock_down");
+                        template.MaxHighAbilityResource = reader.GetInt32("max_high_ability_resource");
+                        template.MaxLifeTime = reader.GetInt32("max_life_time");
+                        template.MeleeImmortality = reader.GetBoolean("melee_immortality");
+                        template.MinHighAbilityResource = reader.GetInt32("min_high_ability_resource");
+                        template.Name = reader.GetString("name");
+                        template.NoCollideRigid = reader.GetBoolean("no_collide_rigid");
+                        template.NoExpPenalty = reader.GetBoolean("no_exp_penalty");
+                        template.NotToMateRider = reader.GetBoolean("not_to_mate_rider");
+                        template.NotToSlaveRider = reader.GetBoolean("not_to_slave_rider");
+                        template.OffPassive = reader.GetBoolean("off_passive");
+                        template.OffPassiveExectionTagId = reader.GetInt32("off_passive_exection_tag_id");
+                        template.OneTimeImmortality = reader.GetBoolean("one_time_immortality");
+                        template.OnlyMyPet = reader.GetBoolean("only_my_pet");
+                        template.OnlyPetOwner = reader.GetBoolean("only_pet_owner");
+                        template.PercussionInstrumentStartAnimId = reader.GetInt32("percussion_instrument_start_anim_id");
+                        template.PercussionInstrumentTickAnimId = reader.GetInt32("percussion_instrument_tick_anim_id");
+                        template.RangedImmortality = reader.GetBoolean("ranged_immortality");
+                        template.RemoveOnAutoattack = reader.GetBoolean("remove_on_autoattack");
+                        template.RemoveOnUnbond = reader.GetBoolean("remove_on_unbond");
+                        template.RemoveOnUnmountAttachPointId = reader.GetInt32("remove_on_unmount_attach_point_id");
+                        template.RestrictActionbar = reader.GetBoolean("restrict_actionbar");
+                        template.SetHeadScale = reader.GetBoolean("set_head_scale");
+                        template.SiegeImmortality = reader.GetBoolean("siege_immortality");
+                        template.SpellImmortality = reader.GetBoolean("spell_immortality");
+                        template.StackRuleId = reader.GetInt32("stack_rule_id");
+                        template.StopOnlineLpRegen = reader.GetBoolean("stop_online_lp_regen");
+                        template.StringInstrumentStartAnimId = reader.GetInt32("string_instrument_start_anim_id");
+                        template.StringInstrumentTickAnimId = reader.GetInt32("string_instrument_tick_anim_id");
+                        template.TargetingRelationId = reader.GetInt32("targeting_relation_id");
+                        template.TargetingUseOriginSource = reader.GetBoolean("targeting_use_origin_source");
+                        template.TubeInstrumentStartAnimId = reader.GetInt32("tube_instrument_start_anim_id");
+                        template.TubeInstrumentTickAnimId = reader.GetInt32("tube_instrument_tick_anim_id");
+
                         // _effects["Buff"].Add(template.Id, template);
                         _buffs.Add(template.Id, template);
                     }
