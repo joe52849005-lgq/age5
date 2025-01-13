@@ -171,6 +171,7 @@ public class ChatManager : Singleton<ChatManager>
     {
         var zone = ZoneManager.Instance.GetZoneByKey(zoneKey);
         var zoneGroupId = zone?.GroupId ?? 0;
+        Logger.Info($"GetZoneChat - zoneKey:zoneGroupId={zoneKey}:{zoneGroupId}");
 
         // create it if it's not there
         if (!_zoneChannels.ContainsKey(zoneGroupId))

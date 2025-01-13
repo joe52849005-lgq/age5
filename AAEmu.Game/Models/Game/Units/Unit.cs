@@ -27,6 +27,7 @@ using AAEmu.Game.Models.Game.Static;
 using AAEmu.Game.Models.Game.Units.Route;
 using AAEmu.Game.Models.Game.Units.Static;
 using AAEmu.Game.Models.Game.World;
+using AAEmu.Game.Models.Game.World.Transform;
 using AAEmu.Game.Models.StaticValues;
 using AAEmu.Game.Models.Tasks;
 using AAEmu.Game.Models.Tasks.Skills;
@@ -1411,10 +1412,16 @@ public class Unit : BaseUnit, IUnit
         if (this is Character player)
         {
             if (lastZoneGroupId != 0)
+            {
+                Logger.Info($"OnZoneChange - newZone={newZoneKey}:{newZoneGroupId}, lastZone={lastZoneKey}:{lastZoneGroupId}, Transform.ZoneId={Transform.ZoneId}");
                 ChatManager.Instance.GetZoneChat(lastZoneKey).LeaveChannel(player);
+            }
 
             if (newZoneGroupId != 0)
-                ChatManager.Instance.GetZoneChat(Transform.ZoneId).JoinChannel(player);
+            {
+                Logger.Info($"OnZoneChange - newZone={newZoneKey}:{newZoneGroupId}, lastZone={lastZoneKey}:{lastZoneGroupId}, Transform.ZoneId={Transform.ZoneId}");
+                ChatManager.Instance.GetZoneChat(newZoneKey).JoinChannel(player);
+            }
         }
     }
 }
