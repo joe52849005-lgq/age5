@@ -180,6 +180,15 @@ public class SkillTemplate
     public bool UseSkillCamera { get; set; }
     public bool ValidHeightEdgeToEdge { get; set; }
     public int WeaponSlotForAutoattackId { get; set; }
+    public int ChargeCooldownTime { get; set; }
+    public int ChargeCount { get; set; }
+    public bool IsDropableBackpack { get; set; }
+    public int PrecedenceSkillId { get; set; }
+    public int ReqPoints { get; set; }
+    public bool SourceCrippled { get; set; }
+    public bool SourceSilence { get; set; }
+    public bool SourceSleep { get; set; }
+    public int WeaponGcdId { get; set; }
 
     public List<SkillEffect> Effects { get; set; }
 

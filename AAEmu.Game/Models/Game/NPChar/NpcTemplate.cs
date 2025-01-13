@@ -128,6 +128,8 @@ public class NpcTemplate
     public bool TradegoodBuy { get; set; }
     public bool UseDdcmsMountSkill { get; set; }
     public bool UseModelCameraDistance { get; set; }
+    public int EquipClothsId { get; set; }
+    public int EquipWeaponsId { get; set; }
 
     public NpcTemplate()
     {

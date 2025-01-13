@@ -375,6 +375,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         template.CooldownTime = reader.GetUInt32("cooldown_time");
                         template.CastingTime = reader.GetInt32("casting_time");
                         template.IgnoreGlobalCooldown = reader.GetBoolean("ignore_global_cooldown", true);
+                        template.IsDropableBackpack = reader.GetBoolean("is_dropable_backpack");
                         template.EffectDelay = reader.GetInt32("effect_delay");
                         template.EffectSpeed = reader.GetFloat("effect_speed");
                         template.EffectRepeatCount = reader.GetInt32("effect_repeat_count");
@@ -407,6 +408,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         template.SkillControllerId = value.Contains("null") ? 0 : uint.Parse(value);
                         template.RepeatCount = reader.GetInt32("repeat_count");
                         template.RepeatTick = reader.GetInt32("repeat_tick");
+                        template.ReqPoints = reader.GetInt32("req_points");
                         template.ToggleBuffId = reader.GetUInt32("toggle_buff_id", 0);
                         template.TargetDead = reader.GetBoolean("target_dead", true);
                         template.ChannelingBuffId = reader.GetUInt32("channeling_buff_id", 0);
@@ -456,6 +458,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         template.CancelOngoingBuffs = reader.GetBoolean("cancel_ongoing_buffs", true);
                         template.CancelOngoingBuffExceptionTagId = reader.GetUInt32("cancel_ongoing_buff_exception_tag_id", 0);
                         template.SourceCannotUseWhileWalk = reader.GetBoolean("source_cannot_use_while_walk", true);
+                        template.SourceCrippled = reader.GetBoolean("source_crippled");
                         template.SourceMountMate = reader.GetBoolean("source_mount_mate", true);
                         template.CheckTerrain = reader.GetBoolean("check_terrain", true);
                         template.TargetOnlyWater = reader.GetBoolean("target_only_water", true);
@@ -490,6 +493,8 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         template.CategoryId = reader.GetInt32("category_id");
                         template.ChannelingAnimId = reader.GetInt32("channeling_anim_id");
                         template.CharRaceId = reader.GetInt32("char_race_id");
+                        template.ChargeCooldownTime = reader.GetInt32("charge_cooldown_time");
+                        template.ChargeCount = reader.GetInt32("charge_count");
                         template.CheckObstacle = reader.GetBoolean("check_obstacle");
                         template.ConsumeLp = reader.GetInt32("consume_lp");
                         template.ControllerCamera = reader.GetBoolean("controller_camera");
@@ -510,6 +515,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         template.PercussionInstrumentStartAnimId = reader.GetInt32("percussion_instrument_start_anim_id");
                         template.PitchAngle = reader.GetFloat("pitch_angle");
                         template.PlotId = reader.GetInt32("plot_id");
+                        template.PrecedenceSkillId = reader.GetInt32("precedence_skill_id");
                         template.ProjectileId = reader.GetInt32("projectile_id");
                         template.SecondCooldownTagId = reader.GetInt32("second_cooldown_tag_id");
                         template.SensitiveOperation = reader.GetBoolean("sensitive_operation");
@@ -518,6 +524,8 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         template.SkipValidateSource = reader.GetBoolean("skip_validate_source");
                         template.SourceAlive = reader.GetBoolean("source_alive");
                         template.SourceShouldSwim = reader.GetBoolean("source_should_swim");
+                        template.SourceSilence = reader.GetBoolean("source_silence");
+                        template.SourceSleep = reader.GetBoolean("source_sleep");
                         template.StartAnimId = reader.GetInt32("start_anim_id");
                         template.StartAutoattack = reader.GetBoolean("start_autoattack");
                         template.StopAutoattack = reader.GetBoolean("stop_autoattack");
@@ -538,6 +546,7 @@ public class SkillManager : Singleton<SkillManager>, ISkillManager
                         template.TwohandFireAnimId = reader.GetInt32("twohand_fire_anim_id");
                         template.UseSkillCamera = reader.GetBoolean("use_skill_camera");
                         template.ValidHeightEdgeToEdge = reader.GetBoolean("valid_height_edge_to_edge");
+                        template.WeaponGcdId = reader.GetInt32("weapon_gcd_id");
                         template.WeaponSlotForAutoattackId = reader.GetInt32("weapon_slot_for_autoattack_id");
 
                         _skills.Add(template.Id, template);

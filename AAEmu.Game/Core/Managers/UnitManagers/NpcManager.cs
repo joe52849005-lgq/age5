@@ -22,8 +22,6 @@ using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Models.StaticValues;
 using AAEmu.Game.Utils.DB;
 
-using Microsoft.Data.Sqlite;
-
 using NLog;
 
 namespace AAEmu.Game.Core.Managers.UnitManagers;
@@ -616,6 +614,8 @@ public class NpcManager : Singleton<NpcManager>
                         template.MateEquipSlotPackId = reader.GetInt32("mate_equip_slot_pack_id", 0);
                         template.MateKindId = reader.GetInt32("mate_kind_id", 0);
                         template.EngageCombatGiveQuestId = reader.GetUInt32("engage_combat_give_quest_id", 0);
+                        template.EquipClothsId = reader.GetInt32("equip_cloths_id");
+                        template.EquipWeaponsId = reader.GetInt32("equip_weapons_id");
                         template.NoApplyTotalCustom = reader.GetBoolean("no_apply_total_custom", true);
                         template.BaseSkillStrafe = reader.GetBoolean("base_skill_strafe", true);
                         template.BaseSkillDelay = reader.GetFloat("base_skill_delay");
