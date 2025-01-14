@@ -823,7 +823,7 @@ public class Unit : BaseUnit, IUnit
 
     // TODO: Implement this to grab actual loot info
     public virtual bool HasLootLeft { get; set; } = false;
-    public virtual ModelPostureType ModelPostureType { get => ModelPostureType.None; }
+    public virtual ModelPostureType ModelPostureType { get; set; }
     public Gimmick Gimmick { get; set; }
 
     public virtual void OnSkillEnd(Skill skill)

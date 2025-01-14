@@ -31,7 +31,7 @@ public class Slave : Unit
 {
     public override UnitTypeFlag TypeFlag { get; } = UnitTypeFlag.Slave;
     public override BaseUnitType BaseUnitType => BaseUnitType.Slave;
-    public override ModelPostureType ModelPostureType { get => ModelPostureType.TurretState; }
+    public override ModelPostureType ModelPostureType { get => ModelPostureType.None; }
     //public uint Id { get; set; } // moved to BaseUnit
     //public uint TemplateId { get; set; } // moved to BaseUnit
     public uint BondingObjId { get; set; } = 0;

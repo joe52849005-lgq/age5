@@ -40,7 +40,13 @@ public class SCUnitStatePacket : GamePacket
                 break;
             case Slave:
                 _baseUnitType = BaseUnitType.Slave;
-                _modelPostureType = ModelPostureType.TurretState; // was TurretState = 8
+                _modelPostureType = ModelPostureType.None; // was TurretState = 8
+                unit.ModelPostureType = _unit switch
+                {
+                    Slave when _unit.ModelId == 895 => ModelPostureType.TurretState, // Harpoon
+                    Slave => ModelPostureType.None, // Ship
+                };
+
                 break;
             case House:
                 _baseUnitType = BaseUnitType.Housing;
@@ -293,9 +299,11 @@ public class SCUnitStatePacket : GamePacket
 
                     stream.Write((byte)skills.Count);    // learnedSkillCount
                     if (skills.Count > 0)
-                        Logger.Trace($"Warning! npc.Template.Skills.Count = {skills.Count}");
+                        Logger.Trace($"Warning! npc.Skills.Count = {skills.Count}");
 
                     stream.Write((byte)npc.Template.PassiveBuffs.Count); // passiveBuffCount
+                    if (npc.Template.PassiveBuffs.Count > 0)
+                        Logger.Trace($"Warning! npc.PassiveBuffs.Count = {npc.Template.PassiveBuffs.Count}");
 
                     stream.Write(npc.HighAbilityRsc); // highAbilityRsc
                     stream.Write(0u);                 // type, add 5070
@@ -308,7 +316,24 @@ public class SCUnitStatePacket : GamePacket
                     stream.WritePiscW(arrSkills.Length, arrSkills);
 
                     var arrBuffs = npc.Template.PassiveBuffs
-                        .Select(buff => (long)buff.Id)
+                        .Select(buff => (long)buff.PassiveBuffId)
+                        .ToArray();
+                    stream.WritePiscW(arrBuffs.Length, arrBuffs);
+
+                    break;
+                }
+            case Slave slave:
+                {
+                    stream.Write((byte)0); // learnedSkillCount
+                    stream.Write((byte)slave.Template.PassiveBuffs.Count); // passiveBuffCount
+
+                    stream.Write(slave.HighAbilityRsc); // highAbilityRsc
+                    stream.Write(0u);                   // type, add 5070
+                    stream.Write(0);                    // appellationStampId, add 5070
+                    stream.Write(0u);                   // vechicleDyeing, add 5070
+
+                    var arrBuffs = slave.Template.PassiveBuffs
+                        .Select(buff => (long)buff.PassiveBuffId)
                         .ToArray();
                     stream.WritePiscW(arrBuffs.Length, arrBuffs);
 
