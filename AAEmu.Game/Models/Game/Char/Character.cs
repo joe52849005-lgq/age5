@@ -1649,7 +1649,7 @@ public partial class Character : Unit, ICharacter
         SendPacket(new SCChatMessagePacket(type, message));
     }
 
-    public void SendMessage(string message) => SendMessage(ChatType.General, message, null);
+    public void SendMessage(string message) => SendMessage(ChatType.System2, message, null);
 
     public void SendErrorMessage(ErrorMessageType errorMsgType, uint type = 0, bool isNotify = true)
     {

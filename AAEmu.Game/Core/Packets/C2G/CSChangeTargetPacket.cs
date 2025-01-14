@@ -19,7 +19,7 @@ public class CSChangeTargetPacket : GamePacket
         var targetId = stream.ReadBc();
         if (targetId == 0)
         {
-            Connection.ActiveChar.SendMessage("Selected nothing");
+            //Connection.ActiveChar.SendMessage("Selected nothing");
             return;
         }
         var target = WorldManager.Instance.GetUnit(targetId);
