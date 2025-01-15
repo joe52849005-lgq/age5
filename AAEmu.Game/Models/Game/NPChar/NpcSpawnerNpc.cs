@@ -11,11 +11,10 @@ using NLog;
 
 namespace AAEmu.Game.Models.Game.NPChar;
 
-public class NpcSpawnerNpc
+public class NpcSpawnerNpc : Spawner<Npc>
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public uint Id { get; set; }     // index
     public uint NpcSpawnerTemplateId { get; set; } // spawner template id
     public uint MemberId { get; set; } // npc template id
     public string MemberType { get; set; } // 'Npc'
