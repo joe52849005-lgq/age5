@@ -181,7 +181,7 @@ public class Gimmick : Unit
         // var skill = new Skill(SkillManager.Instance.GetSkillTemplate(skillId));
         // var skillResult = skill.Use(caster, skillCaster, skillCastTarget, null, true, out _);
 
-        BroadcastPacket(new SCChatMessagePacket(ChatType.General, $"Gimmick {ObjId} used skill {skillId}"), false);
+        BroadcastPacket(new SCChatMessagePacket(ChatType.System, $"Gimmick {ObjId} used skill {skillId}"), false);
     }
 
     public void GimmickTick(TimeSpan delta)

@@ -89,7 +89,7 @@ public class EnterWorldManager : Singleton<EnterWorldManager>
                     
                     // Say goodbye if player is quitting (but not going to character select)
                     if (type == 0)
-                        connection.ActiveChar?.SendMessage(ChatType.General, AppConfiguration.Instance.World.LogoutMessage);
+                        connection.ActiveChar?.SendMessage(ChatType.System, AppConfiguration.Instance.World.LogoutMessage);
 
                     int logoutTime = 10000; // in ms
 

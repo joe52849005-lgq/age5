@@ -68,6 +68,6 @@ public class ItemCapScaleReset : SpecialEffectAction
 
         owner.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.EnchantPhysical, new List<ItemTask>() { new ItemUpdate(equipItem) }, new List<ulong>()));
         // No indication ingame that the item's tempering has been successfully resetted 
-        owner.SendMessage(ChatType.General, "Tempering reset");
+        owner.SendMessage(ChatType.System, "Tempering reset");
     }
 }

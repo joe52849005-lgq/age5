@@ -980,7 +980,7 @@ public partial class Npc : Unit
         // {
         //     player = (Character)unit;
         // }
-        // player?.SendMessage(ChatType.General, $"AddUnitAggro {player.Name} + {amount} for {this.ObjId}");
+        // player?.SendMessage(ChatType.System, $"AddUnitAggro {player.Name} + {amount} for {this.ObjId}");
 
         // check self buff tags
         if (Buffs.CheckBuffTag((uint)TagsEnum.NoFight) || Buffs.CheckBuffTag((uint)TagsEnum.Returning))

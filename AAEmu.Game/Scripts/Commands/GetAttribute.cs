@@ -58,7 +58,7 @@ public class GetAttribute : ICommand
             foreach (var attr in Enum.GetValues(typeof(UnitAttribute)))
             {
                 var value = target.GetAttribute((UnitAttribute)attr);
-                character.SendPacket(new SCChatMessagePacket(ChatType.General, $"{(UnitAttribute)attr}: {value}"));
+                character.SendPacket(new SCChatMessagePacket(ChatType.System, $"{(UnitAttribute)attr}: {value}"));
             }
         }
         else if (args[argsIdx].ToLower() == "used")
@@ -75,7 +75,7 @@ public class GetAttribute : ICommand
 
                 if (!hide)
                 {
-                    character.SendPacket(new SCChatMessagePacket(ChatType.General, $"{(UnitAttribute)attr}: {value}"));
+                    character.SendPacket(new SCChatMessagePacket(ChatType.System, $"{(UnitAttribute)attr}: {value}"));
                 }
             }
         }
@@ -84,11 +84,11 @@ public class GetAttribute : ICommand
             if (Enum.IsDefined(typeof(UnitAttribute), attrId))
             {
                 var value = target.GetAttribute(attrId);
-                character.SendPacket(new SCChatMessagePacket(ChatType.General, $"{(UnitAttribute)attrId}: {value}"));
+                character.SendPacket(new SCChatMessagePacket(ChatType.System, $"{(UnitAttribute)attrId}: {value}"));
             }
             else
             {
-                character.SendPacket(new SCChatMessagePacket(ChatType.General, $"Attribute doesn't exist."));
+                character.SendPacket(new SCChatMessagePacket(ChatType.System, $"Attribute doesn't exist."));
             }
         }
         else
@@ -96,11 +96,11 @@ public class GetAttribute : ICommand
             if (Enum.TryParse(typeof(UnitAttribute), args[argsIdx], true, out var attr))
             {
                 var value = target.GetAttribute((UnitAttribute)attr);
-                character.SendPacket(new SCChatMessagePacket(ChatType.General, $"{(UnitAttribute)attr}: {value}"));
+                character.SendPacket(new SCChatMessagePacket(ChatType.System, $"{(UnitAttribute)attr}: {value}"));
             }
             else
             {
-                character.SendPacket(new SCChatMessagePacket(ChatType.General, $"Attribute doesn't exist."));
+                character.SendPacket(new SCChatMessagePacket(ChatType.System, $"Attribute doesn't exist."));
             }
         }
     }

@@ -434,7 +434,7 @@ public class CharacterManager : Singleton<CharacterManager>
     public static void PlayerRoll(Character player, int max)
     {
         var roll = Rand.Next(1, max);
-        player.BroadcastPacket(new SCChatMessagePacket(ChatType.General, $"{player.Name} rolled {roll}."), true);
+        player.BroadcastPacket(new SCChatMessagePacket(ChatType.System, $"{player.Name} rolled {roll}."), true);
     }
 
     public int GetEffectiveAccessLevel(Character character)

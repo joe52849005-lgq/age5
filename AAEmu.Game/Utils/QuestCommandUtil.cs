@@ -267,7 +267,7 @@ public class QuestCommandUtil
                     var questTemplate = QuestManager.Instance.GetTemplate(questVal);
                     if (questTemplate == null)
                     {
-                        character.SendMessage(ChatType.General, $"[Quest] No such quest {questVal}", Color.Red);
+                        character.SendMessage(ChatType.System, $"[Quest] No such quest {questVal}", Color.Red);
                         break;
                     }
 

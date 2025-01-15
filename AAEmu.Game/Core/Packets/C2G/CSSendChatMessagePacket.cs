@@ -95,21 +95,21 @@ public class CSSendChatMessagePacket : GamePacket
                 {
                     var packet = new SCChatMessagePacket(ChatType.Whisper, Connection.ActiveChar, message, ability, languageType);
                     target.SendPacket(packet);
-                    var packet_me = new SCChatMessagePacket(ChatType.WhisperReply, target, message, ability, languageType);
+                    var packet_me = new SCChatMessagePacket(ChatType.Whispered, target, message, ability, languageType);
                     Connection.SendPacket(packet_me);
                 }
                 break;
-            case ChatType.General: //say
+            case ChatType.White: //say
                 Connection.ActiveChar.BroadcastPacket(
                     new SCChatMessagePacket(type, Connection.ActiveChar, message, ability, languageType), true);
                 break;
-            case ChatType.Command:
+            case ChatType.RaidLeader:
             case ChatType.Raid:
                 var teamRaid = TeamManager.Instance.GetActiveTeamByUnit(Connection.ActiveChar.Id);
 
                 if (teamRaid != null)
                 {
-                    if ((type == ChatType.Command) && (teamRaid.OwnerId != Connection.ActiveChar.Id))
+                    if ((type == ChatType.RaidLeader) && (teamRaid.OwnerId != Connection.ActiveChar.Id))
                     {
                         Connection.ActiveChar.SendErrorMessage(ErrorMessageType.ChatNotRaidOwner);
                     }
@@ -123,7 +123,7 @@ public class CSSendChatMessagePacket : GamePacket
                     Connection.ActiveChar.SendErrorMessage(ErrorMessageType.ChatNotInRaid);
                 }
                 break;
-            case ChatType.Parties:
+            case ChatType.Party:
                 var partyRaid = TeamManager.Instance.GetActiveTeamByUnit(Connection.ActiveChar.Id);
                 if (partyRaid != null)
                 {
@@ -134,15 +134,15 @@ public class CSSendChatMessagePacket : GamePacket
                     Connection.ActiveChar.SendErrorMessage(ErrorMessageType.ChatNotInParty);
                 }
                 break;
-            case ChatType.Transactions: //trade
-            case ChatType.FindAParty: //lfg
+            case ChatType.Trade: //trade
+            case ChatType.GroupFind: //lfg
             case ChatType.Shout: //shout
                 // We use SendPacket here so we can fake our way through the different channel types
                 ChatManager.Instance.GetZoneChat(Connection.ActiveChar.Transform.ZoneId).SendPacket(
                     new SCChatMessagePacket(type, Connection.ActiveChar, message, ability, languageType)
                     );
                 break;
-            case ChatType.Expeditions:
+            case ChatType.Clan:
                 if (Connection.ActiveChar.Expedition != null)
                 {
                     ChatManager.Instance.GetGuildChat(Connection.ActiveChar.Expedition).SendMessage(Connection.ActiveChar, message, ability, languageType);
@@ -172,10 +172,10 @@ public class CSSendChatMessagePacket : GamePacket
                 );
             break;
             */
-            case ChatType.Forces: //nation (birth place/race, includes pirates etc)
+            case ChatType.Region: //nation (birth place/race, includes pirates etc)
                 ChatManager.Instance.GetNationChat(Connection.ActiveChar.Race).SendMessage(Connection.ActiveChar, message, ability, languageType);
                 break;
-            case ChatType.Races: //faction (by current allegiance)
+            case ChatType.Ally: //faction (by current allegiance)
                 ChatManager.Instance.GetFactionChat(Connection.ActiveChar.Faction.MotherId).SendMessage(Connection.ActiveChar, message, ability, languageType);
                 break;
             default:
