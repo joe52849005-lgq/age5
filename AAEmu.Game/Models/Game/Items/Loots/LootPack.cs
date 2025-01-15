@@ -78,7 +78,7 @@ public class LootPack
 
                 Logger.Debug($"Rolling loot with pack {Id}, GroupNo {gIdx} rolled {dice}/{lootGroup.DropRate}");
 
-                if (lootGroup.DropRate > 1 && dice > lootGroup.DropRate)
+                if (lootGroup.DropRate > 0 && dice > lootGroup.DropRate)
                     continue;
             }
 
@@ -187,7 +187,7 @@ public class LootPack
         {
             var group = Groups.Values.FirstOrDefault(g => g.GroupNo == groupNo);
             // If group is defined, use it's DropRate for calculations 
-            var groupRate = group is { DropRate: > 1 } ? group.DropRate / 100_000f : 1f;
+            var groupRate = group is { DropRate: > 0 } ? group.DropRate / 100_000f : 1f;
 
             var selectedItemsByGroup = new Dictionary<uint, List<Loot>>();
 
@@ -232,7 +232,7 @@ public class LootPack
                     continue;
                 }
 
-                var itemRate = loot.DropRate > 1 ? loot.DropRate / 10_000_000f : 1f;
+                var itemRate = loot.DropRate > 0 ? loot.DropRate / 10_000_000f : 1f;
                 var requiresDice = (long)Math.Floor(10_000_000f * groupRate * itemRate * lootDropRate);
                 var dice = (long)Rand.Next(0, 10000000);
                 if (dice < requiresDice)
@@ -352,7 +352,7 @@ public class LootPack
 
                 Logger.Debug($"Rolling loot with pack {Id}, GroupNo {gIdx} rolled {dice}/{lootGroup.DropRate}");
 
-                if (lootGroup.DropRate > 1 && dice > lootGroup.DropRate)
+                if (lootGroup.DropRate > 0 && dice > lootGroup.DropRate)
                     continue;
             }
 
@@ -515,13 +515,16 @@ public class LootPack
         if (!canAdd)
             return false;
 
+        var coinCount = 0;
         // Distribute the items (and coins)
         foreach (var (itemTemplateId, count, grade, _) in generatedList)
         {
             if (itemTemplateId == (uint)ItemConstants.Coins)
             {
-                Logger.Debug("{Category} - {Character} got {Amount} from lootpack {Lootpack}");
-                character.AddMoney(SlotType.Bag, count, taskType);
+                //Logger.Debug("{Category} - {Character} got {Amount} from lootpack {Lootpack}");
+                //character.AddMoney(SlotType.Bag, count, taskType);
+                coinCount += count;
+                //Coins can drop from multiple groups on the same item, collating.
                 continue;
             }
 
@@ -534,6 +537,13 @@ public class LootPack
                 Logger.Error($"Unable to give loot to {character.Name} - ItemId: {itemTemplate} x {count} at grade {gradeToAdd} (loot grade {grade})");
                 return false;
             }
+        }
+
+        if (coinCount > 0)
+        {
+            //We have coins to give out.
+            // Logger.Debug("{Category} - {Character} got {Amount} from lootpack {Lootpack}");
+            character.AddMoney(SlotType.Bag, coinCount, taskType);
         }
 
         return true;
