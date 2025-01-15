@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 using System.Linq;
 using System.Numerics;
+using System.Threading;
+using System.Threading.Tasks;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game.AI.AStar;
@@ -181,10 +183,10 @@ public abstract class NpcAi
 
     private bool HasPersistentAi()
     {
-        return PathHandler.AiPathPoints.Count > 0 || 
-               PathHandler.AiPathPointsRemaining.Count > 0 || 
+        return PathHandler.AiPathPoints.Count > 0 ||
+               PathHandler.AiPathPointsRemaining.Count > 0 ||
                AiFollowUnitObj != null ||
-               AiCommandsQueue.Count > 0; 
+               AiCommandsQueue.Count > 0;
     }
 
     private void Transition(TransitionEvent on)
@@ -328,6 +330,37 @@ public abstract class NpcAi
         {
             foreach (var point in points)
             {
+                PathHandler.AiPathPointsRemaining.Enqueue(point);
+            }
+        }
+
+        return true;
+    }
+
+    public async Task<bool> LoadAiPathPointsAsync(string aiPathFileName, bool addToQueueOnly, CancellationToken cancellationToken = default)
+    {
+        // Загружаем точки пути асинхронно с поддержкой отмены
+        var points = await Task.Run(() => AiPathsManager.Instance.LoadAiPathPoints(aiPathFileName), cancellationToken);
+
+        // Проверяем отмену операции
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Если точек нет, возвращаем false
+        if (points.Count <= 0)
+            return false;
+
+        // Обрабатываем точки пути
+        if (!addToQueueOnly)
+        {
+            PathHandler.AiPathPoints.Clear();
+            PathHandler.AiPathLooping = true; // Устанавливаем в true для начальной загрузки
+            PathHandler.AiPathPoints.AddRange(points);
+        }
+        else
+        {
+            foreach (var point in points)
+            {
+                cancellationToken.ThrowIfCancellationRequested(); // Проверяем отмену перед добавлением
                 PathHandler.AiPathPointsRemaining.Enqueue(point);
             }
         }

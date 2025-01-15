@@ -33,6 +33,7 @@ public class NpcSpawner : Spawner<Npc>
     private int _spawnCount;
     private bool _isSpawnScheduled;
     private bool isNotFoundInScheduler;
+    private readonly object _spawnLock = new(); // Блокировка для потокобезопасности
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
     [DefaultValue(1f)]
@@ -101,17 +102,23 @@ public class NpcSpawner : Spawner<Npc>
         npc.UnregisterNpcEvents();
         npc.Delete();
 
-        if (npc.Respawn == DateTime.MinValue)
+        lock (_spawnLock) // Блокировка для потокобезопасности
         {
-            _spawned.TryTake(out _);
-            ObjectIdManager.Instance.ReleaseId(npc.ObjId);
-            Interlocked.Decrement(ref _spawnCount);
+            if (npc.Respawn == DateTime.MinValue)
+            {
+                _spawned.TryTake(out _);
+                ObjectIdManager.Instance.ReleaseId(npc.ObjId);
+                Interlocked.Decrement(ref _spawnCount);
+            }
+
+            if (_lastSpawn == null || _lastSpawn.ObjId == npc.ObjId)
+            {
+                _lastSpawn = _spawned.LastOrDefault();
+            }
         }
 
-        if (_lastSpawn == null || _lastSpawn.ObjId == npc.ObjId)
-        {
-            _lastSpawn = _spawned.LastOrDefault();
-        }
+        // Освобождаем ресурсы NPC
+        //npc.Dispose();
     }
 
     /// <summary>
@@ -600,18 +607,16 @@ public class NpcSpawner : Spawner<Npc>
     /// </summary>
     public void ClearSpawnCount()
     {
-        Interlocked.Exchange(ref _spawnCount, 0);
-        _spawned.Clear();
-        _lastSpawn = null;
-    }
-
-    /// <summary>
-    /// Checks if the spawner can spawn more NPCs.
-    /// </summary>
-    /// <returns>True if the spawner can spawn more NPCs, otherwise false.</returns>
-    public bool CanSpawn()
-    {
-        return _spawnCount < Template.MaxPopulation;
+        lock (_spawnLock) // Блокировка для потокобезопасности
+        {
+            //foreach (var npc in _spawned)
+            //{
+            //    npc.Dispose(); // Очистка ресурсов
+            //}
+            _spawned.Clear();
+            Interlocked.Exchange(ref _spawnCount, 0);
+            _lastSpawn = null;
+        }
     }
 
     /// <summary>

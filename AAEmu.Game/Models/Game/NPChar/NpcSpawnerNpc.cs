@@ -61,18 +61,17 @@ public class NpcSpawnerNpc : Spawner<Npc>
         var npc = await Task.Run(() => NpcManager.Instance.Create(0, MemberId));
         if (npc == null)
         {
-            Logger.Warn($"Npc {MemberId}, from spawner Id {npcSpawner.Id} not exist at db");
+            Logger.Warn($"Npc {MemberId}, from spawner Id {npcSpawner.Id} not exist at db. Spawner Position: {npcSpawner.Position}");
             return null;
         }
 
         npc.RegisterNpcEvents();
 
-        Logger.Trace($"Spawn npc templateId {MemberId} objId {npc.ObjId} from spawnerId {NpcSpawnerTemplateId}");
+        Logger.Trace($"Spawn npc templateId {MemberId} objId {npc.ObjId} from spawnerId {NpcSpawnerTemplateId} at Position: {npcSpawner.Position}");
 
         if (!npc.CanFly)
         {
-            // try to find Z first in GeoData, and then in HeightMaps, if not found, leave Z as it is
-            var newZ = await Task.Run(() => WorldManager.Instance.GetHeight(npcSpawner.Position.ZoneId, npcSpawner.Position.X, npcSpawner.Position.Y));
+            var newZ = await WorldManager.Instance.GetHeightAsync(npcSpawner.Position.ZoneId, npcSpawner.Position.X, npcSpawner.Position.Y);
             if (Math.Abs(npcSpawner.Position.Z - newZ) < 1f)
             {
                 npcSpawner.Position.Z = newZ;
@@ -82,7 +81,7 @@ public class NpcSpawnerNpc : Spawner<Npc>
         npc.Transform.ApplyWorldSpawnPosition(npcSpawner.Position);
         if (npc.Transform == null)
         {
-            Logger.Error($"Can't spawn npc {MemberId} from spawnerId {NpcSpawnerTemplateId}");
+            Logger.Error($"Can't spawn npc {MemberId} from spawnerId {NpcSpawnerTemplateId}. Transform is null.");
             return null;
         }
 
@@ -91,8 +90,8 @@ public class NpcSpawnerNpc : Spawner<Npc>
 
         if (npc.Ai != null)
         {
-            npc.Ai.HomePosition = npc.Transform.World.Position; // Original spawn location
-            npc.Ai.IdlePosition = npc.Ai.HomePosition; // Can be updated by paths, starts at spawn
+            npc.Ai.HomePosition = npc.Transform.World.Position;
+            npc.Ai.IdlePosition = npc.Ai.HomePosition;
             npc.Ai.GoToSpawn();
         }
 
@@ -100,8 +99,7 @@ public class NpcSpawnerNpc : Spawner<Npc>
         npc.Spawner.RespawnTime = (int)Rand.Next(npc.Spawner.Template.SpawnDelayMin, npc.Spawner.Template.SpawnDelayMax);
         npc.Spawn();
 
-        // check what's nearby
-        var aroundNpcs = await Task.Run(() => WorldManager.GetAround<Npc>(npc, 1)); // 15
+        var aroundNpcs = await WorldManager.GetAroundAsync<Npc>(npc, 1);
         var count = 0u;
         foreach (var n in aroundNpcs.Where(n => n.TemplateId == MemberId))
         {
@@ -114,14 +112,11 @@ public class NpcSpawnerNpc : Spawner<Npc>
 
         if (npc.Ai != null && !string.IsNullOrWhiteSpace(npcSpawner.FollowPath))
         {
-            if (!await Task.Run(() => npc.Ai.LoadAiPathPoints(npcSpawner.FollowPath, false)))
+            if (!await npc.Ai.LoadAiPathPointsAsync(npcSpawner.FollowPath, false))
                 Logger.Warn($"Failed to load {npcSpawner.FollowPath} for NPC {npc.TemplateId} ({npc.ObjId})");
         }
 
         npcs.Add(npc);
-
-        //Logger.Warn($"Spawned Npcs id={MemberId}, maxPopulation={maxPopulation}...");
-
         return npcs;
     }
 

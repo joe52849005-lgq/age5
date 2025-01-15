@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 
 using AAEmu.Commons.IO;
@@ -667,6 +669,37 @@ public class WorldManager : Singleton<WorldManager>, IWorldManager
         return height;
     }
 
+    public async Task<float> GetHeightAsync(uint zoneId, float x, float y, CancellationToken cancellationToken = default)
+    {
+        // try to find Z first in GeoData, and then in HeightMaps, if not found, leave Z as it is
+        var height = 0f;
+        var world = GetWorldByZone(zoneId);
+
+        if (AppConfiguration.Instance.World.GeoDataMode && world.Id > 0)
+        {
+            var position = new WorldSpawnPosition { WorldId = 0, ZoneId = zoneId, X = x, Y = y, Z = 0, Yaw = 0, Pitch = 0, Roll = 0 };
+            height = await Task.Run(() => AiGeoDataManager.Instance.GetHeight(zoneId, position), cancellationToken);
+        }
+
+        // check, as there is no geodata for main_world yet
+        if (height == 0)
+        {
+            if (AppConfiguration.Instance.HeightMapsEnable)
+            {
+                try
+                {
+                    height = await Task.Run(() => world?.GetHeight(x, y) ?? 0f, cancellationToken);
+                }
+                catch
+                {
+                    height = 0f;
+                }
+            }
+        }
+
+        return height;
+    }
+
     /// <summary>
     /// Returns target height of World position of transform according to loaded heightmaps
     /// </summary>
@@ -1159,6 +1192,40 @@ public class WorldManager : Singleton<WorldManager>, IWorldManager
         return result;
     }
 
+    public static async Task<List<T>> GetAroundAsync<T>(GameObject obj, float radius, bool useModelSize = false, CancellationToken cancellationToken = default) where T : class
+    {
+        var result = new List<T>();
+
+        if (radius <= 0f)
+            return result;
+
+        if (obj?.Region == null)
+            return result;
+
+        if (useModelSize)
+            radius += obj.ModelSize;
+
+        return await Task.Run(() =>
+        {
+            cancellationToken.ThrowIfCancellationRequested(); // Проверка отмены
+
+            if (radius > 0.0f && RadiusFitsCurrentRegion(obj, radius))
+            {
+                obj.Region.GetList(result, obj.ObjId, obj.Transform.World.Position.X, obj.Transform.World.Position.Y, radius * radius, useModelSize);
+            }
+            else
+            {
+                foreach (var neighbor in obj.Region.GetNeighbors())
+                {
+                    cancellationToken.ThrowIfCancellationRequested(); // Проверка отмены
+                    neighbor?.GetList(result, obj.ObjId, obj.Transform.World.Position.X, obj.Transform.World.Position.Y, radius * radius, useModelSize);
+                }
+            }
+
+            return result;
+        }, cancellationToken);
+    }
+
     private static bool RadiusFitsCurrentRegion(GameObject obj, float radius)
     {
         var xMod = obj?.Transform?.World?.Position.X % REGION_SIZE;
@@ -1369,7 +1436,7 @@ public class WorldManager : Singleton<WorldManager>, IWorldManager
     {
         return _doodads.Values.ToList();
     }
-    
+
     public List<Gimmick> GetAllGimmicks()
     {
         return _gimmicks.Values.ToList();
