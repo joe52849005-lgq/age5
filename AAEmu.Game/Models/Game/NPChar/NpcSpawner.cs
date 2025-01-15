@@ -58,7 +58,13 @@ public class NpcSpawner : Spawner<Npc>
             return null;
         }
 
-        DoSpawn(true, beginning);
+        _ = DoSpawn(true, beginning);
+
+        if (_isSpawnScheduled)
+        {
+            ScheduleDespawn(_lastSpawn);
+        }
+
         return _spawned.ToList();
     }
 
@@ -74,7 +80,13 @@ public class NpcSpawner : Spawner<Npc>
             return null;
         }
 
-        DoSpawn();
+        _ = DoSpawn();
+
+        if (_isSpawnScheduled)
+        {
+            ScheduleDespawn(_lastSpawn);
+        }
+
         return _lastSpawn;
     }
 
@@ -194,7 +206,6 @@ public class NpcSpawner : Spawner<Npc>
         var npcSpawnerIds = spawnerIds.Count > NpcSpawnerIds.Count ? spawnerIds : NpcSpawnerIds;
 
         var npcs = new List<Npc>();
-        var delnpcs = new List<Npc>();
 
         foreach (var spawnerId in npcSpawnerIds)
         {
@@ -204,55 +215,40 @@ public class NpcSpawner : Spawner<Npc>
                 var nsnTask = Template.Npcs.FirstOrDefault(nsn => nsn.MemberId == UnitId);
                 if (nsnTask != null)
                 {
-                    npcs = await nsnTask.SpawnAsync(this, all ? Template.MaxPopulation : 1);
+                    npcs = await nsnTask.SpawnAsync(this);
                     if (npcs == null) return;
                 }
             }
             else
             {
-                if (template.NpcSpawnerCategoryId == NpcSpawnerCategory.Normal && npcSpawnerIds.Count > 1)
-                {
-                    continue;
-                }
-
-                var suspendSpawnCount = template.SuspendSpawnCount > 0 ? template.SuspendSpawnCount : 1;
-                var maxPopulation = template.MaxPopulation;
-                var quantity = suspendSpawnCount;
-
-                if (quantity > maxPopulation) quantity = maxPopulation;
-                if (!all) quantity = 1;
-
-                if (_spawnCount > maxPopulation)
-                {
-                    Logger.Trace($"Let's not spawn Npc templateId {UnitId} from spawnerId {Template.Id} since exceeded MaxPopulation {maxPopulation}");
-                    return;
-                }
-
                 var templateNsnTask = template.Npcs.FirstOrDefault(nsn => nsn.MemberId == UnitId);
                 if (templateNsnTask != null)
                 {
-                    npcs = await templateNsnTask.SpawnAsync(this, quantity, maxPopulation);
+                    npcs = await templateNsnTask.SpawnAsync(this);
                 }
                 if (npcs == null) continue;
             }
 
-            if (npcs.Count == 0)
+            if (npcs is { Count: 0 })
             {
                 Logger.Error($"Can't spawn npc {UnitId} from spawnerId {Template.Id}");
                 continue;
             }
 
-            delnpcs.AddRange(npcs);
-            foreach (var npc in npcs)
+            if (npcs != null)
             {
-                _spawned.Add(npc);
-            }
-            if (_scheduledCount > 0)
-            {
-                Interlocked.Add(ref _scheduledCount, -npcs.Count);
-            }
+                foreach (var npc in npcs)
+                {
+                    _spawned.Add(npc);
+                }
 
-            Interlocked.Add(ref _spawnCount, npcs.Count);
+                if (_scheduledCount > 0)
+                {
+                    Interlocked.Add(ref _scheduledCount, -npcs.Count);
+                }
+
+                Interlocked.Add(ref _spawnCount, npcs.Count);
+            }
 
             if (_spawnCount < 0)
             {
@@ -260,21 +256,6 @@ public class NpcSpawner : Spawner<Npc>
             }
 
             _lastSpawn = _spawned.LastOrDefault();
-        }
-
-        if (_isSpawnScheduled)
-        {
-            ScheduleDespawn(_lastSpawn, all);
-        }
-
-        var deleteCount = delnpcs.Count - 1;
-        if (deleteCount > 1)
-        {
-            for (var i = 0; i < deleteCount; i++)
-            {
-                Logger.Trace($"Let's schedule npc removal {UnitId} from spawnerId {Template.Id}");
-                ScheduleDespawn(delnpcs[i], false, 60);
-            }
         }
     }
 
@@ -548,7 +529,7 @@ public class NpcSpawner : Spawner<Npc>
         var templateNsnTask2 = template.Npcs.FirstOrDefault(nsn => nsn != null && nsn.MemberId == UnitId);
         if (templateNsnTask2 != null)
         {
-            n = await templateNsnTask2.SpawnAsync(this, template.MaxPopulation);
+            n = await templateNsnTask2.SpawnAsync(this);
         }
 
         try
