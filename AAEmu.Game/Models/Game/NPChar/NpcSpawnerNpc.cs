@@ -42,6 +42,89 @@ public class NpcSpawnerNpc : Spawner<Npc>
         MemberType = "Npc";
     }
 
+    public List<Npc> Spawn(NpcSpawner npcSpawner)
+    {
+        switch (MemberType)
+        {
+            case "Npc":
+                return SpawnNpc(npcSpawner);
+            case "NpcGroup":
+                return SpawnNpcGroup(npcSpawner);
+            default:
+                throw new InvalidOperationException($"Tried spawning an unsupported line from NpcSpawnerNpc - Id: {Id}");
+        }
+    }
+
+    private List<Npc> SpawnNpc(NpcSpawner npcSpawner)
+    {
+        var npcs = new List<Npc>();
+        var npc = NpcManager.Instance.Create(0, MemberId);
+        if (npc == null)
+        {
+            Logger.Warn($"Npc {MemberId}, from spawner Id {npcSpawner.Id} not exist at db. Spawner Position: {npcSpawner.Position}");
+            return null;
+        }
+
+        npc.RegisterNpcEvents();
+
+        Logger.Trace($"Spawn npc templateId {MemberId} objId {npc.ObjId} from spawnerId {NpcSpawnerTemplateId} at Position: {npcSpawner.Position}");
+
+        if (!npc.CanFly)
+        {
+            var newZ = WorldManager.Instance.GetHeight(npcSpawner.Position.ZoneId, npcSpawner.Position.X, npcSpawner.Position.Y); // Убираем await
+            if (Math.Abs(npcSpawner.Position.Z - newZ) < 1f)
+            {
+                npcSpawner.Position.Z = newZ;
+            }
+        }
+
+        npc.Transform.ApplyWorldSpawnPosition(npcSpawner.Position);
+        if (npc.Transform == null)
+        {
+            Logger.Error($"Can't spawn npc {MemberId} from spawnerId {NpcSpawnerTemplateId}. Transform is null.");
+            return null;
+        }
+
+        npc.Transform.InstanceId = npc.Transform.WorldId;
+        npc.InstanceId = npc.Transform.WorldId;
+
+        if (npc.Ai != null)
+        {
+            npc.Ai.HomePosition = npc.Transform.World.Position;
+            npc.Ai.IdlePosition = npc.Ai.HomePosition;
+            npc.Ai.GoToSpawn();
+        }
+
+        npc.Spawner = npcSpawner;
+        npc.Spawner.RespawnTime = (int)Rand.Next(npc.Spawner.Template.SpawnDelayMin, npc.Spawner.Template.SpawnDelayMax);
+        npc.Spawn();
+
+        var aroundNpcs = WorldManager.GetAround<Npc>(npc, 1);
+        var count = 0u;
+        foreach (var n in aroundNpcs.Where(n => n.TemplateId == MemberId))
+        {
+            count++;
+        }
+
+        var world = WorldManager.Instance.GetWorld(npc.Transform.WorldId);
+        world.Events.OnUnitSpawn(world, new OnUnitSpawnArgs { Npc = npc });
+        npc.Simulation = new Simulation(npc);
+
+        if (npc.Ai != null && !string.IsNullOrWhiteSpace(npcSpawner.FollowPath))
+        {
+            if (!npc.Ai.LoadAiPathPoints(npcSpawner.FollowPath, false))
+                Logger.Warn($"Failed to load {npcSpawner.FollowPath} for NPC {npc.TemplateId} ({npc.ObjId})");
+        }
+
+        npcs.Add(npc);
+        return npcs;
+    }
+
+    private List<Npc> SpawnNpcGroup(NpcSpawner npcSpawner)
+    {
+        return SpawnNpc(npcSpawner);
+    }
+
     public async Task<List<Npc>> SpawnAsync(NpcSpawner npcSpawner)
     {
         switch (MemberType)

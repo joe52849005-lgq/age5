@@ -18,4 +18,18 @@ public static class TimeSpanExtensions
 
         return time >= startTime && time <= endTime;
     }
+
+    public static bool IsTimeBetween(this TimeSpan currentTime, TimeSpan startTime, TimeSpan endTime)
+    {
+        if (startTime <= endTime)
+        {
+            // Обычный случай: диапазон не переходит через полночь
+            return currentTime >= startTime && currentTime <= endTime;
+        }
+        else
+        {
+            // Диапазон переходит через полночь
+            return currentTime >= startTime || currentTime <= endTime;
+        }
+    }
 }

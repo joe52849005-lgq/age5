@@ -4,7 +4,7 @@ namespace AAEmu.Game.Models.Game.NPChar;
 
 public class NpcSpawnerTemplate
 {
-    public uint Id { get; set; }
+    public uint Id { get; set; } // spawner template id
     public NpcSpawnerCategory NpcSpawnerCategoryId { get; set; }
     public string Name { get; set; }
     public string Comment { get; set; }

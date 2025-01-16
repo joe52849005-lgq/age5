@@ -50,6 +50,27 @@ public class SpawnManager : Singleton<SpawnManager>
     private uint _nextId = 1u;
     private uint _fakeSpawnerId = 9000001u;
 
+    private void Update(TimeSpan delta)
+    {
+        byte worldId = 0;
+        foreach (var spawners in _npcSpawners[worldId].Values)
+        {
+            foreach (var spawner in spawners)
+            {
+                if (spawner.Template == null)
+                {
+                    Logger.Warn($"Templates not found for Npc templateId {spawner.SpawnerId}:{spawner.UnitId} in world {worldId}");
+                }
+                else
+                {
+                    //Logger.Info($"Templates found for Npc templateId {spawner.SpawnerId}:{spawner.UnitId} in world {worldId}");
+                    spawner.Update();
+                }
+            }
+        }
+    }
+
+
     /// <summary>
     /// Initializes the SpawnManager and loads all spawn data.
     /// </summary>
@@ -197,7 +218,7 @@ public class SpawnManager : Singleton<SpawnManager>
     /// <summary>
     /// Sets up the position for an NPC spawner.
     /// </summary>
-    private void SetupNpcSpawnerPosition(Models.Game.World.World world, NpcSpawner npcSpawner)
+    private static void SetupNpcSpawnerPosition(Models.Game.World.World world, NpcSpawner npcSpawner)
     {
         npcSpawner.Position.WorldId = world.Id;
         npcSpawner.Position.ZoneId = WorldManager.Instance.GetZoneId(world.Id, npcSpawner.Position.X, npcSpawner.Position.Y);
@@ -209,7 +230,7 @@ public class SpawnManager : Singleton<SpawnManager>
     /// <summary>
     /// Gets spawn files from a directory.
     /// </summary>
-    private string[] GetSpawnFiles(string worldPath, string searchPattern)
+    private static string[] GetSpawnFiles(string worldPath, string searchPattern)
     {
         try
         {
@@ -217,7 +238,7 @@ public class SpawnManager : Singleton<SpawnManager>
         }
         catch (Exception ex)
         {
-            Logger.Error(ex, $"Failed to get spawn files in {worldPath}");
+            Logger.Warn($"Failed to get spawn files in {worldPath}");
             return null;
         }
     }
@@ -268,24 +289,23 @@ public class SpawnManager : Singleton<SpawnManager>
                 // TODO добавил список спавнеров // added a list of spawners
                 foreach (var id in npcSpawnerIds)
                 {
+                    var spawner = NpcSpawner.Clone(npcSpawner);
                     var template = NpcGameData.Instance.GetNpcSpawnerTemplate(id);
-                    if (template.Npcs.Count != 1)
-                        continue;
-
-                    npcSpawner.NpcSpawnerIds.Add(id);
-                    if (npcSpawner.Id == 0)
-                        npcSpawner.Id = id;
-                    npcSpawner.Template = template;
-                    foreach (var n in npcSpawner.Template.Npcs)
+                    spawner.InitializeSpawnableNpcs(template);
+                    spawner.NpcSpawnerIds.Add(id);
+                    spawner.Id = _nextId;
+                    spawner.SpawnerId = id;
+                    spawner.Template = template;
+                    foreach (var n in spawner.Template.Npcs)
                     {
-                        n.Position = npcSpawner.Position;
+                        n.Position = spawner.Position;
                     }
-                    break;
+
+                    spawners.Add(spawner);
+                    _nextId++;
                 }
             }
-            spawners.Add(npcSpawner);
             _npcSpawners[(byte)npcSpawner.Position.WorldId].TryAdd(_nextId, spawners);
-            _nextId++;
         }
         else
         {
@@ -323,7 +343,8 @@ public class SpawnManager : Singleton<SpawnManager>
                 }
                 else
                 {
-                    spawner.SpawnAll(true);
+                    //if (worldId != 0)
+                    spawner.Update();
                     count++;
                     if (count % 5000 == 0)
                     {
@@ -333,6 +354,12 @@ public class SpawnManager : Singleton<SpawnManager>
             }
         }
         Logger.Info($"{count} NPC spawners spawned in world {worldId}");
+
+        //Управляет всеми спавнерами в игре, обновляя их состояние и вызывая методы спавна.
+        if (worldId == 0)
+        {
+            TickManager.Instance.OnTick.Subscribe(Update, TimeSpan.FromSeconds(5));
+        }
     }
 
     /// <summary>

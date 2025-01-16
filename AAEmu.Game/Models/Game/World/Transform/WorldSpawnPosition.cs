@@ -68,6 +68,16 @@ public class WorldSpawnPosition
         };
     }
 
+    public Vector3 ToVector3()
+    {
+        return new Vector3
+        {
+            X = X,
+            Y = Y,
+            Z = Z
+        };
+    }
+
     /// <summary>
     /// Returns a Vector3 copy of the X Y and Z values
     /// </summary>
