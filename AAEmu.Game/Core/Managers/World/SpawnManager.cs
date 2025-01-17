@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -50,23 +51,57 @@ public class SpawnManager : Singleton<SpawnManager>
     private uint _nextId = 1u;
     private uint _fakeSpawnerId = 9000001u;
 
-    private void Update(TimeSpan delta)
+    private int _currentSpawnerIndex = 0; // Индекс текущего спавнера
+    private List<NpcSpawner> _currentSpawners = []; // Список спавнеров для текущего мира
+
+    public void Update(TimeSpan delta)
     {
         byte worldId = 0;
-        foreach (var spawners in _npcSpawners[worldId].Values)
+
+        // Если список спавнеров пуст, инициализируем его
+        if (_currentSpawners.Count == 0)
         {
-            foreach (var spawner in spawners)
+            _currentSpawners = _npcSpawners[worldId].Values.SelectMany(x => x).ToList();
+        }
+
+        var stopwatch = Stopwatch.StartNew();
+
+        // Продолжаем выполнение цикла, пока не истечет время
+        for (; _currentSpawnerIndex < _currentSpawners.Count; _currentSpawnerIndex++)
+        {
+            var spawner = _currentSpawners[_currentSpawnerIndex];
+
+            if (spawner.Template == null)
             {
-                if (spawner.Template == null)
+                Logger.Warn($"Templates not found for Npc templateId {spawner.SpawnerId}:{spawner.UnitId} in world {worldId}");
+            }
+            else
+            {
+                var innerStopwatch = Stopwatch.StartNew();
+                try
                 {
-                    Logger.Warn($"Templates not found for Npc templateId {spawner.SpawnerId}:{spawner.UnitId} in world {worldId}");
-                }
-                else
-                {
-                    //Logger.Info($"Templates found for Npc templateId {spawner.SpawnerId}:{spawner.UnitId} in world {worldId}");
                     spawner.Update();
                 }
+                finally
+                {
+                    innerStopwatch.Stop();
+                    Logger.Trace($"Update for spawner {spawner.SpawnerId}:{spawner.UnitId} took {innerStopwatch.ElapsedMilliseconds} ms.");
+                }
             }
+
+            // Если время выполнения превысило допустимый порог, прерываем цикл
+            if (stopwatch.Elapsed > TimeSpan.FromMilliseconds(500)) // Порог 100 мс
+            {
+                Logger.Warn($"idx={_currentSpawnerIndex}. Update loop interrupted due to time limit. Elapsed time: {stopwatch.ElapsedMilliseconds} ms.");
+                break;
+            }
+        }
+
+        // Если цикл завершен, сбрасываем индекс и список
+        if (_currentSpawnerIndex >= _currentSpawners.Count)
+        {
+            _currentSpawnerIndex = 0;
+            _currentSpawners.Clear();
         }
     }
 
@@ -358,7 +393,7 @@ public class SpawnManager : Singleton<SpawnManager>
         //Управляет всеми спавнерами в игре, обновляя их состояние и вызывая методы спавна.
         if (worldId == 0)
         {
-            TickManager.Instance.OnTick.Subscribe(Update, TimeSpan.FromSeconds(5));
+            TickManager.Instance.OnTick.Subscribe(Update, TimeSpan.FromSeconds(1));
         }
     }
 

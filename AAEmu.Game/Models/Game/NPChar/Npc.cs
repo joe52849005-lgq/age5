@@ -1367,7 +1367,7 @@ public partial class Npc : Unit
 
     public void DoDespawn(Npc npc)
     {
-        Spawner.DoDespawn(npc);
+        Spawner.DoDespawn([npc]);
     }
 
     /// <summary>
