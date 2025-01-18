@@ -45,6 +45,7 @@ public class NpcSpawner : Spawner<Npc>
     public List<NpcSpawnerNpc> SpawnableNpcs { get; set; } = []; // List of NPCs that can be spawned
     public ConcurrentDictionary<uint, List<Npc>> SpawnedNpcs { get; set; } = new(); // <SpawnerId, List of spawned NPCs>
     private DateTime _lastSpawnTime = DateTime.MinValue;
+    private readonly Dictionary<int, SpawnerPlayerCountCache> _playerCountCache = new();
 
     public NpcSpawner()
     {
@@ -225,24 +226,50 @@ public class NpcSpawner : Spawner<Npc>
     /// <returns>The number of players within the radius.</returns>
     private int GetNumberOfPlayerInSpawnRadius(NpcSpawnerTemplate template)
     {
-        // Checks if the template and radius are valid
+        // Проверяем, есть ли уже кэш для этого SpawnerId
+        if (_playerCountCache.TryGetValue((int)SpawnerId, out var cache))
+        {
+            // Если прошло меньше 60 секунд с момента последнего обновления, возвращаем кэшированное значение
+            if ((DateTime.Now - cache.LastUpdate).TotalSeconds < 60)
+            {
+                return cache.PlayerCount;
+            }
+        }
+
+        // Проверяем, что шаблон и радиус валидны
         if (template == null || template.TestRadiusNpc <= 0)
             return 0;
+
         var playerCount = 0;
-        // Gets the spawn position (e.g., the position of the first NPC or the center point)
+
+        // Получаем позицию спавна (например, позицию первого NPC или центральную точку)
         if (SpawnedNpcs is { Count: > 0 })
         {
             var npcs = SpawnedNpcs.Values.FirstOrDefault();
             if (npcs?.Count > 0)
             {
-                // Returns the number of players
+                // Получаем количество игроков в радиусе
                 var tmpPlayerCount = WorldManager.GetAround<Character>(npcs[0], template.TestRadiusNpc * 3).Count;
                 if (playerCount < tmpPlayerCount)
                     playerCount = tmpPlayerCount;
             }
         }
 
+        // Обновляем кэш для текущего SpawnerId
+        _playerCountCache[(int)SpawnerId] = new SpawnerPlayerCountCache
+        {
+            PlayerCount = playerCount,
+            LastUpdate = DateTime.UtcNow
+        };
+
         return playerCount;
+    }
+
+    // Структура для хранения кэшированных данных
+    private struct SpawnerPlayerCountCache
+    {
+        public int PlayerCount { get; set; }
+        public DateTime LastUpdate { get; set; }
     }
 
     /// <summary>
