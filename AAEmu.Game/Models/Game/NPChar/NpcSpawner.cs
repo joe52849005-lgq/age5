@@ -46,6 +46,7 @@ public class NpcSpawner : Spawner<Npc>
     public ConcurrentDictionary<uint, List<Npc>> SpawnedNpcs { get; set; } = new(); // <SpawnerId, List of spawned NPCs>
     private DateTime _lastSpawnTime = DateTime.MinValue;
     private readonly Dictionary<int, SpawnerPlayerCountCache> _playerCountCache = new();
+    private readonly Dictionary<int, SpawnerPlayerInRadiusCache> _playerInRadiusCache = new();
 
     public NpcSpawner()
     {
@@ -205,18 +206,51 @@ public class NpcSpawner : Spawner<Npc>
     /// </summary>
     private bool IsPlayerInSpawnRadius()
     {
+        // Проверяем, нужно ли вообще проверять радиус
         if (Template.TestRadiusPc == 0)
             return true;
 
+        // Проверяем, есть ли кэш для текущего SpawnerId
+        if (_playerInRadiusCache.TryGetValue((int)SpawnerId, out var cache))
+        {
+            // Если с момента последнего обновления прошло меньше 60 секунд, возвращаем кэшированное значение
+            if ((DateTime.UtcNow - cache.LastUpdate).TotalSeconds < 60)
+            {
+                return cache.IsPlayerInRadius;
+            }
+        }
+
+        // Если кэш устарел или отсутствует, выполняем проверку
         var players = WorldManager.Instance.GetAllCharacters();
         foreach (var player in players)
         {
             var distance = MathUtil.CalculateDistance(player.Transform.World.Position, new Vector3(Position.X, Position.Y, Position.Z));
             if (distance <= Template.TestRadiusPc * 3)
+            {
+                // Обновляем кэш
+                _playerInRadiusCache[(int)SpawnerId] = new SpawnerPlayerInRadiusCache
+                {
+                    IsPlayerInRadius = true,
+                    LastUpdate = DateTime.UtcNow
+                };
                 return true;
+            }
         }
 
+        // Обновляем кэш (игроков в радиусе нет)
+        _playerInRadiusCache[(int)SpawnerId] = new SpawnerPlayerInRadiusCache
+        {
+            IsPlayerInRadius = false,
+            LastUpdate = DateTime.UtcNow
+        };
         return false;
+    }
+
+    // Структура для хранения кэшированных данных
+    private struct SpawnerPlayerInRadiusCache
+    {
+        public bool IsPlayerInRadius { get; set; }
+        public DateTime LastUpdate { get; set; }
     }
 
     /// <summary>
@@ -230,7 +264,7 @@ public class NpcSpawner : Spawner<Npc>
         if (_playerCountCache.TryGetValue((int)SpawnerId, out var cache))
         {
             // Если прошло меньше 60 секунд с момента последнего обновления, возвращаем кэшированное значение
-            if ((DateTime.Now - cache.LastUpdate).TotalSeconds < 60)
+            if ((DateTime.UtcNow - cache.LastUpdate).TotalSeconds < 60)
             {
                 return cache.PlayerCount;
             }
