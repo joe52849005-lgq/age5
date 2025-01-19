@@ -1661,7 +1661,8 @@ public class SlaveManager : Singleton<SlaveManager>
         _attachPoints = new Dictionary<uint, Dictionary<AttachPointKind, WorldSpawnPosition>>();
         foreach (var set in attachPoints)
         {
-            _attachPoints[set.ModelId] = set.AttachPoints;
+            foreach (var modelId in set.ModelId)
+                _attachPoints[modelId] = set.AttachPoints;
         }
     }
 
