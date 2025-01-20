@@ -62,6 +62,6 @@ public class NpcSpawnSubCommand : SubCommandBase
 
         SpawnManager.Instance.AddNpcSpawner(npcSpawner);
 
-        npcSpawner.SpawnAll();
+        npcSpawner.Update();
     }
 }

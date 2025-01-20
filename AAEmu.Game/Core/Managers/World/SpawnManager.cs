@@ -85,14 +85,14 @@ public class SpawnManager : Singleton<SpawnManager>
                 finally
                 {
                     innerStopwatch.Stop();
-                    Logger.Trace($"Update for spawner {spawner.SpawnerId}:{spawner.UnitId} took {innerStopwatch.ElapsedMilliseconds} ms.");
+                    //Logger.Trace($"Update for spawner {spawner.SpawnerId}:{spawner.UnitId} took {innerStopwatch.ElapsedMilliseconds} ms.");
                 }
             }
 
             // Если время выполнения превысило допустимый порог, прерываем цикл
             if (stopwatch.Elapsed > TimeSpan.FromMilliseconds(50)) // Порог 100 мс
             {
-                Logger.Warn($"idx={_currentSpawnerIndex}. Update loop interrupted due to time limit. Elapsed time: {stopwatch.ElapsedMilliseconds} ms.");
+                //Logger.Warn($"idx={_currentSpawnerIndex}. Update loop interrupted due to time limit. Elapsed time: {stopwatch.ElapsedMilliseconds} ms.");
                 break;
             }
         }

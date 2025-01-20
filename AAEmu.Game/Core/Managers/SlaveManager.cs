@@ -223,6 +223,16 @@ public class SlaveManager : Singleton<SlaveManager>
 
         return res;
     }
+    public Dictionary<AttachPointKind, WorldSpawnPosition> GetAttachPointByModelId(uint modelId)
+    {
+
+        if (_attachPoints.TryGetValue(modelId, out var attachPoint))
+        {
+            return attachPoint;
+        }
+
+        return null;
+    }
 
     public Slave GetSlaveByOwnerObjId(uint objId)
     {

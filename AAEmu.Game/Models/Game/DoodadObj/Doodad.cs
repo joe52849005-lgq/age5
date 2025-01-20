@@ -226,7 +226,7 @@ public class Doodad : BaseUnit
     private bool _deleted = false;
     public VehicleSeat Seat { get; set; }
     private List<uint> ListGroupId { get; set; }
-    public List<AreaTrigger> AttachAreaTriggers { get; set; } = new();
+    public List<AreaTrigger> AttachAreaTriggers { get; set; } = [];
     
     public Doodad()
     {
@@ -234,9 +234,9 @@ public class Doodad : BaseUnit
         PlantTime = DateTime.MinValue;
         AttachPoint = AttachPointKind.System;
         Seat = new VehicleSeat(this);
-        ListGroupId = new List<uint>();
-        CurrentFuncs = new List<DoodadFunc>();
-        CurrentPhaseFuncs = new List<DoodadPhaseFunc>();
+        ListGroupId = [];
+        CurrentFuncs = [];
+        CurrentPhaseFuncs = [];
         CurrentToDTriggers = new Dictionary<float, int>();
     }
 

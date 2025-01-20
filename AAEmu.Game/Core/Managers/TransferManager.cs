@@ -237,9 +237,7 @@ public class TransferManager : Singleton<TransferManager>
 
         transfer.Spawn();
         lock (_activeTransfersLock)
-        {
             _activeTransfers.Add(transfer.ObjId, transfer);
-        }
 
         foreach (var doodadBinding in transfer.Template.TransferBindingDoodads)
         {
@@ -271,6 +269,107 @@ public class TransferManager : Singleton<TransferManager>
         transfer.PostUpdateCurrentHp(transfer, 0, transfer.Hp, KillReason.Unknown);
 
         return owner;
+    }
+
+    public Transfer Create2(uint objectId, uint templateId, TransferSpawner spawner)
+    {
+        if (!Exist(templateId)) { return null; }
+
+        // create a Ship
+        var owner = new Transfer();
+        var carriage = GetTransferTemplate(templateId); // 161 - Dawn Peninsula ~ Two Crowns Cruise Ship
+        owner.Name = carriage.Name;
+        owner.TlId = (ushort)TlIdManager.Instance.GetNextId();
+        owner.ObjId = objectId == 0 ? ObjectIdManager.Instance.GetNextId() : objectId;
+        owner.OwnerId = 255;
+        owner.Spawner = spawner;
+        owner.TemplateId = carriage.Id;
+        owner.Id = carriage.Id;
+        owner.ModelId = carriage.ModelId;
+        owner.Template = carriage;
+        owner.AttachPointId = AttachPointKind.System;
+        owner.BondingObjId = 0;
+        owner.Level = 55;
+        owner.Hp = owner.MaxHp;
+        owner.Mp = owner.MaxMp;
+        owner.ModelParams = new UnitCustomModelParams();
+        owner.Bounded = null;
+        owner.Transform.ApplyWorldSpawnPosition(spawner.Position);
+        owner.Transform.ResetFinalizeTransform();
+        owner.Faction = FactionManager.Instance.GetFaction(FactionsEnum.PcFriendly); // formerly set to 164
+        owner.Patrol = null;
+        // BUFF: Untouchable (Unable to attack this target)
+        var buffId = (uint)BuffConstants.Untouchable;
+        owner.Buffs.AddBuff(new Buff(owner, owner, SkillCaster.GetByType(SkillCasterType.Unit), SkillManager.Instance.GetBuffTemplate(buffId), null, DateTime.UtcNow));
+        owner.Spawn();
+        lock (_activeTransfersLock)
+            _activeTransfers.Add(owner.ObjId, owner);
+
+        foreach (var doodadBinding in owner.Template.TransferBindingDoodads)
+            CreateDoodads(owner, doodadBinding, false);
+
+        owner.PostUpdateCurrentHp(owner, 0, owner.Hp, KillReason.Unknown);
+
+        return owner;
+    }
+
+    private void ApplyAttachPointLocation(Transfer transfer, Doodad doodad, AttachPointKind attachPoint)
+    {
+        var modelId = transfer.Template.ModelId;
+        var attachPoints = SlaveManager.Instance.GetAttachPointByModelId(modelId);
+        if (attachPoints.ContainsKey(attachPoint))
+        {
+            doodad.AttachPoint = attachPoint;
+            doodad.Transform = transfer.Transform.CloneAttached(transfer);
+            doodad.Transform.Parent = transfer.Transform;
+            doodad.Transform.Local.Translate(attachPoints[attachPoint].AsPositionVector());
+            doodad.Transform.Local.SetRotation(
+                attachPoints[attachPoint].Roll,
+                attachPoints[attachPoint].Pitch,
+                attachPoints[attachPoint].Yaw);
+            Logger.Debug($"Model id: {modelId} attachment {attachPoint} => pos {attachPoints[attachPoint]} = {transfer.Transform}");
+        }
+    }
+
+    private void CreateDoodads(Transfer transfer, TransferBindingDoodads doodadBinding, bool save = true)
+    {
+        // Create attached doodad
+        var doodad = new Doodad();
+        doodad.ObjId = ObjectIdManager.Instance.GetNextId();
+        doodad.TemplateId = doodadBinding.DoodadId;
+        doodad.OwnerObjId = 0;
+        doodad.ParentObjId = transfer.ObjId;
+        doodad.AttachPoint = doodadBinding.AttachPointId;
+        doodad.OwnerId = 0;
+        doodad.PlantTime = transfer.SpawnTime;
+        doodad.OwnerType = DoodadOwnerType.System;
+        doodad.OwnerDbId = transfer.Id;
+        doodad.Template = DoodadManager.Instance.GetTemplate(doodadBinding.DoodadId);
+        doodad.Data = (byte)doodadBinding.AttachPointId; // copy of AttachPointId
+        doodad.ParentObj = transfer;
+        doodad.Faction = transfer.Faction;
+        doodad.Type2 = 1u; // Flag: No idea why it's 1 for slave's doodads, seems to be 0 for everything else
+
+        doodad.Spawner = new DoodadSpawner();
+        doodad.Spawner.Id = 0;
+        doodad.Spawner.UnitId = doodad.TemplateId;
+        doodad.Spawner.Position = doodad.Transform.CloneAsSpawnPosition();
+        doodad.SetScale(1f);
+        doodad.FuncGroupId = doodad.GetFuncGroupId();
+        doodad.Transform = transfer.Transform.CloneAttached(doodad);
+        doodad.Transform.Parent = transfer.Transform;
+        ApplyAttachPointLocation(transfer, doodad, doodadBinding.AttachPointId);
+
+        transfer.AttachedDoodads.Add(doodad);
+        doodad.InitDoodad();
+        doodad.Spawn();
+
+        // Only set IsPersistent if the binding is defined as such
+        //if (doodadBinding.Persist)
+        //{
+        //    doodad.IsPersistent = true;
+        //    doodad.Save();
+        //}
     }
 
     public void Load()

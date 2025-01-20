@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.Id;
 using AAEmu.Game.Core.Managers.World;
@@ -46,7 +47,15 @@ public class TransferSpawner : Spawner<Transfer>
 
     public override Transfer Spawn(uint objId)
     {
-        var transfer = TransferManager.Instance.Create(objId, UnitId, this);
+        Transfer transfer;
+        if (UnitId is 161 or 162 or 8000011)
+        {
+            transfer = TransferManager.Instance.Create2(objId, UnitId, this);
+        }
+        else
+        {
+            transfer = TransferManager.Instance.Create(objId, UnitId, this);
+        }
         if (transfer == null)
         {
             Logger.Warn("Transfer {0}, from spawn not exist at db", UnitId);
