@@ -600,7 +600,7 @@ public class SpawnManager : Singleton<SpawnManager>
                 {
                     entry++;
 
-                    if (IsDuplicateDoodadSpawner(world, spawner))
+                    if (IsDuplicateDoodadSpawner(spawner))
                     {
                         Logger.Trace($"Duplicate Doodad spawner found in {jsonFileName} (UnitId: {spawner.UnitId}, Position: {spawner.Position})");
                         continue;
@@ -629,17 +629,13 @@ public class SpawnManager : Singleton<SpawnManager>
         }
 
         return doodadSpawners;
-    }
-
-    /// <summary>
-    /// Checks if a doodad spawner is a duplicate.
-    /// </summary>
-    private bool IsDuplicateDoodadSpawner(Models.Game.World.World world, DoodadSpawner doodadSpawner)
-    {
-        return _doodadSpawners[(byte)world.Id].Values
-            .Any(existingSpawner => existingSpawner.UnitId == doodadSpawner.UnitId &&
-                                    Math.Abs(existingSpawner.Position.X - doodadSpawner.Position.X) < 1f &&
-                                    Math.Abs(existingSpawner.Position.Y - doodadSpawner.Position.Y) < 1f);
+        bool IsDuplicateDoodadSpawner(DoodadSpawner doodadSpawner)
+        {
+            return doodadSpawners.Values.Any(existingSpawner =>
+                existingSpawner.UnitId == doodadSpawner.UnitId &&
+                Math.Abs(existingSpawner.Position.X - doodadSpawner.Position.X) < 1f &&
+                Math.Abs(existingSpawner.Position.Y - doodadSpawner.Position.Y) < 1f);
+        }
     }
 
     /// <summary>
