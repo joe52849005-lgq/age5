@@ -600,11 +600,11 @@ public class SpawnManager : Singleton<SpawnManager>
                 {
                     entry++;
 
-                    if (IsDuplicateDoodadSpawner(spawner))
-                    {
-                        Logger.Trace($"Duplicate Doodad spawner found in {jsonFileName} (UnitId: {spawner.UnitId}, Position: {spawner.Position})");
-                        continue;
-                    }
+                    //if (IsDuplicateDoodadSpawner(spawner))
+                    //{
+                    //    Logger.Trace($"Duplicate Doodad spawner found in {jsonFileName} (UnitId: {spawner.UnitId}, Position: {spawner.Position})");
+                    //    continue;
+                    //}
 
                     if (!DoodadManager.Instance.Exist(spawner.UnitId))
                     {
