@@ -20,7 +20,11 @@ public class FinishChanneling : SpecialEffectAction
         int value3,
         int value4, int value5, int value6, int value7)
     {
-        // TODO ...
-        if (caster is Character) { Logger.Debug("Special effects: FinishChanneling value1 {0}, value2 {1}, value3 {2}, value4 {3}", value1, value2, value3, value4); }
+        Logger.Debug($"Special effects: FinishChanneling value1 {value1}, value2 {value2}, value3 {value3}, value4 {value4}, value5 {value5}, value6 {value6}, value7 {value7}");
+
+        if (target is Unit unit)
+        {
+            unit.ActivePlotState?.FinishChanneling();
+        }
     }
 }

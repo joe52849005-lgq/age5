@@ -16,11 +16,14 @@ public class PlotCondition
 {
     protected static Logger Logger { get; } = LogManager.GetCurrentClassLogger();
     public uint Id { get; set; }
-    public bool NotCondition { get; set; }
     public PlotConditionType Kind { get; set; }
+    public int KindId { get; set; }
+    public bool NotCondition { get; set; }
+    public bool OrUnitReqs { get; set; }
     public int Param1 { get; set; }
     public int Param2 { get; set; }
     public int Param3 { get; set; }
+    public int Param4 { get; set; }
 
     public bool Check(BaseUnit caster, SkillCaster casterCaster, BaseUnit target, SkillCastTarget targetCaster, SkillObject skillObject, PlotEventCondition eventCondition, Skill skill)
     {
@@ -144,6 +147,8 @@ public class PlotCondition
         // Param2 is only used once, and its value is "1"
         var roll = Rand.Next(0, 100);
         Caster.ConditionChance = roll <= chance;
+        Logger.Warn($"PlotConditionChance Params : {chance}, {unk2}, {unk3} | Result : {roll <= chance}");
+
         return roll <= chance;
     }
 
@@ -161,9 +166,7 @@ public class PlotCondition
         {
             //Super hacky way to do combat dice....
             var hitType = skill.RollCombatDice(caster, trg);
-            if (!skill.HitTypes.ContainsKey(trg.ObjId))
-                skill.HitTypes.Add(trg.ObjId, hitType);
-            else
+            if (!skill.HitTypes.TryAdd(trg.ObjId, hitType))
                 skill.HitTypes[trg.ObjId] = hitType;
 
             return hitType == SkillHitType.MeleeDodge
@@ -215,14 +218,17 @@ public class PlotCondition
         int index = unk1;
         int operation = unk2;
         int value = unk3;
+        Logger.Warn($"PlotConditionVariable Params : Index: {index}, Operation: {unk2}, Value: {unk3} | Index Value:  {Caster.ActivePlotState.Variables[index]}");
         //There is a high chance this is not implemented correctly..
         //If refactoring. See SpecialEffect -> SetVariable as well
         if (operation == 1)
         {
+            bool returnCondition = (Caster.ActivePlotState.Variables[index] == value);
+            Logger.Warn($"PlotConditionVariable result: {returnCondition}");
             //TODO obtain variables directly from plot.
-            return Caster.ActivePlotState.Variables[index] == value;
+            return returnCondition;
         }
-        Logger.Trace("Invalid Plot Variable Condition Operation[{0}]", operation);
+        Logger.Error("Invalid Plot Variable Condition Operation[{0}]", operation);
         return false;
     }
 

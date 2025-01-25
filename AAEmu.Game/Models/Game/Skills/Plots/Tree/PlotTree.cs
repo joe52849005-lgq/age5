@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-
 using AAEmu.Game.Core.Managers.Id;
 using AAEmu.Game.Core.Packets;
 using AAEmu.Game.Core.Packets.G2C;
@@ -41,36 +40,36 @@ public class PlotTree
             var executeQueue = new Queue<(PlotNode node, PlotTargetInfo targetInfo)>();
 
             queue.Enqueue((RootNode, DateTime.UtcNow, new PlotTargetInfo(state)));
-
+            byte lastEvent = 1;
             while (queue.Count > 0)
             {
                 var nodeWatch = new Stopwatch();
                 nodeWatch.Start();
+                var item = queue.Dequeue();
+                var now = DateTime.UtcNow;
+                var node = item.node;
+                if (state.IsChanneling && state.ChannelingFinishRequested())
+                {
+                    HandleChannelingFinish(node, state, queue, item);
+                    lastEvent = 0;
+                    continue;
+                }
                 if (state.CancellationRequested())
                 {
                     if (state.IsCasting)
                     {
-                        state.Caster.BroadcastPacket(
-                            new SCPlotCastingStoppedPacket(state.ActiveSkill.TlId, 0, 1),
-                            true
-                        );
-                        state.Caster.BroadcastPacket(
-                            new SCPlotChannelingStoppedPacket(state.ActiveSkill.TlId, 0, 1),
-                            true
-                        );
+                        state.Caster.BroadcastPacket(new SCPlotCastingStoppedPacket(state.ActiveSkill.TlId, 0, lastEvent), true);
+                        state.Caster.BroadcastPacket(new SCPlotChannelingStoppedPacket(state.ActiveSkill.TlId, 0, 1), true);
                     }
 
                     DoPlotEnd(state);
                     return;
                 }
-                var item = queue.Dequeue();
-                var now = DateTime.UtcNow;
-                var node = item.node;
 
                 if (now >= item.timestamp)
                 {
-                    if (state.Tickets.ContainsKey(node.Event.Id))
-                        state.Tickets[node.Event.Id]++;
+                    if (state.Tickets.TryGetValue(node.Event.Id, out var value))
+                        state.Tickets[node.Event.Id] = ++value;
                     else
                         state.Tickets.TryAdd(node.Event.Id, 1);
 
@@ -155,6 +154,75 @@ public class PlotTree
 
         DoPlotEnd(state);
         Logger.Trace($"Tree with ID {PlotId} has finished executing took {treeWatch.ElapsedMilliseconds}ms");
+    }
+
+    private void HandleChannelingFinish(PlotNode node, PlotState state, Queue<(PlotNode node, DateTime timestamp, PlotTargetInfo targetInfo)> queue, (PlotNode node, DateTime timestamp, PlotTargetInfo targetInfo) item)
+    {
+        if (node == null || state == null || queue == null || item.targetInfo == null)
+        {
+            Logger.Error($"Plot {PlotId}: Invalid arguments passed to HandleChannelingFinish.");
+            return;
+        }
+
+        // Stop all active channeling or casting nodes
+        EndPlotChannel(state);
+
+        // Check if ParentNextEvent is null
+        if (node.ParentNextEvent == null)
+        {
+            return;
+        }
+
+        // Determine the correct node to trigger
+        if (node.ParentNextEvent.Channeling)
+        {
+            // Reset channeling state
+            state.PermitChanneling();
+
+            // Execute the correct node fully before moving to children
+            node.Execute(state, item.targetInfo);
+
+            // Use a HashSet to track unique node IDs already in the queue
+            var queuedNodeIds = new HashSet<uint>(queue.Select(q => q.node.Event.Id));
+
+            // Only enqueue children after the current node is executed
+            foreach (var child in node.Children ?? Enumerable.Empty<PlotNode>())
+            {
+                if (child == null || child.Event == null)
+                {
+                    Logger.Warn($"Plot {PlotId}: Skipping null child or child with null Event.");
+                    continue;
+                }
+
+                // Check if the child node's Event.Id is already in the queue
+                if (!queuedNodeIds.Contains(child.Event.Id))
+                {
+                    if (child.ParentNextEvent?.PerTarget ?? false)
+                    {
+                        foreach (var target in item.targetInfo.EffectedTargets)
+                        {
+                            var targetInfo = new PlotTargetInfo(item.targetInfo.Source, target);
+                            queue.Enqueue((child, DateTime.UtcNow, targetInfo));
+                            queuedNodeIds.Add(child.Event.Id); // Mark this node as queued
+                        }
+                    }
+                    else
+                    {
+                        var targetInfo = new PlotTargetInfo(item.targetInfo.Source, item.targetInfo.Target);
+                        queue.Enqueue((child, DateTime.UtcNow, targetInfo));
+                        queuedNodeIds.Add(child.Event.Id); // Mark this node as queued
+                    }
+                }
+                else
+                {
+                    //Logger.Debug($"Plot {PlotId}: Child node {child.Event.Id} is already in the queue. Skipping.");
+                }
+            }
+        }
+        else
+        {
+            //Logger.Debug($"Plot {PlotId}: No channeling node to transition to.");
+        }
     }
 
     private static void FlushExecutionQueue(Queue<(PlotNode node, PlotTargetInfo targetInfo)> executeQueue, PlotState state)

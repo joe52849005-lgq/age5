@@ -49,6 +49,16 @@ public class PlotObject : PacketMarshaler
                 stream.Write(ypr.Item1); // rotx
                 stream.Write(ypr.Item2); // roty
                 stream.Write(ypr.Item3); // rotz
+
+                stream.WritePosition(Position.Local.Position); // added in 5.0.7.0
+                var lineypr = Position.Local.ToRollPitchYawSBytes();
+                stream.Write(lineypr.Item1); // rotx
+                stream.Write(lineypr.Item2); // roty
+                stream.Write(lineypr.Item3); // rotz
+
+                stream.WriteBc(0); // unk1
+                stream.WriteBc(0); // unk2
+                stream.WriteBc(0); // unk3
                 break;
         }
 

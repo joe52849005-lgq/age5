@@ -11,11 +11,13 @@ namespace AAEmu.Game.Models.Game.Skills.Plots;
 
 public class PlotEventEffect
 {
+    public int Id { get; set; }
+    public string ActualType { get; set; }
+    public uint ActualId { get; set; }
+    public uint EventId { get; set; }
     public int Position { get; set; }
     public PlotEffectSource SourceId { get; set; }
     public PlotEffectTarget TargetId { get; set; }
-    public uint ActualId { get; set; }
-    public string ActualType { get; set; }
 
     public void ApplyEffect(PlotState state, PlotTargetInfo targetInfo, PlotEventTemplate evt, ref byte flag, bool channeled = false, CompressedGamePackets gamePackets = null)
     {
@@ -23,7 +25,7 @@ public class PlotEventEffect
 
         var buffEffect = template as BuffEffect;
         if (buffEffect != null)
-            flag = 6; //idk what this does?  
+            flag = 2; // We still don't know what this does, but we had it as 6, and it's 2 in our packet sniffing.
 
         BaseUnit source;
         switch (SourceId)

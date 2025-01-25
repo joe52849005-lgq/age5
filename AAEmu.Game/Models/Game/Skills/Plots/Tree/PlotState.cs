@@ -8,11 +8,12 @@ namespace AAEmu.Game.Models.Game.Skills.Plots.Tree;
 public class PlotState
 {
     private bool _cancellationRequest;
+    private bool _finishChanneling;
     public Dictionary<uint, int> Tickets { get; set; }
     public int[] Variables { get; set; }
     public byte CombatDiceRoll { get; set; }
     public bool IsCasting { get; set; }
-
+    public bool IsChanneling { get; set; }
     public Skill ActiveSkill { get; set; }
     public Unit Caster { get; set; }
     public SkillCaster CasterCaster { get; set; }
@@ -26,6 +27,7 @@ public class PlotState
     public PlotState(BaseUnit caster, SkillCaster casterCaster, BaseUnit target, SkillCastTarget targetCaster, SkillObject skillObject, Skill skill)
     {
         _cancellationRequest = false;
+        _finishChanneling = false;
 
         Caster = caster as Unit;
         CasterCaster = casterCaster;
@@ -34,12 +36,15 @@ public class PlotState
         SkillObject = skillObject;
         ActiveSkill = skill;
 
-        HitObjects = new Dictionary<uint, List<GameObject>>();
-        Tickets = new Dictionary<uint, int>();
-        ChanneledBuffs = new List<(BaseUnit, uint)>();
+        HitObjects = [];
+        Tickets = [];
+        ChanneledBuffs = [];
         Variables = new int[12];
     }
 
     public bool CancellationRequested() => _cancellationRequest;
     public bool RequestCancellation() => _cancellationRequest = true;
+    public bool ChannelingFinishRequested() => _finishChanneling;
+    public bool FinishChanneling() => _finishChanneling = true;
+    public bool PermitChanneling() => _finishChanneling = false;
 }
