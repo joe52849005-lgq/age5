@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Linq;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using NetCoreServer;
@@ -15,7 +16,7 @@ internal class StatusController : BaseController
     [WebApiGet("/status")]
     public HttpResponse GetStatus(HttpRequest request)
     {
-        var playerCount = WorldManager.Instance.GetAllCharacters().Count;
+        var playerCount = WorldManager.Instance.GetAllCharacters().Count();
         var serverUptime = new TimeSpan(0, 0, Program.UpTime);
         var responseBody = $"Server uptime: {serverUptime}<br/>" +
                            $"Players online: {playerCount}<br/>"+
