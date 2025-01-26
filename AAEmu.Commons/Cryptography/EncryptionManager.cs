@@ -265,54 +265,54 @@ namespace AAEmu.Commons.Cryptography
              */
             var dirty = false;
             // подбираем константы шифрации
-            //if (keys.XorKeyConstant1 > 0x75A024FF)
-            //{
-            //    keys.XorKeyConstant1 = 0x75A02400;
-            //    dirty = true;
-            //    needNewkey2 = true;
-            //}
+            if (keys.XorKeyConstant1 > 0x75A024FF)
+            {
+                keys.XorKeyConstant1 = 0x75A02400;
+                dirty = true;
+                needNewkey2 = true;
+            }
             if (keys.XorKeyConstant1 == 0 || keys.XorKeyConstant2 == 0)
             {
                 LoadXorKeyConstant(keys);
 
-                //keys.XorKeyConstant2 = 0x00a3af00;
-                //dirty = true;
-                //needNewkey2 = true;
+                keys.XorKeyConstant2 = 0x00a3af00;
+                dirty = true;
+                needNewkey2 = true;
             }
 
-            //if (needNewkey1)
-            //{
-            //    needNewkey1 = false;
-            //    // заменим первую константу
-            //    keys.XorKeyConstant1++;
-            //    if (keys.XorKeyConstant1 > 0x75A024FF)
-            //    {
-            //        keys.XorKeyConstant1 = 0x75A02400;
-            //        needNewkey2 = true;
-            //    }
-            //    dirty = true;
-            //}
-            //if (needNewkey2)
-            //{
-            //    needNewkey2 = false;
-            //    // заменим вторую константу
-            //    var tuneL = (byte)rnd.Next(0x01, 0xFF);
-            //    var tuneR = (byte)rnd.Next(0x01, 0xFF);
-            //    // Исходное uint число с заполнителями NN
-            //    var result = keys.XorKeyConstant2 & 0x00FFFF00;
-            //    result |= (uint)tuneL << 24; // Вставляем tuneL в старший байт
-            //    result |= tuneR;      // Вставляем tuneR в младший байт
-            //    keys.XorKeyConstant2 = result; // Заменяем байты на указанные значения
-            //    dirty = true;
-            //}
-            //if (dirty)
-            //{
-            //    using var writer = new StreamWriter(XorKeyValueFilePath, false);
-            //    writer.WriteLine("XorKeyConstant1:");
-            //    writer.WriteLine(keys.XorKeyConstant1.ToString("X8"));
-            //    writer.WriteLine("XorKeyConstant2:");
-            //    writer.WriteLine(keys.XorKeyConstant2.ToString("X8"));
-            //}
+            if (needNewkey1)
+            {
+                needNewkey1 = false;
+                // заменим первую константу
+                keys.XorKeyConstant1++;
+                if (keys.XorKeyConstant1 > 0x75A024FF)
+                {
+                    keys.XorKeyConstant1 = 0x75A02400;
+                    needNewkey2 = true;
+                }
+                dirty = true;
+            }
+            if (needNewkey2)
+            {
+                needNewkey2 = false;
+                // заменим вторую константу
+                var tuneL = (byte)rnd.Next(0x01, 0xFF);
+                var tuneR = (byte)rnd.Next(0x01, 0xFF);
+                // Исходное uint число с заполнителями NN
+                var result = keys.XorKeyConstant2 & 0x00FFFF00;
+                result |= (uint)tuneL << 24; // Вставляем tuneL в старший байт
+                result |= tuneR;      // Вставляем tuneR в младший байт
+                keys.XorKeyConstant2 = result; // Заменяем байты на указанные значения
+                dirty = true;
+            }
+            if (dirty)
+            {
+                using var writer = new StreamWriter(XorKeyValueFilePath, false);
+                writer.WriteLine("XorKeyConstant1:");
+                writer.WriteLine(keys.XorKeyConstant1.ToString("X8"));
+                writer.WriteLine("XorKeyConstant2:");
+                writer.WriteLine(keys.XorKeyConstant2.ToString("X8"));
+            }
 
             //          +-Hash начало блока для DecodeXOR, где второе число, в данном случае F(16 байт)-реальная длина данных в пакете, к примеру A(10 байт)-реальная длина данных в пакете
             //          |  +-начало блока для DecodeAES

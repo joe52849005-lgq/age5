@@ -16,44 +16,6 @@ public class DoodadFuncFishSchool : DoodadPhaseFuncTemplate
     {
         Logger.Debug($"DoodadFuncFishSchool NpcSpawnerId={NpcSpawnerId}");
 
-        var npcSpawnerNpc = NpcGameData.Instance.GetNpcSpawnerNpc(NpcSpawnerId);
-        if (npcSpawnerNpc == null)
-        {
-            Logger.Warn($"DoodadFuncFishSchool: Npc for SpawnerId={NpcSpawnerId} doesn't exist");
-            return false;
-        }
-        var unitId = npcSpawnerNpc.MemberId;
-
-        var spawner = SpawnManager.Instance.GetNpcSpawner(NpcSpawnerId, (byte)caster.Transform.WorldId);
-        if (spawner.Count == 0)
-        {
-            spawner.Add(new NpcSpawner());
-            //var npcSpawnersIds = new List<uint> { NpcSpawnerId };//NpcGameData.Instance.GetSpawnerIds(unitId);
-            spawner[0].UnitId = unitId;
-            spawner[0].Id = NpcSpawnerId;
-            spawner[0].NpcSpawnerIds = new List<uint> { NpcSpawnerId };
-            spawner[0].Template = NpcGameData.Instance.GetNpcSpawnerTemplate(NpcSpawnerId);
-            if (spawner[0].Template == null) { return false; }
-
-            if (spawner[0].Template.Npcs.Count == 0)
-            {
-                spawner[0].Template.Npcs = new List<NpcSpawnerNpc>();
-                var nsn = NpcGameData.Instance.GetNpcSpawnerNpc(NpcSpawnerId);
-                if (nsn == null) { return false; }
-                spawner[0].Template.Npcs.Add(nsn);
-            }
-            if (spawner[0].Template.Npcs == null) { return false; }
-
-            spawner[0].Template.Npcs[0].MemberId = unitId;
-            spawner[0].Template.Npcs[0].UnitId = unitId;
-
-        }
-        using var spawnPos = owner.Transform.Clone();
-        //spawnPos.World.AddDistanceToFront(3f);
-        //spawnPos.World.SetHeight(WorldManager.Instance.GetHeight(spawnPos));
-        spawner[0].Position = spawnPos.CloneAsSpawnPosition();
-        //var npc = spawner[0].Spawn(0);
-        //npc.Spawner.RespawnTime = 0; // запретим респавн
         // No initial spawn, fish spawn are triggered by fishing.
 
         return false;

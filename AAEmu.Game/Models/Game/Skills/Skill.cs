@@ -233,13 +233,14 @@ public class Skill
             maxRangeCheck = maxWeaponRange;
         }
 
-        if (targetDist < minRangeCheck)
-        {
-            SkillTlIdManager.ReleaseId(TlId);
-            TlId = 0;
-            Logger.Info($"TooCloseRange targetDist={targetDist}, minRangeCheck={minRangeCheck}, SkillTlId {TlId} for Skill {Template.Id}, Caster {caster.Name} ({caster.TemplateId}:{caster.ObjId}) with target {target.Name} ({target.TemplateId}:{target.ObjId})");
-            return SkillResult.TooCloseRange;
-        }
+        // TODO временно отключил проверку дистанции скилла.
+        //if (targetDist < minRangeCheck)
+        //{
+        //    SkillTlIdManager.ReleaseId(TlId);
+        //    TlId = 0;
+        //    Logger.Info($"TooCloseRange targetDist={targetDist}, minRangeCheck={minRangeCheck}, SkillTlId {TlId} for Skill {Template.Id}, Caster {caster.Name} ({caster.TemplateId}:{caster.ObjId}) with target {target.Name} ({target.TemplateId}:{target.ObjId})");
+        //    return SkillResult.TooCloseRange;
+        //}
 
         // TODO: Remove exception for doodads
         // TODO: Remove exceptions for slave initiated by Doodads (needed to fix repair points on ships)

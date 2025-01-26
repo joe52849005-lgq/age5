@@ -146,7 +146,11 @@ public class PlotCondition
         var Caster = caster as Unit;
         // Param2 is only used once, and its value is "1"
         var roll = Rand.Next(0, 100);
-        Caster.ConditionChance = roll <= chance;
+        if (Caster != null)
+        {
+            Caster.ConditionChance = roll <= chance;
+        }
+
         Logger.Warn($"PlotConditionChance Params : {chance}, {unk2}, {unk3} | Result : {roll <= chance}");
 
         return roll <= chance;

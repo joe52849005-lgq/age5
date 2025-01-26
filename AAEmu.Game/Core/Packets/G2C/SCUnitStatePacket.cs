@@ -95,9 +95,10 @@ public class SCUnitStatePacket : GamePacket
                 stream.Write(0L);                  // v
                 break;
             case BaseUnitType.Npc:
+                Logger.Warn($"UnitStatePacket is an NPC, ownerId is {npc.OwnerId}");
                 stream.WriteBc(npc.ObjId);    // objId
                 stream.Write(npc.TemplateId); // npc templateId
-                stream.Write(0);              // type(id) (ownerId?)
+                stream.Write(npc.OwnerId);    // type(id) (ownerId?)
                 stream.Write((byte)0);        // clientDriven
                 break;
             case BaseUnitType.Slave:
