@@ -304,24 +304,27 @@ public class SpawnManager : Singleton<SpawnManager>
                 var id = _fakeSpawnerId;
                 npcSpawner.NpcSpawnerIds.Add(id);
                 npcSpawner.Id = id;
+                npcSpawner.SpawnerId = id;
                 var tmpTemplate = NpcGameData.Instance.GetNpcSpawnerTemplate(1); // id=1 Test Warrior
                 npcSpawner.Template = Helpers.Clone(tmpTemplate);
                 npcSpawner.Template.Id = id;
 
-                var tmpNpc = new NpcSpawnerNpc
-                {
-                    Position = npcSpawner.Position,
-                    MemberId = npcSpawner.UnitId,
-                    Id = id,
-                    MemberType = "Npc",
-                    Weight = 1f,
-                    NpcSpawnerTemplateId = id
-                };
+                var tmpNpc = new NpcSpawnerNpc();
+                tmpNpc.Position = npcSpawner.Position;
+                tmpNpc.MemberId = npcSpawner.UnitId;
+                tmpNpc.SpawnerId = id;
+                tmpNpc.Id = id;
+                tmpNpc.MemberType = "Npc";
+                tmpNpc.Weight = 1f;
+                tmpNpc.NpcSpawnerTemplateId = id;
                 npcSpawner.Template.Npcs = [tmpNpc];
                 NpcGameData.Instance.AddNpcSpawnerNpc(tmpNpc);
                 NpcGameData.Instance.AddMemberAndSpawnerTemplateIds(tmpNpc);
                 NpcGameData.Instance.AddNpcSpawner(npcSpawner.Template);
                 _fakeSpawnerId++;
+                _nextId++;
+                npcSpawner.InitializeSpawnableNpcs(npcSpawner.Template);
+                spawners.Add(npcSpawner);
             }
             else
             {
@@ -387,7 +390,7 @@ public class SpawnManager : Singleton<SpawnManager>
                     count++;
                     if (count % 5000 == 0)
                     {
-                        Logger.Info($"{count} NPC spawners spawned in world {worldId}");
+                        Logger.Debug($"{count} NPC spawners spawned in world {worldId}");
                     }
                 }
             }
@@ -982,7 +985,7 @@ public class SpawnManager : Singleton<SpawnManager>
                     count++;
                     if (count % 1000 == 0 && worldId == 0)
                     {
-                        Logger.Info($"in world {worldId} Doodads spawned: {count}...");
+                        Logger.Debug($"in world {worldId} Doodads spawned: {count}...");
                     }
                 }
                 Logger.Info($"in world {worldId} Doodads spawned: {count}");
@@ -1005,7 +1008,7 @@ public class SpawnManager : Singleton<SpawnManager>
                     count++;
                     if (count % 10 == 0 && worldId == 0)
                     {
-                        Logger.Info($"in world {worldId} Transfers spawned: {count}...");
+                        Logger.Debug($"in world {worldId} Transfers spawned: {count}...");
                     }
                 }
                 Logger.Info($"in world {worldId} Transfers spawned: {count}");
@@ -1025,7 +1028,7 @@ public class SpawnManager : Singleton<SpawnManager>
                     count++;
                     if (count % 5 == 0 && worldId == 0)
                     {
-                        Logger.Info($"in world {worldId} Gimmicks spawned: {count}...");
+                        Logger.Debug($"in world {worldId} Gimmicks spawned: {count}...");
                     }
                 }
                 Logger.Info($"in world {worldId} Gimmicks spawned: {count}");
@@ -1045,7 +1048,7 @@ public class SpawnManager : Singleton<SpawnManager>
                     count++;
                     if (count % 5 == 0 && worldId == 0)
                     {
-                        Logger.Info($"in world {worldId} Slaves spawned: {count}...");
+                        Logger.Debug($"in world {worldId} Slaves spawned: {count}...");
                     }
                 }
                 Logger.Info($"in world {worldId} slaves spawned: {count}");

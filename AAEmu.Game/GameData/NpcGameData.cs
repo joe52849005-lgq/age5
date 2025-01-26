@@ -50,7 +50,7 @@ public class NpcGameData : Singleton<NpcGameData>, IGameDataLoader
                 };
 
                 if (!_skillsForNpc.ContainsKey(template.OwnerId))
-                    _skillsForNpc.Add(template.OwnerId, new List<NpcSkill>());
+                    _skillsForNpc.Add(template.OwnerId, []);
 
                 _skillsForNpc[template.OwnerId].Add(template);
             }
@@ -73,7 +73,7 @@ public class NpcGameData : Singleton<NpcGameData>, IGameDataLoader
                 };
 
                 if (!_passivesForNpc.ContainsKey(template.OwnerId))
-                    _passivesForNpc.Add(template.OwnerId, new List<NpcPassiveBuff>());
+                    _passivesForNpc.Add(template.OwnerId, []);
 
                 _passivesForNpc[template.OwnerId].Add(template);
             }
@@ -104,7 +104,7 @@ public class NpcGameData : Singleton<NpcGameData>, IGameDataLoader
                 template.TestRadiusPc = reader.GetFloat("test_radius_pc");
                 template.SuspendSpawnCount = reader.GetUInt32("suspend_spawn_count");
                 template.SpawnDelayMax = reader.GetFloat("spawn_delay_max");
-                template.Npcs = new List<NpcSpawnerNpc>();
+                template.Npcs = [];
                 _npcSpawnerTemplates.Add(template.Id, template);
             }
         }
@@ -170,7 +170,7 @@ public class NpcGameData : Singleton<NpcGameData>, IGameDataLoader
         {
             if (!_npcMemberAndSpawnerTemplateIds.ContainsKey(nsn.MemberId))
             {
-                _npcMemberAndSpawnerTemplateIds.Add(nsn.MemberId, new List<uint> { nsn.NpcSpawnerTemplateId });
+                _npcMemberAndSpawnerTemplateIds.Add(nsn.MemberId, [nsn.NpcSpawnerTemplateId]);
             }
             else
             {
@@ -181,7 +181,7 @@ public class NpcGameData : Singleton<NpcGameData>, IGameDataLoader
     public void AddMemberAndSpawnerTemplateIds(NpcSpawnerNpc nsn)
     {
         if (!_npcMemberAndSpawnerTemplateIds.ContainsKey(nsn.MemberId))
-            _npcMemberAndSpawnerTemplateIds.Add(nsn.MemberId, new List<uint> { nsn.NpcSpawnerTemplateId });
+            _npcMemberAndSpawnerTemplateIds.Add(nsn.MemberId, [nsn.NpcSpawnerTemplateId]);
         else
             _npcMemberAndSpawnerTemplateIds[nsn.MemberId].Add(nsn.NpcSpawnerTemplateId);
     }

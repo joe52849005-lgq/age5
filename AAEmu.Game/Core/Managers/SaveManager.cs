@@ -55,7 +55,7 @@ public class SaveManager : Singleton<SaveManager>
 
     public void SaveTickStart()
     {
-        // Logger.Warn("SaveTickStart: Started");
+        Logger.Info("SaveTickStart: Started");
         saveTask = new SaveTickStartTask();
         TaskManager.Instance.Schedule(saveTask, TimeSpan.FromMinutes(Delay), TimeSpan.FromMinutes(Delay));
     }

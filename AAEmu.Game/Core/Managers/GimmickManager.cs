@@ -208,7 +208,7 @@ public class GimmickManager : Singleton<GimmickManager>
 
     public void Initialize()
     {
-        Logger.Warn("GimmickTickTask: Started");
+        Logger.Info("GimmickTickTask: Started");
         TickManager.Instance.OnTick.Subscribe(GimmickTick, TimeSpan.FromMilliseconds(Delay), true);
     }
 
