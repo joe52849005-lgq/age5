@@ -65,6 +65,8 @@ public class SpawnManager : Singleton<SpawnManager>
         }
 
         var stopwatch = Stopwatch.StartNew();
+        var c = 0;
+        var startIndex = _currentSpawnerIndex;
 
         // Продолжаем выполнение цикла, пока не истечет время
         for (; _currentSpawnerIndex < _currentSpawners.Count; _currentSpawnerIndex++)
@@ -89,14 +91,17 @@ public class SpawnManager : Singleton<SpawnManager>
                 }
             }
 
+            c++;
             // Если время выполнения превысило допустимый порог, прерываем цикл
             if (stopwatch.Elapsed > TimeSpan.FromMilliseconds(50)) // Порог 100 мс
             {
-                //Logger.Warn($"idx={_currentSpawnerIndex}. Update loop interrupted due to time limit. Elapsed time: {stopwatch.ElapsedMilliseconds} ms.");
+                Logger.Debug($"Updated {c}/{_currentSpawners.Count} spawners idx={startIndex}->{_currentSpawnerIndex}. Update loop interrupted due to time limit. Elapsed time: {stopwatch.ElapsedMilliseconds} ms.");
                 break;
             }
         }
 
+        // Logger.Info($"idx={startIndex} -> {_currentSpawnerIndex} / {_currentSpawners.Count}. Update loop finished: {stopwatch.ElapsedMilliseconds} ms.");
+        
         // Если цикл завершен, сбрасываем индекс и список
         if (_currentSpawnerIndex >= _currentSpawners.Count)
         {
@@ -104,7 +109,6 @@ public class SpawnManager : Singleton<SpawnManager>
             _currentSpawners.Clear();
         }
     }
-
 
     /// <summary>
     /// Initializes the SpawnManager and loads all spawn data.
