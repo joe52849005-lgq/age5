@@ -225,11 +225,8 @@ public class SpawnManager : Singleton<SpawnManager>
         {
             entry++;
 
-            if (IsDuplicateNpcSpawner(world, npcSpawnerFromFile))
-            {
-                Logger.Trace($"Duplicate NPC spawner found in {jsonFileName} (UnitId: {npcSpawnerFromFile.UnitId}, Position: {npcSpawnerFromFile.Position})");
-                continue;
-            }
+            //if (IsDuplicateNpcSpawner(world, npcSpawnerFromFile))
+            //    continue;
 
             if (!NpcManager.Instance.Exist(npcSpawnerFromFile.UnitId))
             {
@@ -247,11 +244,20 @@ public class SpawnManager : Singleton<SpawnManager>
     /// </summary>
     private bool IsDuplicateNpcSpawner(Models.Game.World.World world, NpcSpawner npcSpawner)
     {
-        return _npcSpawners[(byte)world.Id].Values
-            .SelectMany(spawners => spawners)
-            .Any(spawner => spawner.UnitId == npcSpawner.UnitId &&
-                            Math.Abs(spawner.Position.X - npcSpawner.Position.X) < 2f &&
-                            Math.Abs(spawner.Position.Y - npcSpawner.Position.Y) < 2f);
+        foreach (List<NpcSpawner> spawners in _npcSpawners[(byte)world.Id].Values)
+        foreach (NpcSpawner spawner in spawners)
+        {
+            if (spawner.UnitId == npcSpawner.UnitId &&
+                Math.Abs(spawner.Position.X - npcSpawner.Position.X) < 0.1f &&
+                Math.Abs(spawner.Position.Y - npcSpawner.Position.Y) < 0.1f)
+            {
+                Logger.Warn($"Duplicate NPC spawner found in (UnitId: {spawner.UnitId}, Position: {spawner.Position})\n" +
+                            $"                                                              (UnitId: {npcSpawner.UnitId}, Position: {npcSpawner.Position})");
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -580,6 +586,9 @@ public class SpawnManager : Singleton<SpawnManager>
     /// </summary>
     private ConcurrentDictionary<uint, DoodadSpawner> LoadDoodadSpawns(Models.Game.World.World world, string worldPath)
     {
+        var count = 0;
+        var countMax = 0;
+
         var doodadSpawners = new ConcurrentDictionary<uint, DoodadSpawner>();
         var doodadFiles = GetSpawnFiles(worldPath, "doodad_spawns*.json");
         if (doodadFiles == null || doodadFiles.Length == 0)
@@ -602,16 +611,14 @@ public class SpawnManager : Singleton<SpawnManager>
 
             if (JsonHelper.TryDeserializeObject(contents, out List<DoodadSpawner> spawners, out _))
             {
+                countMax += spawners.Count;
                 var entry = 0;
                 foreach (var spawner in spawners)
                 {
                     entry++;
 
-                    //if (IsDuplicateDoodadSpawner(spawner))
-                    //{
-                    //    Logger.Trace($"Duplicate Doodad spawner found in {jsonFileName} (UnitId: {spawner.UnitId}, Position: {spawner.Position})");
+                    //if (IsDuplicateDoodadSpawner(spawner, world.Id))
                     //    continue;
-                    //}
 
                     if (!DoodadManager.Instance.Exist(spawner.UnitId))
                     {
@@ -636,12 +643,27 @@ public class SpawnManager : Singleton<SpawnManager>
         }
 
         return doodadSpawners;
-        bool IsDuplicateDoodadSpawner(DoodadSpawner doodadSpawner)
+        bool IsDuplicateDoodadSpawner(DoodadSpawner doodadSpawner, uint worldId)
         {
-            return doodadSpawners.Values.Any(existingSpawner =>
-                existingSpawner.UnitId == doodadSpawner.UnitId &&
-                Math.Abs(existingSpawner.Position.X - doodadSpawner.Position.X) < 1f &&
-                Math.Abs(existingSpawner.Position.Y - doodadSpawner.Position.Y) < 1f);
+            foreach (var existingSpawner in doodadSpawners.Values)
+            {
+                if (existingSpawner.UnitId == doodadSpawner.UnitId &&
+                    Math.Abs(existingSpawner.Position.X - doodadSpawner.Position.X) < 0.1f &&
+                    Math.Abs(existingSpawner.Position.Y - doodadSpawner.Position.Y) < 0.1f)
+                {
+                    Logger.Warn($"Duplicate Doodad spawner found in (UnitId: {existingSpawner.UnitId}, Position: {existingSpawner.Position})\n" +
+                                $"                                                                 (UnitId: {doodadSpawner.UnitId}, Position: {doodadSpawner.Position})");
+                    return true;
+                }
+            }
+
+            count++;
+            if (count % 5000 == 0)
+            {
+                Logger.Debug($"{count}:{countMax} Doodads loaded in world {worldId}");
+            }
+
+            return false;
         }
     }
 
