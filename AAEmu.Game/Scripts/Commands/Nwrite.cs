@@ -12,7 +12,6 @@ using AAEmu.Commons.IO;
 using AAEmu.Commons.Utils;
 using Newtonsoft.Json;
 using System.IO;
-using System.Linq;
 using AAEmu.Game.Utils.Scripts;
 using AAEmu.Game.Utils;
 
@@ -39,8 +38,8 @@ public class Nwrite : ICommand
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)
     {
-        var worlds = WorldManager.Instance.GetWorlds().ToList();
-        var npcs = WorldManager.Instance.GetAllNpcs().ToList();
+        var worlds = WorldManager.Instance.GetWorlds();
+        var npcs = WorldManager.Instance.GetAllNpcs();
 
         Doodad doodad = null;
         Npc npc = null;

@@ -1,6 +1,4 @@
 ﻿//using System;
-
-using System.Linq;
 using AAEmu.Game.Core.Managers;
 //using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game;
@@ -33,7 +31,7 @@ internal class TestAuctionHouse : ICommand
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)
     {
-        var allItems = ItemManager.Instance.GetAllItems().ToList();
+        var allItems = ItemManager.Instance.GetAllItems();
         CommandManager.SendNormalText(this, messageOutput, $"Trying to add {allItems.Count} items to the Auction House!");
 
         var amount = 0;

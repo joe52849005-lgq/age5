@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-
+using System;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game;
@@ -33,7 +31,7 @@ public class Online : ICommand
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)
     {
-        var characters = WorldManager.Instance.GetAllCharacters().ToList();
+        var characters = WorldManager.Instance.GetAllCharacters();
 
         if (args.Length > 0)
         {
