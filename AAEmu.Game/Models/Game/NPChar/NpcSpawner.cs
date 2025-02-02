@@ -101,6 +101,15 @@ public class NpcSpawner : Spawner<Npc>
             return false;
         }
 
+        // Checks if there is a NPC that is a corpse so it doesn`t respawn immediatly after being killed
+        if (SpawnedNpcs.TryGetValue(SpawnerId, out var npcs))
+        {
+            if (IsCorpse(npcs))
+            {
+                return false;
+            }
+        }
+
         //if (Template.NpcSpawnerCategoryId != NpcSpawnerCategory.Autocreated)
         {
             // Checks if this spawner is suitable based on the number of mobs in the spawn and the number of nearby players
@@ -152,6 +161,14 @@ public class NpcSpawner : Spawner<Npc>
             return true;
 
         return !IsPlayerInSpawnRadius();
+    }
+
+    /// <summary>
+    /// Checks if there is a NPC that is a corpse
+    /// </summary>
+    private bool IsCorpse(List<Npc> npcs)
+    {
+        return npcs.Any(npc => npc.IsDead);
     }
 
     /// <summary>
