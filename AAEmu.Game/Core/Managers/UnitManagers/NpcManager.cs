@@ -89,6 +89,9 @@ public class NpcManager : Singleton<NpcManager>
 
         var npc = new Npc();
         npc.ObjId = objectId > 0 ? objectId : ObjectIdManager.Instance.GetNextId();
+
+        Logger.Info($"Used ObjId={npc.ObjId}");
+
         npc.TemplateId = id; // duplicate Id
         npc.Id = id;
         npc.Template = template;

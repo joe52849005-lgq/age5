@@ -409,35 +409,38 @@ public class SCUnitStatePacket : GamePacket
                      * 0000 0000 0010 0000 = 0x20 - 5bit - Invisible
                      * 0010 0000 0000 0000 = 0x2000 - 13bit - IdleStatus
  
-                     * 0x0001 - 8bit - режим боя
-                     * 0x0002 - 7bit - 
-                     * 0x0004 - 6bit - невидимость?
-                     * 0x0008 - 5bit - дуэль
-                     * 0x0010 - 4bit - 
-                     * 0x0020 
-                     * 0x0040 - 2bit - gmmode, дополнительно 7 байт
-                     * 0x0080 - 1bit - дополнительно tl(ushort), tl(ushort), tl(ushort), tl(ushort)
-                     * 0x0100 - 16bit - дополнительно 3 байт (bc), firstHitterTeamId(uint)
-                     * 0x0200
-                     * 0x0400 - 14bit - надпись "Отсутсвует" под именем
-                     * 0x0800
-                     * 0x1000
+                     * 0x0001 - Бит 0: {isBit0Set} 1 // 8bit - режим боя
+                     * 0x0002 - Бит 1: {isBit1Set} 2 // 7bit - 
+                     * 0x0004 - Бит 2: {isBit2Set} 4 // 6bit - невидимость?
+                     * 0x0008 - Бит 3: {isBit5Set} 8 // 5bit - дуэль
+                     * 0x0010 - Бит 4: {isBit4Set} 16
+                     * 0x0020 - Бит 5: {isBit5Set} 32 - 5bit - Invisible
+                     * 0x0040 - Бит 6: {isBit6Set} 64 // 2bit - gmmode, дополнительно 7 байт
+                     * 0x0080 - Бит 7: {isBit7Set} 128 // 1bit - дополнительно tl(ushort), tl(ushort), tl(ushort), tl(ushort)
+                     * 0x0100 - Бит 8: {isBit8Set} 256 // 16bit - дополнительно 3 байт (bc), firstHitterTeamId(uint)
+                     * 0x0200 - Бит 9: {isBit9Set} 512
+                     * 0x0400 - Бит 10: {isBit10Set} 1024 // 14bit - надпись "Отсутсвует" под именем
+                     * 0x0800 - Бит 11: {isBit11Set} 2048
+                     * 0x1000 - Бит 12: {isBit12Set} 4096
+                     * 0x2000 - Бит 13: {isBit13Set} 8192
+                     * 0x4000 - Бит 14: {isBit14Set} 16384
+                     * 0x8000 - Бит 15: {isBit15Set} 32768
                     */
                     break;
                 }
             case Npc:
-                var nflags = new BitSet(16); // short
-                if (_unit.IdleStatus)
-                    nflags.Set(13);
-                if (_unit.IsInBattle)
-                    nflags.Set(9);
-                stream.Write(nflags.ToByteArray()); // flags(ushort)
+                //var nflags = new BitSet(16); // short
+                //if (_unit.IdleStatus)
+                //    nflags.Set(13);
+                //if (_unit.IsInBattle)
+                //    nflags.Set(9);
+                //stream.Write(nflags.ToByteArray()); // flags(ushort)
                 //if (flags.Get(1)) // если Npc в бою, то шлем дополнительные байты
                 //{
                 //    stream.WriteBc(npc.CurrentAggroTarget);  // objId бойца
                 //    stream.WriteBc(0u); // TeamId команды, кто первая нанесла удар
                 //}
-                //stream.Write((ushort)8192); // flags
+                stream.Write((ushort)8192); // flags - нейтральный флаг, нет дополнительных данных в пакете
                 break;
             default:
                 stream.Write((ushort)0); // flags
