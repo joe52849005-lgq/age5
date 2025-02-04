@@ -231,7 +231,7 @@ public class NpcSpawner : Spawner<Npc>
         if (_playerInRadiusCache.TryGetValue((int)SpawnerId, out var cache))
         {
             // Если с момента последнего обновления прошло меньше 60 секунд, возвращаем кэшированное значение
-            if ((DateTime.UtcNow - cache.LastUpdate).TotalSeconds < 60)
+            if ((DateTime.UtcNow - cache.LastUpdate).TotalSeconds < 1)
             {
                 return cache.IsPlayerInRadius;
             }
@@ -242,7 +242,7 @@ public class NpcSpawner : Spawner<Npc>
         foreach (var player in players)
         {
             var distance = MathUtil.CalculateDistance(player.Transform.World.Position, new Vector3(Position.X, Position.Y, Position.Z));
-            if (distance <= Template.TestRadiusPc * 3)
+            if (distance <= Template.TestRadiusPc * 4)
             {
                 // Обновляем кэш
                 _playerInRadiusCache[(int)SpawnerId] = new SpawnerPlayerInRadiusCache
@@ -281,7 +281,7 @@ public class NpcSpawner : Spawner<Npc>
         if (_playerCountCache.TryGetValue((int)SpawnerId, out var cache))
         {
             // Если прошло меньше 60 секунд с момента последнего обновления, возвращаем кэшированное значение
-            if ((DateTime.UtcNow - cache.LastUpdate).TotalSeconds < 60)
+            if ((DateTime.UtcNow - cache.LastUpdate).TotalSeconds < 1)
             {
                 return cache.PlayerCount;
             }
@@ -300,7 +300,7 @@ public class NpcSpawner : Spawner<Npc>
             if (npcs?.Count > 0)
             {
                 // Получаем количество игроков в радиусе
-                var tmpPlayerCount = WorldManager.GetAround<Character>(npcs[0], template.TestRadiusNpc * 3).Count;
+                var tmpPlayerCount = WorldManager.GetAround<Character>(npcs[0], template.TestRadiusNpc * 5).Count;
                 if (playerCount < tmpPlayerCount)
                     playerCount = tmpPlayerCount;
             }
