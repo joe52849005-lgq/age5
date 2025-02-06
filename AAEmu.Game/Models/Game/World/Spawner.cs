@@ -28,6 +28,11 @@ public class Spawner<T> where T : GameObject
         Spawn(0);
     }
 
+    public virtual T ForceSpawn(uint objId)
+    {
+        return null;
+    }
+
     public virtual void Despawn(T obj)
     {
     }

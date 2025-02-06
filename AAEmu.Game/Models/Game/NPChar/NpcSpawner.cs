@@ -419,6 +419,24 @@ public class NpcSpawner : Spawner<Npc>
     }
 
     /// <summary>
+    /// Force spawns a single NPC with the specified object ID.
+    /// </summary>
+    public override Npc ForceSpawn(uint objId)
+    {
+        if (SpawnedNpcs.Count == 0)
+        {
+            InitializeSpawnableNpcs(Template);
+        }
+
+        DoSpawn();
+
+        if (IsSpawnScheduled)
+            IsDespawningScheduleEnabled(SpawnerId);
+
+        return SpawnedNpcs[SpawnerId][0];
+    }
+
+    /// <summary>
     /// Despawns the specified NPC.
     /// </summary>
     public override void Despawn(Npc npc)
