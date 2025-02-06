@@ -21,6 +21,7 @@ using Microsoft.Extensions.Hosting;
 
 using NLog;
 using NLog.Config;
+
 using OSVersionExtension;
 
 namespace AAEmu.Game;
@@ -129,13 +130,30 @@ public static class Program
         return 0;
     }
 
+    /// <summary>
+    /// Tries to return a more human-readable OS name
+    /// </summary>
+    /// <returns></returns>
+    private static string GetOsName()
+    {
+        try
+        {
+            // Note: This NuGet package can throw an exception in some cases, so we try to catch it
+            return OSVersion.GetOperatingSystem().ToString();
+        }
+        catch
+        {
+            return "Unknown";
+        }
+    }
+
     private static void Initialization()
     {
         Logger.Info($"{Name} version {Version}");
         _thread.Name = "AA.Game Base Thread";
         _startTime = DateTime.UtcNow;
 
-        Logger.Info($"Running as {(Environment.Is64BitProcess ? "64" : "32")}-bits on {(Environment.Is64BitOperatingSystem ? "64" : "32")}-bits {OSVersion.GetOperatingSystem()} ({Environment.OSVersion})");
+        Logger.Info($"Running as {(Environment.Is64BitProcess ? "64" : "32")}-bits on {(Environment.Is64BitOperatingSystem ? "64" : "32")}-bits {GetOsName()} ({Environment.OSVersion})");
         if (!Environment.Is64BitProcess)
         {
             Logger.Warn($"Running in 32-bits mode is not recommended to do memory constraints");
