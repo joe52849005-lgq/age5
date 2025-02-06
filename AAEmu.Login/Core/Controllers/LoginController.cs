@@ -119,6 +119,14 @@ namespace AAEmu.Login.Core.Controllers
                             return;
                         }
 
+                        var banned = reader.GetBoolean("banned");
+                        if (banned)
+                        {
+                            var banReason = (byte)reader.GetUInt32("ban_reason");
+                            connection.SendPacket(new ACLoginDeniedPacket(banReason));
+                            return;
+                        }
+
                         connection.AccountId = reader.GetUInt64("id");
                         connection.AccountName = username;
                         connection.LastLogin = DateTime.UtcNow;
