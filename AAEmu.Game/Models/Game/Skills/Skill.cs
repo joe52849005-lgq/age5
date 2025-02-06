@@ -1049,6 +1049,15 @@ public class Skill
                     continue;
                 }
 
+                // prevents an NPC Spawn Skill to be duplicated 
+                if (lastAppliedEffect != null &&
+                    effect.Template is NpcSpawnerSpawnEffect &&
+                    effect.EffectId == lastAppliedEffect.EffectId &&
+                    ((effect.Template as NpcSpawnerSpawnEffect).SpawnerId == (lastAppliedEffect.Template as NpcSpawnerSpawnEffect).SpawnerId))
+                {
+                    continue;
+                }
+
                 // Apply the effect
                 effectsToApply.Add((target, effect));
                 lastAppliedEffect = effect;
@@ -1412,7 +1421,7 @@ public class Skill
             }
         }
 
-AlwaysHit:
+        AlwaysHit:
         switch (damageType)
         {
             case DamageType.Melee:
