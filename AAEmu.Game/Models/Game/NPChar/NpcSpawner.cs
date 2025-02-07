@@ -110,24 +110,12 @@ public class NpcSpawner : Spawner<Npc>
             }
         }
 
-        //if (Template.NpcSpawnerCategoryId != NpcSpawnerCategory.Autocreated)
-        {
-            // Checks if this spawner is suitable based on the number of mobs in the spawn and the number of nearby players
-            var spawnerId = GetOptimalSpawnerForPlayers();
-            if (spawnerId != 0 && spawnerId is not null && SpawnerId != spawnerId)
-                return false;
-        }
-
         // Checks if the spawner is in an active state
         if (!Template.ActivationState)
             return false;
 
         // Checks if spawning is allowed by the schedule
         if (!IsSpawningScheduleEnabled())
-            return false;
-
-        // Checks if a player is within the spawn radius
-        if (!IsPlayerInSpawnRadius())
             return false;
 
         if (Template.NpcSpawnerCategoryId != NpcSpawnerCategory.Autocreated)
@@ -148,6 +136,18 @@ public class NpcSpawner : Spawner<Npc>
         // Checks if the minimum number of NPCs has been reached
         if (_spawnCount > Template.MinPopulation)
             return false;
+
+        if (Template.NpcSpawnerCategoryId != NpcSpawnerCategory.Autocreated)
+        {
+            // Checks if a player is within the spawn radius
+            if (!IsPlayerInSpawnRadius())
+                return false;
+
+            // Checks if this spawner is suitable based on the number of mobs in the spawn and the number of nearby players
+            var spawnerId = GetOptimalSpawnerForPlayers();
+            if (spawnerId != 0 && spawnerId is not null && SpawnerId != spawnerId)
+                return false;
+        }
 
         return true;
     }
@@ -711,14 +711,6 @@ public class NpcSpawner : Spawner<Npc>
                 if (npcTemplate == null)
                 {
                     Logger.Warn("NPC template is null.");
-                    continue;
-                }
-
-                // Creates the NPC
-                var npc = NpcManager.Instance.Create(0, npcTemplate.MemberId);
-                if (npc == null)
-                {
-                    Logger.Warn($"Failed to create NPC from template {npcTemplate.SpawnerId}:{npcTemplate.MemberId}");
                     continue;
                 }
 
