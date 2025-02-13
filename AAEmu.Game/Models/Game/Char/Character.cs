@@ -239,6 +239,11 @@ public partial class Character : Unit, ICharacter
     public FishSchool FishSchool { get; set; }
     public List<ScheduleItem> ScheduleItems { get; set; }
 
+    // Set to true when character has finished loading for this instance
+    private bool FinishedLoading { get; set; } = false;
+    private int _savedHp;
+    private int _savedMp;
+
     #region Attributes
 
     [UnitAttribute(UnitAttribute.GlobalCooldownMul)]
@@ -1945,6 +1950,8 @@ public partial class Character : Unit, ICharacter
                     character.RecoverableExp = reader.GetInt32("recoverable_exp");
                     character.Hp = reader.GetInt32("hp");
                     character.Mp = reader.GetInt32("mp");
+                    character._savedHp = character.Hp; // save for later
+                    character._savedMp = character.Mp;
                     // character.LaborPower = reader.GetInt16("labor_power");
                     // character.LaborPowerModified = reader.GetDateTime("labor_power_modified");
                     character.InitializeLaborCache(accountDetails.Labor, accountDetails.LastUpdated);
@@ -2061,6 +2068,8 @@ public partial class Character : Unit, ICharacter
                     character.RecoverableExp = reader.GetInt32("recoverable_exp");
                     character.Hp = reader.GetInt32("hp");
                     character.Mp = reader.GetInt32("mp");
+                    character._savedHp = character.Hp; // save for later
+                    character._savedMp = character.Mp;
                     character.InitializeLaborCache(accountDetails.Labor, accountDetails.LastUpdated);
                     // character.LaborPower = reader.GetInt16("labor_power");
                     // character.LaborPowerModified = reader.GetDateTime("labor_power_modified");
@@ -2612,6 +2621,15 @@ public partial class Character : Unit, ICharacter
         if (CrimeRecord < 0)
             CrimeRecord = 0;
         return CrimePoint;
+    }
+
+    /// <summary>
+    /// Restores HP/MP back to their loaded values
+    /// </summary>
+    public void RestoreSavedHpMp()
+    {
+        Hp = Math.Min(_savedHp, MaxHp);
+        Mp = Math.Min(_savedMp, MaxMp);
     }
 
     public override string DebugName()

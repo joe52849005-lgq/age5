@@ -129,6 +129,9 @@ public class CSSelectCharacterPacket : GamePacket
             //Connection.ActiveChar.Buffs.AddBuff((uint)SkillConstants.Patron, Connection.ActiveChar);
             //Connection.ActiveChar.Buffs.AddBuff((uint)SkillConstants.AuctionLicense, Connection.ActiveChar);
 
+            character.UpdateGearBonuses(null, null);
+            character.RestoreSavedHpMp();
+
             Connection.ActiveChar.OnZoneChange(0, Connection.ActiveChar.Transform.ZoneId);
 
             var scheduleItems = AccountManager.Instance.GetDivineClock(character.AccountId);
