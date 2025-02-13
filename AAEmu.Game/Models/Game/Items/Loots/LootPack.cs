@@ -224,20 +224,16 @@ public class LootPack
                 }
 
                 // Group 0 items will always need to be included
-                if (loot.Group <= 0)
+                if (loot.Group <= 0 || loot.AlwaysDrop || loot.DropRate == 10000000)
                 {
-                    if (!selectedItemsByGroup.ContainsKey(loot.Group))
-                        selectedItemsByGroup.Add(loot.Group, []);
-                    selectedItemsByGroup[loot.Group].Add(loot);
+                    if (!selectedItemsByGroup.ContainsKey(0)) // заменил loot.Group==0 на 0, чтобы было лучше видно
+                        selectedItemsByGroup.Add(0, []);
+                    selectedItemsByGroup[0].Add(loot);
                     continue;
                 }
 
                 var itemRate = loot.DropRate > 1 ? loot.DropRate / 10_000_000f : 1f;
                 var requiresDice = (long)Math.Floor(10_000_000f * groupRate * itemRate * lootDropRate);
-                if (loot.AlwaysDrop)
-                {
-                    requiresDice = 10000000;
-                }
                 var dice = (long)Rand.Next(0, 10000000);
                 if (dice < requiresDice)
                 {
