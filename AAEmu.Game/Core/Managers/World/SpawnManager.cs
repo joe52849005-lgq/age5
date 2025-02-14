@@ -225,8 +225,8 @@ public class SpawnManager : Singleton<SpawnManager>
         {
             entry++;
 
-            //if (IsDuplicateNpcSpawner(world, npcSpawnerFromFile))
-            //    continue;
+            if (IsDuplicateNpcSpawner(world, npcSpawnerFromFile))
+                continue;
 
             if (!NpcManager.Instance.Exist(npcSpawnerFromFile.UnitId))
             {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -7,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-using AAEmu.Commons.Exceptions;
 using AAEmu.Commons.IO;
 using AAEmu.Commons.Utils;
 using AAEmu.Commons.Utils.Creatures;
@@ -155,16 +153,9 @@ public class DoodadSaveSubCommand : SubCommandBase
                 }
             });
 
-            var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", currentWorld.Name, "doodad_spawns.json");
+            var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", currentWorld.Name, $"doodad_spawns_add_{DateTime.Now:yyyyMMdd_HHmmss}.json");
 
-            // Переименование существующего файла
-            if (File.Exists(jsonPathOut))
-            {
-                var backupPath = Path.Combine(FileManager.AppPath, "Data", "Worlds", currentWorld.Name, $"doodad_spawns_{DateTime.Now:yyyyMMdd_HHmmss}.bak");
-                File.Move(jsonPathOut, backupPath);
-            }
-
-            // Запись новых данных в файл doodad_spawns.json
+            // Запись новых данных в файл doodad_spawns_add.json
             var json = JsonConvert.SerializeObject(doodadSpawnersToFile, Formatting.Indented, new JsonModelsConverter());
             File.WriteAllText(jsonPathOut, json);
 
@@ -242,7 +233,7 @@ public class DoodadSaveSubCommand : SubCommandBase
 
         spawnersFromFile[spawn.Id] = spawn;
 
-        var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name, "doodad_spawns_new.json");
+        var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name, $"doodad_spawns_add_{DateTime.Now:yyyyMMdd_HHmmss}.json");
         var json = JsonConvert.SerializeObject(spawnersFromFile.Values.ToArray(), Formatting.Indented, new JsonModelsConverter());
         File.WriteAllText(jsonPathOut, json);
         //SendMessage(messageOutput, $"Doodad ObjId: {doodad.ObjId} has been saved!");
@@ -252,16 +243,40 @@ public class DoodadSaveSubCommand : SubCommandBase
 
     private List<JsonDoodadSpawns> LoadDoodadsFromFileByWorld(World world)
     {
-        var jsonPathIn = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name, "doodad_spawns.json");
-        if (!File.Exists(jsonPathIn))
+        var worldDirectory = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name);
+        var jsonFiles = Directory.GetFiles(worldDirectory, "doodad_spawns*.json");
+
+        if (jsonFiles.Length == 0)
         {
-            throw new GameException($"File {jsonPathIn} doesn't exists.");
+            Logger.Warn($"No doodad_spawns*.json files found in directory {worldDirectory}.");
+            return [];
         }
 
-        var contents = FileManager.GetFileContents(jsonPathIn);
-        Logger.Warn($"Loading spawns from file {jsonPathIn} ...");
+        var allDoodads = new List<JsonDoodadSpawns>();
 
-        return string.IsNullOrWhiteSpace(contents) ? [] : JsonHelper.DeserializeObject<List<JsonDoodadSpawns>>(contents);
+        foreach (var jsonFile in jsonFiles)
+        {
+            var contents = FileManager.GetFileContents(jsonFile);
+            if (string.IsNullOrWhiteSpace(contents))
+            {
+                Logger.Warn($"File {jsonFile} is empty or could not be read.");
+                continue;
+            }
+
+            Logger.Info($"Loading spawns from file {jsonFile} ...");
+
+            var doodads = JsonHelper.DeserializeObject<List<JsonDoodadSpawns>>(contents);
+            if (doodads != null)
+            {
+                allDoodads.AddRange(doodads);
+            }
+            else
+            {
+                Logger.Warn($"Failed to deserialize doodads from file {jsonFile}.");
+            }
+        }
+
+        return allDoodads;
     }
 
     private static string GetSpawnName(uint id)
