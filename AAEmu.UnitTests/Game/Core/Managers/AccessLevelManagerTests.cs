@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Reflection;
+
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Models;
+
 using Xunit;
 
 namespace AAEmu.UnitTests.Game.Core.Managers
@@ -12,24 +13,13 @@ namespace AAEmu.UnitTests.Game.Core.Managers
 
         public AccessLevelManagerTests()
         {
-            _manager = AccessLevelManager.Instance;
-            ResetManagerState();
+            _manager = new AccessLevelManager();
             ResetAppConfiguration();
-        }
-
-        private void ResetManagerState()
-        {
-            var cmdField = typeof(AccessLevelManager).GetField("CMD", 
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            cmdField.SetValue(_manager, new List<Command>());
         }
 
         private void ResetAppConfiguration()
         {
-            // Исправляем тип на Dictionary<string, int>
-            var config = AppConfiguration.Instance;
-            var accessLevelProperty = config.GetType().GetProperty("AccessLevel");
-            accessLevelProperty.SetValue(config, new Dictionary<string, int>());
+            AppConfiguration.Instance.AccessLevel?.Clear();
         }
 
         [Fact]
@@ -45,10 +35,9 @@ namespace AAEmu.UnitTests.Game.Core.Managers
         {
             var config = AppConfiguration.Instance;
             var accessLevel = config.AccessLevel as Dictionary<string, int>;
-            
-            // Используем добавление через словарь
+
             accessLevel.Add("test_command", 5);
-            
+
             _manager.Load();
             var result = _manager.GetLevel("test_command");
             Assert.Equal(5, result);
@@ -59,8 +48,7 @@ namespace AAEmu.UnitTests.Game.Core.Managers
         {
             var config = AppConfiguration.Instance;
             var accessLevel = config.AccessLevel as Dictionary<string, int>;
-            
-            // Добавляем элементы в словарь
+
             accessLevel["cmd1"] = 1;
             accessLevel["cmd2"] = 2;
             accessLevel["cmd3"] = 3;
@@ -76,13 +64,12 @@ namespace AAEmu.UnitTests.Game.Core.Managers
         {
             var config = AppConfiguration.Instance;
             var accessLevel = config.AccessLevel as Dictionary<string, int>;
-            
-            // В словаре дубликаты перезаписывают значение
+
             accessLevel["duplicate"] = 5;
-            accessLevel["duplicate"] = 10; // Перезапись
+            accessLevel["duplicate"] = 10;
 
             _manager.Load();
-            Assert.Equal(10, _manager.GetLevel("duplicate")); // Ожидаем последнее значение
+            Assert.Equal(10, _manager.GetLevel("duplicate"));
         }
 
         [Fact]
