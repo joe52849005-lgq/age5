@@ -45,13 +45,9 @@ public class DoodadSaveSubCommand : SubCommandBase
             try
             {
                 if (parameters.TryGetValue("ObjId", out var doodadObjId))
-                {
                     SaveById(character, doodadObjId, messageOutput);
-                }
                 else
-                {
                     SaveAll(character, messageOutput);
-                }
             }
             catch (Exception ex)
             {
@@ -105,7 +101,27 @@ public class DoodadSaveSubCommand : SubCommandBase
             GC.Collect(); // Вызываем сборку мусора
 
             // Создаем словарь для быстрого поиска элементов в doodadSpawnersToFile
-            var doodadSpawnersDict = doodadSpawnersToFile.ToDictionary(d => (d.UnitId, d.Position.X, d.Position.Y, d.Position.Z));
+            var doodadSpawnersDict = new Dictionary<(uint UnitId, float X, float Y, float Z), JsonDoodadSpawns>();
+            var uniqueKeys = new HashSet<(uint, float, float, float)>();
+
+            foreach (var spawns in doodadSpawnersToFile)
+            {
+                // Формируем ключ для проверки
+                var key = (spawns.UnitId, 
+                    spawns.Position.X, 
+                    spawns.Position.Y, 
+                    spawns.Position.Z);
+
+                // Проверяем уникальность ключа
+                if (!uniqueKeys.Add(key))
+                {
+                    Logger.Warn($"Дубликат объекта с UnitId {spawns.UnitId} " + $"на позиции ({spawns.Position.X}, {spawns.Position.Y}, {spawns.Position.Z})");
+                    continue;
+                }
+
+                // Если ключ уникален - добавляем в словарь
+                doodadSpawnersDict.Add(key, spawns);
+            }
 
             // Удаляем элементы из doodadSpawnersToFile, которые соответствуют removeDoodads
             Parallel.For(0, removeDoodads.Count, i =>
@@ -113,14 +129,10 @@ public class DoodadSaveSubCommand : SubCommandBase
                 var doodad = removeDoodads[i];
                 var key = (doodad.TemplateId, doodad.Transform.World.Position.X, doodad.Transform.World.Position.Y, doodad.Transform.World.Position.Z);
                 if (!doodadSpawnersDict.TryGetValue(key, out var value))
-                {
                     return;
-                }
 
                 lock (doodadSpawnersToFile)
-                {
                     doodadSpawnersToFile.Remove(value);
-                }
                 doodadSpawnersDict.Remove(key);
             });
 
@@ -153,9 +165,9 @@ public class DoodadSaveSubCommand : SubCommandBase
                 }
             });
 
-            var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", currentWorld.Name, $"doodad_spawns_add_{DateTime.Now:yyyyMMdd_HHmmss}.json");
+            var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", currentWorld.Name, $"doodad_spawns_all_{DateTime.Now:yyyyMMdd_HHmmss}.json.add");
 
-            // Запись новых данных в файл doodad_spawns_add.json
+            // Запись новых данных в файл
             var json = JsonConvert.SerializeObject(doodadSpawnersToFile, Formatting.Indented, new JsonModelsConverter());
             File.WriteAllText(jsonPathOut, json);
 
