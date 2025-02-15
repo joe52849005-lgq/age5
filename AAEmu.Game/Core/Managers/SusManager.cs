@@ -83,10 +83,7 @@ public class SusManager : Singleton<SusManager>
         var deltaPos = player.Transform.World.ClonePosition() - last.pos;
         var deltaFlatPos = deltaPos with { Z = 0 };
 
-        if (player.IsRiding == false &&
-            player.DisabledSetPosition == false &&
-            deltaFlatPos != Vector3.Zero &&
-            last.skipTime <= 0f)
+        if (player.IsRiding == false && player.DisabledSetPosition == false && deltaFlatPos != Vector3.Zero && last.skipTime <= 0f)
         {
             var observedSpeed = deltaFlatPos.Length() / deltaTime;
             // var playerCheckSpeed = 5.0 * character.BaseMoveSpeed * character.MoveSpeedMul * 3.0;
@@ -135,9 +132,7 @@ public class SusManager : Singleton<SusManager>
         var deltaPos = pet.Transform.World.ClonePosition() - last.pos;
         var deltaFlatPos = deltaPos with { Z = 0 };
 
-        if (pet.DisabledSetPosition == false &&
-            deltaFlatPos != Vector3.Zero &&
-            last.skipTime <= 0f)
+        if (pet.DisabledSetPosition == false && deltaFlatPos != Vector3.Zero && last.skipTime <= 0f)
         {
             var observedSpeed = deltaFlatPos.Length() / deltaTime;
             // var playerCheckSpeed = 5.0 * character.BaseMoveSpeed * character.MoveSpeedMul * 3.0;
@@ -150,11 +145,11 @@ public class SusManager : Singleton<SusManager>
                 LogActivity(CategoryCheating,
                     petOwner,
                     $"Pet {pet.Name} from {petOwner?.Name} seems to be moving a bit fast {observedSpeed:F1} m/s (max {playerCheckSpeed:F1})");
-                petOwner?.SendMessage($"Pet Speed {observedSpeed:F1} m/s (max {playerCheckSpeed:F1}) !!!");
+                //petOwner?.SendMessage($"Pet Speed {observedSpeed:F1} m/s (max {playerCheckSpeed:F1}) !!!");
             }
             else
             {
-                petOwner?.SendMessage($"Pet Speed {observedSpeed:F1} m/s (max {playerCheckSpeed:F1})");    
+                //petOwner?.SendMessage($"Pet Speed {observedSpeed:F1} m/s (max {playerCheckSpeed:F1})");    
             }
         }
 
