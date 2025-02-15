@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+
+using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Network.Game;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Units;
+
 using NLog;
 
 namespace AAEmu.Game.Models.Game.World;
@@ -12,11 +15,30 @@ namespace AAEmu.Game.Models.Game.World;
 public class GameObject : IGameObject
 {
     protected static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private bool _disabledSetPosition;
 
     public Guid Guid { get; set; } = Guid.NewGuid();
     public uint ObjId { get; set; }
     public uint InstanceId { get; set; } = WorldManager.DefaultInstanceId;
-    public bool DisabledSetPosition { get; set; }
+
+    public bool DisabledSetPosition
+    {
+        get => _disabledSetPosition;
+        set
+        {
+            if (_disabledSetPosition == value)
+                return;
+            _disabledSetPosition = value;
+            if (value)
+            {
+                if (this is Character character)
+                    SusManager.Instance.ResetAnalyzePlayerDeltaMovement(character.Id);
+                if (this is Units.Mate pet)
+                    SusManager.Instance.ResetAnalyzeMountDeltaMovement(pet.Id);
+            }
+        }
+    }
+
     /// <summary>
     /// Contains position, rotation, zone and instance information
     /// </summary>
@@ -119,7 +141,7 @@ public class GameObject : IGameObject
     }
 
     /// <summary>
-    /// Make GameObject visible to player, on it's own only propagates children, needs to be inherited and calling base at the end of it
+    /// Make GameObject visible to player, on its own only propagates children, needs to be inherited and calling base at the end of it
     /// </summary>
     /// <param name="character"></param>
     public virtual void AddVisibleObject(Character character)
@@ -145,7 +167,7 @@ public class GameObject : IGameObject
 
     public virtual string DebugName()
     {
-        return "(" + ObjId.ToString() + ") - " + ToString();
+        return "(" + ObjId + ") - " + ToString();
     }
 
     /// <summary>

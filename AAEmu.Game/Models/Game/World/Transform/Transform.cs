@@ -31,6 +31,8 @@ public class Transform : IDisposable
     private Transform _stickyParentTransform;
     private List<Transform> _stickyChildren;
     private Vector3 _lastFinalizePos; // Might use this later for cheat detection or delta movement
+    private DateTime _lastFinalizeTime;
+    private float _skipCheckTime;
     public List<Character> _debugTrackers;
     private object _lock = new();
 
@@ -93,12 +95,14 @@ public class Transform : IDisposable
         _owningObject = owningObject;
         _parentTransform = parentTransform;
         _stickyParentTransform = stickyParentTransform;
-        _children = new List<Transform>();
+        _children = [];
         _localPosRot = new PositionAndRotation();
         //_stickyParentTransform = null; // TODO why are we doing this?
-        _stickyChildren = new List<Transform>();
+        _stickyChildren = [];
         _lastFinalizePos = Vector3.Zero;
-        _debugTrackers = new List<Character>();
+        _lastFinalizeTime = DateTime.UtcNow;
+        _skipCheckTime = 0f;
+        _debugTrackers = [];
     }
 
     public Transform(GameObject owningObject, Transform parentTransform = null, Transform stickyParentTransform = null)
@@ -385,6 +389,8 @@ public class Transform : IDisposable
     /// </summary>
     public void FinalizeTransform(bool includeChildren = true)
     {
+        var deltaTime = DateTime.UtcNow - _lastFinalizeTime;
+        // Timer to reduce log spam
         var worldPosDelta = World.ClonePosition() - _lastFinalizePos;
         if (worldPosDelta == Vector3.Zero)
             return;
@@ -504,6 +510,21 @@ public class Transform : IDisposable
             }
         }
 
+        _skipCheckTime -= (float)deltaTime.TotalSeconds;
+        if (_skipCheckTime <= 0f)
+        {
+            _skipCheckTime = 5f;
+            if (_owningObject is Character player)
+            {
+                SusManager.Instance.AnalyzePlayerDeltaMovement(player, 5f);
+            }
+            
+            if (_owningObject is Units.Mate mount)
+            {
+                SusManager.Instance.AnalyzeMountDeltaMovement(mount, 5f);
+            }
+        }
+
         ResetFinalizeTransform();
         _owningObject.SetPosition(Local.Position.X, Local.Position.Y, Local.Position.Z, Local.Rotation.X, Local.Rotation.Y, Local.Rotation.Z);
     }
@@ -511,6 +532,7 @@ public class Transform : IDisposable
     public void ResetFinalizeTransform()
     {
         _lastFinalizePos = World.ClonePosition();
+        _lastFinalizeTime = DateTime.UtcNow;
     }
 
     /// <summary>

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using AAEmu.Commons.Network;
+﻿using AAEmu.Commons.Network;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Network.Game;
 using AAEmu.Game.Core.Packets.G2C;
@@ -29,11 +28,21 @@ public class CSDestroyItemPacket : GamePacket
             // TODO ... ItemNotify?
             return;
         }
+        
+        if (count <= 0)
+        {
+            // The amount to destroy should always be more than 0, assume hacking otherwise, and just destroy the entire item
+            SusManager.Instance.LogActivity(
+                SusManager.CategoryCheating,
+                Connection.ActiveChar,
+                $"CSDestroyItemPacket, player {Connection.ActiveChar?.Name} attempted to destroy a negative amount of items {count} for item: template {item.TemplateId}, id {item.Id}");
+            count = item.Count;
+        }
 
         if (item.Count > count)
         {
             item.Count -= count;
-            Connection.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Destroy, new List<ItemTask> { new ItemCountUpdate(item, -count) }, new List<ulong>()));
+            Connection.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Destroy, [new ItemCountUpdate(item, -count)], []));
         }
         else
         {
@@ -41,7 +50,7 @@ public class CSDestroyItemPacket : GamePacket
             if (item.HoldingContainer == null)
             {
                 ItemManager.Instance.ReleaseId(item.Id);
-                Connection.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Destroy, new List<ItemTask> { new ItemRemove(item) }, new List<ulong>()));
+                Connection.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.Destroy, [new ItemRemove(item)], []));
             }
             else
             if (!item.HoldingContainer.RemoveItem(ItemTaskType.Destroy, item, true))

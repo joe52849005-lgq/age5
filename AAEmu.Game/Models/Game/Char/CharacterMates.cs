@@ -117,9 +117,8 @@ public class CharacterMates
         SetMateType(item, mount);
 
         mount.Transform = Owner.Transform.CloneDetached(mount);
+        SusManager.Instance.ResetAnalyzeMountDeltaMovement(mount.Id);
 
-        //foreach (var skill in MateManager.Instance.GetMateSkills(npcId))
-        //    mount.Skills.Add(skill);
         var mateSkills = MateManager.Instance.GetMateSkills(npcId);
         if (mateSkills is { Count: > 0 })
             mount.Skills.AddRange(mateSkills);
@@ -224,32 +223,28 @@ public class CharacterMates
 
     public void Load(MySqlConnection connection)
     {
-        using (var command = connection.CreateCommand())
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM mates WHERE `owner` = @owner";
+        command.Parameters.AddWithValue("@owner", Owner.Id);
+        command.Prepare();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
         {
-            command.CommandText = "SELECT * FROM mates WHERE `owner` = @owner";
-            command.Parameters.AddWithValue("@owner", Owner.Id);
-            command.Prepare();
-            using (var reader = command.ExecuteReader())
+            var template = new MateDb
             {
-                while (reader.Read())
-                {
-                    var template = new MateDb
-                    {
-                        Id = reader.GetUInt32("id"),
-                        ItemId = reader.GetUInt64("item_id"),
-                        Name = reader.GetString("name"),
-                        Xp = reader.GetInt32("xp"),
-                        Level = reader.GetUInt16("level"),
-                        Mileage = reader.GetInt32("mileage"),
-                        Hp = reader.GetInt32("hp"),
-                        Mp = reader.GetInt32("mp"),
-                        Owner = reader.GetUInt32("owner"),
-                        UpdatedAt = reader.GetDateTime("updated_at"),
-                        CreatedAt = reader.GetDateTime("created_at")
-                    };
-                    _mates.Add(template.ItemId, template);
-                }
-            }
+                Id = reader.GetUInt32("id"),
+                ItemId = reader.GetUInt64("item_id"),
+                Name = reader.GetString("name"),
+                Xp = reader.GetInt32("xp"),
+                Level = reader.GetUInt16("level"),
+                Mileage = reader.GetInt32("mileage"),
+                Hp = reader.GetInt32("hp"),
+                Mp = reader.GetInt32("mp"),
+                Owner = reader.GetUInt32("owner"),
+                UpdatedAt = reader.GetDateTime("updated_at"),
+                CreatedAt = reader.GetDateTime("created_at")
+            };
+            _mates.Add(template.ItemId, template);
         }
     }
 
@@ -257,42 +252,38 @@ public class CharacterMates
     {
         if (_removedMates.Count > 0)
         {
-            using (var command = connection.CreateCommand())
-            {
-                command.Connection = connection;
-                command.Transaction = transaction;
+            using var command = connection.CreateCommand();
+            command.Connection = connection;
+            command.Transaction = transaction;
 
-                command.CommandText = "DELETE FROM mates WHERE owner = @owner AND id IN(" + string.Join(",", _removedMates) + ")";
-                command.Parameters.AddWithValue("@owner", Owner.Id);
-                command.Prepare();
-                command.ExecuteNonQuery();
-                _removedMates.Clear();
-            }
+            command.CommandText = "DELETE FROM mates WHERE owner = @owner AND id IN(" + string.Join(",", _removedMates) + ")";
+            command.Parameters.AddWithValue("@owner", Owner.Id);
+            command.Prepare();
+            command.ExecuteNonQuery();
+            _removedMates.Clear();
         }
 
         foreach (var (_, value) in _mates)
         {
-            using (var command = connection.CreateCommand())
-            {
-                command.Connection = connection;
-                command.Transaction = transaction;
+            using var command = connection.CreateCommand();
+            command.Connection = connection;
+            command.Transaction = transaction;
 
-                command.CommandText =
-                    "REPLACE INTO mates(`id`,`item_id`,`name`,`xp`,`level`,`mileage`,`hp`,`mp`,`owner`,`updated_at`,`created_at`) " +
-                    "VALUES (@id, @item_id, @name, @xp, @level, @mileage, @hp, @mp, @owner, @updated_at, @created_at)";
-                command.Parameters.AddWithValue("@id", value.Id);
-                command.Parameters.AddWithValue("@item_id", value.ItemId);
-                command.Parameters.AddWithValue("@name", value.Name);
-                command.Parameters.AddWithValue("@xp", value.Xp);
-                command.Parameters.AddWithValue("@level", value.Level);
-                command.Parameters.AddWithValue("@mileage", value.Mileage);
-                command.Parameters.AddWithValue("@hp", value.Hp);
-                command.Parameters.AddWithValue("@mp", value.Mp);
-                command.Parameters.AddWithValue("@owner", value.Owner);
-                command.Parameters.AddWithValue("@updated_at", value.UpdatedAt);
-                command.Parameters.AddWithValue("@created_at", value.CreatedAt);
-                command.ExecuteNonQuery();
-            }
+            command.CommandText =
+                "REPLACE INTO mates(`id`,`item_id`,`name`,`xp`,`level`,`mileage`,`hp`,`mp`,`owner`,`updated_at`,`created_at`) " +
+                "VALUES (@id, @item_id, @name, @xp, @level, @mileage, @hp, @mp, @owner, @updated_at, @created_at)";
+            command.Parameters.AddWithValue("@id", value.Id);
+            command.Parameters.AddWithValue("@item_id", value.ItemId);
+            command.Parameters.AddWithValue("@name", value.Name);
+            command.Parameters.AddWithValue("@xp", value.Xp);
+            command.Parameters.AddWithValue("@level", value.Level);
+            command.Parameters.AddWithValue("@mileage", value.Mileage);
+            command.Parameters.AddWithValue("@hp", value.Hp);
+            command.Parameters.AddWithValue("@mp", value.Mp);
+            command.Parameters.AddWithValue("@owner", value.Owner);
+            command.Parameters.AddWithValue("@updated_at", value.UpdatedAt);
+            command.Parameters.AddWithValue("@created_at", value.CreatedAt);
+            command.ExecuteNonQuery();
         }
     }
 }
