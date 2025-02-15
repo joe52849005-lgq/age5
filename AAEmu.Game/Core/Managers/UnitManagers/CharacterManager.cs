@@ -584,6 +584,7 @@ public class CharacterManager : Singleton<CharacterManager>
 
         character.Hp = character.MaxHp;
         character.Mp = character.MaxMp;
+        character.RestoreSavedHpMp();
 
         if (character.SaveDirectlyToDatabase())
         {
