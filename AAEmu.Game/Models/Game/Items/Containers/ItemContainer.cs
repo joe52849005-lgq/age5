@@ -136,7 +136,7 @@ public class ItemContainer
         // Only relevant for inheritance
         Owner = null;
         ContainerType = SlotType.Invalid;
-        Items = new List<Item>();
+        Items = [];
         ContainerSize = 0;
     }
 
@@ -152,7 +152,7 @@ public class ItemContainer
         OwnerId = ownerId;
         ContainerType = containerType;
         ParentUnit = parentUnit;
-        Items = new List<Item>();
+        Items = [];
         ContainerSize = -1; // Unlimited
         if (createWithNewId)
         {
@@ -417,12 +417,12 @@ public class ItemContainer
         {
             if (itemTasks.Count > 0)
             {
-                Owner?.SendPacket(new SCItemTaskSuccessPacket(taskType, itemTasks, new List<ulong>()));
+                Owner?.SendPacket(new SCItemTaskSuccessPacket(taskType, itemTasks, []));
             }
 
             if (sourceItemTasks.Count > 0)
             {
-                sourceContainer?.Owner?.SendPacket(new SCItemTaskSuccessPacket(taskType, sourceItemTasks, new List<ulong>()));
+                sourceContainer?.Owner?.SendPacket(new SCItemTaskSuccessPacket(taskType, sourceItemTasks, []));
             }
         }
 
@@ -572,12 +572,12 @@ public class ItemContainer
         {
             if (itemTasks.Count > 0)
             {
-                Owner?.SendPacket(new SCItemTaskSuccessPacket(taskType, itemTasks, new List<ulong>()));
+                Owner?.SendPacket(new SCItemTaskSuccessPacket(taskType, itemTasks, []));
             }
 
             if (sourceItemTasks.Count > 0)
             {
-                sourceContainer?.Owner?.SendPacket(new SCItemTaskSuccessPacket(taskType, sourceItemTasks, new List<ulong>()));
+                sourceContainer?.Owner?.SendPacket(new SCItemTaskSuccessPacket(taskType, sourceItemTasks, []));
             }
         }
 
@@ -789,8 +789,8 @@ public class ItemContainer
     /// <returns></returns>
     public bool AcquireDefaultItemEx(ItemTaskType taskType, uint templateId, int amountToAdd, int gradeToAdd, out List<Item> newItemsList, out List<Item> updatedItemsList, uint crafterId, int preferredSlot = -1)
     {
-        newItemsList = new List<Item>();
-        updatedItemsList = new List<Item>();
+        newItemsList = [];
+        updatedItemsList = [];
         if (amountToAdd <= 0)
         {
             return true;
@@ -917,7 +917,7 @@ public class ItemContainer
 
         if (taskType != ItemTaskType.Invalid)
         {
-            Owner?.SendPacket(new SCItemTaskSuccessPacket(taskType, itemTasks, new List<ulong>()));
+            Owner?.SendPacket(new SCItemTaskSuccessPacket(taskType, itemTasks, []));
         }
 
         UpdateFreeSlotCount();
@@ -961,7 +961,7 @@ public class ItemContainer
     {
         if (itemToAdd == null)
         {
-            currentItems = new List<Item>();
+            currentItems = [];
             return 0;
         }
 
@@ -994,7 +994,7 @@ public class ItemContainer
     /// <returns>True if any item was found</returns>
     public bool GetAllItemsByTemplate(uint templateId, int gradeToFind, out List<Item> foundItems, out int unitsOfItemFound)
     {
-        foundItems = new List<Item>();
+        foundItems = [];
         unitsOfItemFound = 0;
         foreach (var i in Items)
         {
@@ -1010,7 +1010,7 @@ public class ItemContainer
 
     public bool GetAllItemsByTemplate(uint templateId, out List<Item> foundItems, out int unitsOfItemFound)
     {
-        foundItems = new List<Item>();
+        foundItems = [];
         unitsOfItemFound = 0;
         foreach (var i in Items.Where(i => i.TemplateId == templateId))
         {
@@ -1050,7 +1050,7 @@ public class ItemContainer
 
         if (itemTasks.Count > 0)
         {
-            Owner?.SendPacket(new SCItemTaskSuccessPacket(taskType, itemTasks, new List<ulong>()));
+            Owner?.SendPacket(new SCItemTaskSuccessPacket(taskType, itemTasks, []));
         }
     }
 
@@ -1077,7 +1077,7 @@ public class ItemContainer
         // When it's a backpack, allow only gliders by default
         if (PartOfPlayerInventory && item.Template is BackpackTemplate backpackTemplate)
         {
-            return backpackTemplate.BackpackType == BackpackType.Glider || backpackTemplate.BackpackType == BackpackType.ToyFlag;
+            return backpackTemplate.BackpackType is BackpackType.Glider or BackpackType.ToyFlag;
         }
 
         return true;
@@ -1095,7 +1095,9 @@ public class ItemContainer
     public static ItemContainer CreateByTypeName(string containerTypeName, uint ownerId, SlotType slotType, bool createWithNewId, Unit parentUnit)
     {
         if (containerTypeName.EndsWith("SlaveEquipmentContainer"))
+        {
             return new SlaveEquipmentContainer(ownerId, slotType, createWithNewId, parentUnit);
+        }
 
         if (containerTypeName.EndsWith("MateEquipmentContainer"))
         {

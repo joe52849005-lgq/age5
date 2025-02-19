@@ -101,8 +101,7 @@ public class DoodadManager : Singleton<DoodadManager>
             // doodad_func_groups
             using (var command = connection.CreateCommand())
             {
-                command.CommandText =
-                    "SELECT * FROM doodad_func_groups ORDER BY doodad_almighty_id, doodad_func_group_kind_id";
+                command.CommandText = "SELECT * FROM doodad_func_groups ORDER BY doodad_almighty_id, doodad_func_group_kind_id";
                 command.Prepare();
                 using (var sqliteDataReaderChild = command.ExecuteReader())
                 using (var reader = new SQLiteWrapperReader(sqliteDataReaderChild))
@@ -153,7 +152,7 @@ public class DoodadManager : Singleton<DoodadManager>
                         }
                         else
                         {
-                            tempListGroups = new List<DoodadFunc>();
+                            tempListGroups = [];
                             _funcsByGroups.Add(func.GroupId, tempListGroups);
                         }
 
@@ -186,7 +185,7 @@ public class DoodadManager : Singleton<DoodadManager>
                         }
                         else
                         {
-                            list = new List<DoodadPhaseFunc>();
+                            list = [];
                             _phaseFuncs.Add(func.GroupId, list);
                         }
 
@@ -598,7 +597,7 @@ public class DoodadManager : Singleton<DoodadManager>
                             TargetBuffTagId = reader.GetUInt32("target_buff_tag_id", 0),
                             TargetNoBuffTagId = reader.GetUInt32("target_no_buff_tag_id", 0),
                             UseOriginSource = reader.GetBoolean("use_origin_source", true),
-                            Effects = new List<uint>()
+                            Effects = []
                         };
                         _phaseFuncTemplates["DoodadFuncClout"].Add(func.Id, func);
                     }
@@ -693,45 +692,45 @@ public class DoodadManager : Singleton<DoodadManager>
             // doodad_func_consume_changer_items
             // This is not actually a phase, but rather a collection of items that is available for doodad_func_consume_changers
             // TODO there is no such table in 5070 AAFree
-            //using (var command = connection.CreateCommand())
-            //{
-            //    command.CommandText = "SELECT * FROM doodad_func_consume_changer_items";
-            //    command.Prepare();
-            //    using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
-            //    {
-            //        while (reader.Read())
-            //        {
-            //            var entry = new DoodadFuncConsumeChangerItem
-            //            {
-            //                Id = reader.GetUInt32("id"),
-            //                DoodadFuncConsumeChangerId = reader.GetUInt32("doodad_func_consume_changer_id"),
-            //                ItemId = reader.GetUInt32("item_id")
-            //            };
-            //            _doodadFuncConsumeChangerItem.TryAdd(entry.Id, entry);
-            //        }
-            //    }
-            //}
+            using (var command = connection2.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM doodad_func_consume_changer_items";
+                command.Prepare();
+                using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
+                {
+                    while (reader.Read())
+                    {
+                        var entry = new DoodadFuncConsumeChangerItem
+                        {
+                            Id = reader.GetUInt32("id"),
+                            DoodadFuncConsumeChangerId = reader.GetUInt32("doodad_func_consume_changer_id"),
+                            ItemId = reader.GetUInt32("item_id")
+                        };
+                        _doodadFuncConsumeChangerItem.TryAdd(entry.Id, entry);
+                    }
+                }
+            }
 
-            //// doodad_func_consume_changer_model_items
+            // doodad_func_consume_changer_model_items
             // TODO there is no such table in 5070 AAFree
-            //using (var command = connection.CreateCommand())
-            //{
-            //    command.CommandText = "SELECT * FROM doodad_func_consume_changer_model_items";
-            //    command.Prepare();
-            //    using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
-            //    {
-            //        while (reader.Read())
-            //        {
-            //            var func = new DoodadFuncConsumeChangerModelItem
-            //            {
-            //                Id = reader.GetUInt32("id"),
-            //                DoodadFuncConsumeChangerModelId = reader.GetUInt32("doodad_func_consume_changer_model_id"),
-            //                ItemId = reader.GetUInt32("item_id")
-            //            };
-            //            _phaseFuncTemplates["DoodadFuncConsumeChangerModelItem"].Add(func.Id, func);
-            //        }
-            //    }
-            //}
+            using (var command = connection2.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM doodad_func_consume_changer_model_items";
+                command.Prepare();
+                using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
+                {
+                    while (reader.Read())
+                    {
+                        var func = new DoodadFuncConsumeChangerModelItem
+                        {
+                            Id = reader.GetUInt32("id"),
+                            DoodadFuncConsumeChangerModelId = reader.GetUInt32("doodad_func_consume_changer_model_id"),
+                            ItemId = reader.GetUInt32("item_id")
+                        };
+                        _phaseFuncTemplates["DoodadFuncConsumeChangerModelItem"].Add(func.Id, func);
+                    }
+                }
+            }
 
             // doodad_func_consume_changer_models
             using (var command = connection.CreateCommand())
@@ -2746,8 +2745,7 @@ public class DoodadManager : Singleton<DoodadManager>
                         {
                             Id = reader.GetUInt32("id"),
                             Almighty = reader.GetUInt32("doodad_almighty_id"),
-                            GroupKindId =
-                                (DoodadFuncGroups.DoodadFuncGroupKind)reader.GetUInt32("doodad_func_group_kind_id"),
+                            GroupKindId = (DoodadFuncGroups.DoodadFuncGroupKind)reader.GetUInt32("doodad_func_group_kind_id"),
                             SoundId = reader.GetUInt32("sound_id", 0)
                         };
 
@@ -3019,12 +3017,12 @@ public class DoodadManager : Singleton<DoodadManager>
 
     public List<DoodadFunc> GetFuncsForGroup(uint funcGroupId)
     {
-        return _funcsByGroups.TryGetValue(funcGroupId, out var group) ? group : new List<DoodadFunc>();
+        return _funcsByGroups.TryGetValue(funcGroupId, out var group) ? group : [];
     }
 
     public List<DoodadPhaseFunc> GetPhaseFunc(uint funcGroupId)
     {
-        return _phaseFuncs.TryGetValue(funcGroupId, out var func) ? func : new List<DoodadPhaseFunc>();
+        return _phaseFuncs.TryGetValue(funcGroupId, out var func) ? func : [];
     }
 
     public DoodadFuncTemplate GetFuncTemplate(uint funcId, string funcType)
@@ -3091,7 +3089,7 @@ public class DoodadManager : Singleton<DoodadManager>
     /// <returns>List of DoodadFunc</returns>
     public List<DoodadFunc> GetDoodadFuncs(uint doodadFuncGroupId)
     {
-        return _funcsByGroups.TryGetValue(doodadFuncGroupId, out var funcs) ? funcs : new List<DoodadFunc>();
+        return _funcsByGroups.TryGetValue(doodadFuncGroupId, out var funcs) ? funcs : [];
     }
 
     /// <summary>
@@ -3101,7 +3099,7 @@ public class DoodadManager : Singleton<DoodadManager>
     /// <returns>DoodadFunc[]</returns>
     public List<DoodadPhaseFunc> GetDoodadPhaseFuncs(uint funcGroupId)
     {
-        return _phaseFuncs.TryGetValue(funcGroupId, out var funcs) ? funcs : new List<DoodadPhaseFunc>();
+        return _phaseFuncs.TryGetValue(funcGroupId, out var funcs) ? funcs : [];
     }
 
     /// <summary>
@@ -3166,7 +3164,7 @@ public class DoodadManager : Singleton<DoodadManager>
         foreach (var item in items)
         {
             character.ItemUse(preferredItem);
-            character.Inventory.ConsumeItem(new[] { SlotType.Bag }, ItemTaskType.DoodadCreate, item, 1,
+            character.Inventory.ConsumeItem([SlotType.Bag], ItemTaskType.DoodadCreate, item, 1,
                 preferredItem);
         }
 

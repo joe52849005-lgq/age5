@@ -244,13 +244,13 @@ public class Skill
 
         // TODO: Remove exception for doodads
         // TODO: Remove exceptions for slave initiated by Doodads (needed to fix repair points on ships)
-        if (targetDist > maxRangeCheck && target is not Doodad && target is not Slave)
-        {
-            SkillTlIdManager.ReleaseId(TlId);
-            TlId = 0;
-            Logger.Info($"TooFarRange targetDist={targetDist}, maxRangeCheck={maxRangeCheck}, SkillTlId {TlId} for Skill {Template.Id}, Caster {caster.Name} ({caster.TemplateId}:{caster.ObjId}) with target {target.Name} ({target.TemplateId}:{target.ObjId})");
-            return SkillResult.TooFarRange;
-        }
+        //if (targetDist > maxRangeCheck && target is not Doodad && target is not Slave)
+        //{
+        //    SkillTlIdManager.ReleaseId(TlId);
+        //    TlId = 0;
+        //    Logger.Info($"TooFarRange targetDist={targetDist}, maxRangeCheck={maxRangeCheck}, SkillTlId {TlId} for Skill {Template.Id}, Caster {caster.Name} ({caster.TemplateId}:{caster.ObjId}) with target {target.Name} ({target.TemplateId}:{target.ObjId})");
+        //    return SkillResult.TooFarRange;
+        //}
 
         if (character is { AccessLevel: < 100 })
         {

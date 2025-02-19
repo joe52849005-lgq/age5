@@ -33,6 +33,8 @@ public class Inventory
     public ItemContainer Warehouse { get; private set; }
     public ItemContainer MailAttachments { get; private set; }
     public ItemContainer SystemContainer { get; private set; }
+    public SlaveEquipmentContainer SlaveContainer { get; private set; }
+    public MateEquipmentContainer MateContainer { get; private set; }
     public ItemContainer AuctionAttachments { get; private set; }
     public ulong PreviousBackPackItemId { get; set; } // used to re-equip glider when putting backpacks down
 
@@ -50,8 +52,8 @@ public class Inventory
         {
             var st = (SlotType)stv;
 
-            if (st == SlotType.PetRideEquipment || st == SlotType.SlaveEquipment)
-                continue;
+            //if (st == SlotType.PetRideEquipment || st == SlotType.SlaveEquipment
+            //    continue;
 
             // Take Equipment Container from Parent Unit's Equipment
             if (st == SlotType.Equipment)
@@ -90,6 +92,12 @@ public class Inventory
                     break;
                 case SlotType.Money:
                     SystemContainer = newContainer;
+                    break;
+                case SlotType.SlaveEquipment:
+                    SlaveContainer = (SlaveEquipmentContainer)newContainer;
+                    break;
+                case SlotType.PetRideEquipment:
+                    MateContainer = (MateEquipmentContainer)newContainer;
                     break;
             }
         }
@@ -167,7 +175,7 @@ public class Inventory
         if ((containersToCheck != null) && (containersToCheck.Length > 0))
             containerList = containersToCheck;
         else
-            containerList = new SlotType[3] { SlotType.Bag, SlotType.Equipment, SlotType.Bank };
+            containerList = [SlotType.Bag, SlotType.Equipment, SlotType.Bank];
         var res = 0;
         foreach (var cli in containerList)
         {
@@ -193,7 +201,7 @@ public class Inventory
         var totalCount = 0;
         if (_itemContainers.TryGetValue(slotType, out var c))
         {
-            if (c.GetAllItemsByTemplate(templateId, -1, out _, out int itemCount))
+            if (c.GetAllItemsByTemplate(templateId, -1, out _, out var itemCount))
                 totalCount += itemCount;
         }
         return totalCount >= count;
@@ -222,7 +230,7 @@ public class Inventory
     /// <returns></returns>
     public int GetItemsCount(SlotType slotType, uint templateId, int gradeToCount = -1)
     {
-        if (GetAllItemsByTemplate(new SlotType[1] { slotType }, templateId, gradeToCount, out var _, out var counted))
+        if (GetAllItemsByTemplate([slotType], templateId, gradeToCount, out var _, out var counted))
             return counted;
         else
             return 0;
@@ -239,12 +247,12 @@ public class Inventory
     /// <returns>True if any item was found</returns>
     public bool GetAllItemsByTemplate(SlotType[] inContainerTypes, uint templateId, int gradeToCheck, out List<Item> foundItems, out int unitsOfItemFound)
     {
-        bool res = false;
-        foundItems = new List<Item>();
+        var res = false;
+        foundItems = [];
         unitsOfItemFound = 0;
-        if (inContainerTypes == null || inContainerTypes.Length <= 0)
+        if (inContainerTypes is not { Length: > 0 })
         {
-            inContainerTypes = new SlotType[3] { SlotType.Bag, SlotType.Equipment, SlotType.Bank };
+            inContainerTypes = [SlotType.Bag, SlotType.Equipment, SlotType.Bank];
         }
         foreach (var ct in inContainerTypes)
         {
@@ -323,7 +331,7 @@ public class Inventory
 
         var action = SwapAction.doNothing;
 
-        // Try to grab the target item by it's itemId
+        // Try to grab the target item by its itemId
         var itemInTargetSlot = ItemManager.Instance.GetItemByItemId(toItemId);
         // If no count provided, and we have a source item, use that item's total count instead
         if (count <= 0 && fromItem != null)
@@ -442,7 +450,7 @@ public class Inventory
         Item offHandWeapon = null;
 
         // If swapping items or equipping new items
-        if (action == SwapAction.doSwap || action == SwapAction.doEquipInEmptySlot)
+        if (action is SwapAction.doSwap or SwapAction.doEquipInEmptySlot)
         {
             // Grab reference to old weapon slots
             mainHandWeapon = Equipment.GetItemBySlot((int)EquipmentItemSlot.Mainhand);
@@ -450,7 +458,7 @@ public class Inventory
 
             // Check for equipping weapons by swapping (and if it's a 2-handed one)
             var isFrom2H = false;
-            if (fromItem != null && fromItem.Template is WeaponTemplate weaponFrom)
+            if (fromItem is { Template: WeaponTemplate weaponFrom })
             {
                 switch ((EquipmentItemSlotType)weaponFrom.HoldableTemplate.SlotTypeId)
                 {
@@ -469,7 +477,7 @@ public class Inventory
             }
 
             var isTo2H = false;
-            if (itemInTargetSlot != null && itemInTargetSlot.Template is WeaponTemplate weaponTo)
+            if (itemInTargetSlot is { Template: WeaponTemplate weaponTo })
             {
                 switch ((EquipmentItemSlotType)weaponTo.HoldableTemplate.SlotTypeId)
                 {
@@ -649,7 +657,7 @@ public class Inventory
 
         // Send Item manipulation packet 
         if (taskType != ItemTaskType.Invalid && itemTasks.Count > 0)
-            Owner.SendPacket(new SCItemTaskSuccessPacket(taskType, itemTasks, new List<ulong>()));
+            Owner.SendPacket(new SCItemTaskSuccessPacket(taskType, itemTasks, []));
 
         // Send ItemContainer events
         if (sourceContainer != targetContainer)
@@ -915,7 +923,7 @@ public class Inventory
             Bag.ContainerSize = Owner.NumInventorySlots;
         }
 
-        Owner.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.DepositMoney, tasks, new List<ulong>()));
+        Owner.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.DepositMoney, tasks, []));
         Owner.SendPacket(new SCInvenExpandedPacket(
                 isBank ? SlotType.Bank : SlotType.Bag,
                 isBank ? (byte)Owner.NumBankSlots : Owner.NumInventorySlots));
