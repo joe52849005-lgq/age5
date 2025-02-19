@@ -45,6 +45,8 @@ public class PlotNode
 
     public void Execute(PlotState state, PlotTargetInfo targetInfo, CompressedGamePackets packets = null)
     {
+        //Logger.Debug("Executing plot node with id {0}", Event.Id);
+
         if (state?.Caster == null)
         {
             return;

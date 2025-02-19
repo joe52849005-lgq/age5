@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -595,6 +595,35 @@ public class LootingContainer(IBaseUnit owner)
         if (itemEntry.Item.TemplateId == (uint)ItemConstants.Coins)
         {
             player.AddMoney(SlotType.Bag, itemEntry.Item.Count);
+        }
+        else if (ItemManager.Instance.IsAutoEquipTradePack(itemEntry.Item.TemplateId))
+        {
+            // Auto-equip tradepack item branch.
+            // Create a new item instance (non-binding on creation).
+            var item = ItemManager.Instance.Create(itemEntry.Item.TemplateId, itemEntry.Item.Count, itemEntry.Item.Grade, false);
+            // Attempt to remove the current backpack item to free up the slot.
+            if (player.Inventory.TakeoffBackpack(ItemTaskType.RecoverDoodadItem, true))
+            {
+                // Try to add the new item to the Equipment container's Backpack slot.
+                if (!player.Inventory.Equipment.AddOrMoveExistingItem(ItemTaskType.RecoverDoodadItem, item, (int)EquipmentItemSlot.Backpack))
+                {
+                    // If adding fails, release the item ID and restore original.
+                    ItemIdManager.Instance.ReleaseId((uint)item.Id);
+                    itemEntry.Item.Id = fullOldItemId;
+                    player.SendPacket(new SCLootItemFailedPacket(ErrorMessageType.BagFull, LootOwnerType, LootOwner.ObjId, itemEntry.ItemIndex, itemEntry.Item.TemplateId, player.ObjId));
+                    return false;
+                }
+                else
+                {
+                    Logger.Trace("AutoEquipTradePack: Tradepack item added to Equipment container successfully.");
+                }
+            }
+            else
+            {
+                Logger.Warn("AutoEquipTradePack: Failed to take off backpack for auto-equip tradepack item TemplateId={0}.", itemEntry.Item.TemplateId);
+                player.SendPacket(new SCLootItemFailedPacket(ErrorMessageType.BagFull, LootOwnerType, LootOwner.ObjId, itemEntry.ItemIndex, itemEntry.Item.TemplateId, player.ObjId));
+                return false;
+            }
         }
         else
         {

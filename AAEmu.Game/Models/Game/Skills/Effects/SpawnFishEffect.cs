@@ -6,8 +6,8 @@ using AAEmu.Game.Core.Packets;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.GameData;
 using AAEmu.Game.Models.Game.Char;
-using AAEmu.Game.Models.Game.DoodadObj.Funcs;
 using AAEmu.Game.Models.Game.DoodadObj;
+using AAEmu.Game.Models.Game.DoodadObj.Funcs;
 using AAEmu.Game.Models.Game.NPChar;
 using AAEmu.Game.Models.Game.Skills.Templates;
 using AAEmu.Game.Models.Game.Units;
@@ -38,7 +38,7 @@ public class SpawnFishEffect : EffectTemplate
             {
                 //Process: Spawn the fish, add it to the world at the correct location, then: combat engaged, target, aggro target before starting fish AI.
                 Logger.Info($"Fish Spawner ID: {fishSpawnerId}");
-                fishSpawnerId = 16725;
+                fishSpawnerId = 14475; // карп - подменяем для теста
                 //We need to get the spawner at the target location.
                 var npcSpawnerNpc = NpcGameData.Instance.GetNpcSpawnerNpc(fishSpawnerId);
                 if (npcSpawnerNpc != null)
@@ -96,7 +96,7 @@ public class SpawnFishEffect : EffectTemplate
     }
     public uint GetFishSpawnerId(Character player)
     {
-        var doodads = WorldManager.GetAround<Doodad>(player, 20);
+        var doodads = WorldManager.GetAround<Doodad>(player, 100);
         for (var i = 0; i < doodads.Count; i++)
         {
             if (doodads[i].Template.GroupId == 65)
