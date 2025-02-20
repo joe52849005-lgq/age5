@@ -145,7 +145,7 @@ public class PlotCondition
     {
         var Caster = caster as Unit;
         // Param2 is only used once, and its value is "1"
-        var roll = 10; //Rand.Next(0, 100);
+        var roll = Rand.Next(0, 100);
         if (Caster != null)
         {
             Caster.ConditionChance = roll <= chance;
