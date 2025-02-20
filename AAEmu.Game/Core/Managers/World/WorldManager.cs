@@ -370,10 +370,15 @@ public class WorldManager : Singleton<WorldManager>, IWorldManager
                     {
                         var shape = new AreaShape();
                         shape.Id = reader.GetUInt32("id");
+                        shape.AdjustAngle = reader.GetBoolean("adjust_angle");
+                        shape.AreaTargetKindId = reader.GetInt32("area_target_kind_id");
+                        shape.CalcDistance = reader.GetBoolean("calc_distance");
+                        shape.KindId = reader.GetInt32("kind_id");
                         shape.Type = (AreaShapeType)reader.GetUInt32("kind_id");
                         shape.Value1 = reader.GetFloat("value1");
                         shape.Value2 = reader.GetFloat("value2");
                         shape.Value3 = reader.GetFloat("value3");
+
                         _areaShapes.TryAdd(shape.Id, shape);
                     }
                 }
