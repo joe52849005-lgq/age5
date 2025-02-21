@@ -25,7 +25,7 @@
         public const ushort CSStartDuelPacket = 0x1E0;
         //public const ushort CSResturnAddrsPacket = 0x074;
         public const ushort off_39E7E968 = 0x0E9;
-        public const ushort off_39E7EA30 = 0x06C;
+        public const ushort off_39E7EA30 = 0x06C; // улучшение Heir скиллов
         public const ushort off_39E7EA40 = 0x148;
         public const ushort CSHeroRankingListPacket = 0x06D;
         public const ushort CSHeroCandidateListPacket = 0x0BB;
@@ -299,7 +299,7 @@
         public const ushort CSLearnBuffPacket = 0x0CB;
         public const ushort CSResetSkillsPacket = 0x077;
         public const ushort CSSwapAbilityPacket = 0x172;
-        public const ushort off_39EC1724 = 0x1B6;
+        public const ushort CSAskHeirLevelUpPacket = 0x1B6; // off_39EC1724
         public const ushort CSRemoveBuffPacket = 0x0C5;
         public const ushort CSStopCastingPacket = 0x0DE;
         public const ushort CSDeletePortalPacket = 0x029;

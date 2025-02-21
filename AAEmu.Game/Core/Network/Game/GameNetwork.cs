@@ -284,6 +284,7 @@ public class GameNetwork : Singleton<GameNetwork>
         RegisterPacket(CSOffsets.CSLearnBuffPacket, 5, typeof(CSLearnBuffPacket));
         RegisterPacket(CSOffsets.CSResetSkillsPacket, 5, typeof(CSResetSkillsPacket));
         RegisterPacket(CSOffsets.CSSwapAbilityPacket, 5, typeof(CSSwapAbilityPacket));
+        RegisterPacket(CSOffsets.CSAskHeirLevelUpPacket, 5, typeof(CSAskHeirLevelUpPacket));
         //RegisterPacket(CSOffsets.CSSelectHighAbilityPacket, 5, typeof(CSSelectHighAbilityPacket));
         //RegisterPacket(CSOffsets.CSUnknown0x18dPacket, 5, typeof(CSUnknown0x18dPacket));
         RegisterPacket(CSOffsets.CSRemoveBuffPacket, 5, typeof(CSRemoveBuffPacket));

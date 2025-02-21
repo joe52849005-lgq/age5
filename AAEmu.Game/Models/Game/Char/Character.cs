@@ -1249,9 +1249,27 @@ public partial class Character : Unit, ICharacter
             var totalExp = exp * AppConfiguration.Instance.World.ExpRate;
             exp = (int)totalExp;
         }
-        Experience = Math.Min(Experience + exp, ExperienceManager.Instance.GetExpForLevel(55));
+        var totalExp55 = Math.Min(Experience + exp, ExperienceManager.Instance.GetExpForLevel(55));
+        if (totalExp55 == Experience)
+        {
+            var reqTotalExp = Math.Min(HeirExp + exp, ExperienceManager.Instance.GetExpForHeirLevel(HeirLevel));
+            if (reqTotalExp <= HeirExp + exp)
+            {
+                HeirExp = (uint)(reqTotalExp - 1);
+            }
+            else
+            {
+                HeirExp += (uint)exp;
+            }
+        }
+        else
+        {
+            Experience += exp;
+        }
+
         if (shouldAddAbilityExp)
             Abilities.AddActiveExp(exp); // TODO ... or all?
+
         SendPacket(new SCExpChangedPacket(ObjId, exp, shouldAddAbilityExp));
         CheckLevelUp();
 
@@ -1282,6 +1300,29 @@ public partial class Character : Unit, ICharacter
             //StartRegen();
             ResidentManager.Instance.AddResidenMemberInfo(this);
         }
+    }
+
+    public void CheckHeirLevelUp()
+    {
+        var needExp = ExperienceManager.Instance.GetExpForHeirLevel(HeirLevel);
+        if (HeirExp + 1 < needExp)
+        {
+            return;
+        }
+
+        var reqItemCount = ExperienceManager.Instance.GetReqItemCountForHeirLevel(HeirLevel);
+        var reqItemId = ExperienceManager.Instance.GetReqItemIdForHeirLevel(HeirLevel);
+        var needItemCount = Inventory.GetItemsCount(SlotType.Bag, (uint)reqItemId);
+        if (reqItemCount > needItemCount)
+        {
+            return;
+        }
+
+        var step = ExperienceManager.Instance.GetStepForHeirLevel(HeirLevel);
+        HeirLevel++;
+        //HeirExp = 0;
+        BroadcastPacket(new SCHeirLevelUpPacket(ObjId), true);
+        ResidentManager.Instance.AddResidenMemberInfo(this);
     }
 
     public void CheckExp()
@@ -1970,6 +2011,8 @@ public partial class Character : Unit, ICharacter
                     character.Gender = (Gender)reader.GetByte("gender");
                     character.Level = reader.GetByte("level");
                     character.Experience = reader.GetInt32("experience");
+                    character.HeirLevel = reader.GetByte("heir_Level");
+                    character.HeirExp = reader.GetUInt32("heir_exp");
                     character.RecoverableExp = reader.GetInt32("recoverable_exp");
                     character.Hp = reader.GetInt32("hp");
                     character.Mp = reader.GetInt32("mp");
@@ -2088,6 +2131,8 @@ public partial class Character : Unit, ICharacter
                     character.Gender = (Gender)reader.GetByte("gender");
                     character.Level = reader.GetByte("level");
                     character.Experience = reader.GetInt32("experience");
+                    character.HeirLevel = reader.GetByte("heir_Level");
+                    character.HeirExp = reader.GetUInt32("heir_exp");
                     character.RecoverableExp = reader.GetInt32("recoverable_exp");
                     character.Hp = reader.GetInt32("hp");
                     character.Mp = reader.GetInt32("mp");
@@ -2360,7 +2405,7 @@ public partial class Character : Unit, ICharacter
                 // ----
                 command.CommandText =
                     "REPLACE INTO `characters` " +
-                    "(`id`,`account_id`,`name`,`access_level`,`race`,`gender`,`unit_model_params`,`level`,`experience`,`recoverable_exp`," +
+                    "(`id`,`account_id`,`name`,`access_level`,`race`,`gender`,`unit_model_params`,`level`,`experience`,`heir_Level`,`heir_exp`,`recoverable_exp`," +
                     "`hp`,`mp`,`consumed_lp`,`ability1`,`ability2`,`ability3`," +
                     "`world_id`,`zone_id`,`x`,`y`,`z`,`roll`,`pitch`,`yaw`," +
                     "`faction_id`,`faction_name`,`expedition_id`,`family`,`dead_count`,`dead_time`,`rez_wait_duration`,`rez_time`,`rez_penalty_duration`,`leave_time`," +
@@ -2368,7 +2413,7 @@ public partial class Character : Unit, ICharacter
                     "`delete_request_time`,`transfer_request_time`,`delete_time`,`auto_use_aapoint`,`prev_point`,`point`,`gift`," +
                     "`num_inv_slot`,`num_bank_slot`,`expanded_expert`,`slots`,`created_at`,`updated_at`,`return_district`,`online_time`" +
                     ") VALUES (" +
-                    "@id,@account_id,@name,@access_level,@race,@gender,@unit_model_params,@level,@experience,@recoverable_exp," +
+                    "@id,@account_id,@name,@access_level,@race,@gender,@unit_model_params,@level,@experience,@heir_Level,@heir_exp,@recoverable_exp," +
                     "@hp,@mp,@consumed_lp,@ability1,@ability2,@ability3," +
                     "@world_id,@zone_id,@x,@y,@z,@yaw,@pitch,@roll," +
                     "@faction_id,@faction_name,@expedition_id,@family,@dead_count,@dead_time,@rez_wait_duration,@rez_time,@rez_penalty_duration,@leave_time," +
@@ -2385,6 +2430,8 @@ public partial class Character : Unit, ICharacter
                 command.Parameters.AddWithValue("@unit_model_params", unitModelParams);
                 command.Parameters.AddWithValue("@level", Level);
                 command.Parameters.AddWithValue("@experience", Experience);
+                command.Parameters.AddWithValue("@heir_Level", HeirLevel);
+                command.Parameters.AddWithValue("@heir_exp", HeirExp);
                 command.Parameters.AddWithValue("@recoverable_exp", RecoverableExp);
                 command.Parameters.AddWithValue("@hp", Hp);
                 command.Parameters.AddWithValue("@mp", Mp);

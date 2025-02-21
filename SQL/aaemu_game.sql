@@ -210,6 +210,8 @@ CREATE TABLE `characters`  (
   `level` tinyint NOT NULL,
   `experience` int NOT NULL,
   `recoverable_exp` int NOT NULL,
+  `heir_Level` tinyint NOT NULL,
+  `heir_exp` int UNSIGNED NOT NULL,
   `hp` int NOT NULL,
   `mp` int NOT NULL,
   `consumed_lp` int NOT NULL,
