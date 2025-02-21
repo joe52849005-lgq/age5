@@ -20,7 +20,7 @@ public class DoodadCoffer : Doodad
 
     public override bool AllowRemoval()
     {
-        return ((ItemContainer == null) || (ItemContainer.Items.Count <= 0)) && base.AllowRemoval();
+        return (ItemContainer == null || ItemContainer.Items.Count <= 0) && base.AllowRemoval();
     }
 
     public override void Delete()
@@ -32,8 +32,6 @@ public class DoodadCoffer : Doodad
     public override bool AllowedToInteract(Character character)
     {
         var permission = (HousingPermission)Data;
-        if (permission == HousingPermission.Public)
-            return base.AllowedToInteract(character);
 
         // Try to cache the owner Character if it's already in the world to make lookups faster
         var owner = WorldManager.Instance.GetCharacterById(OwnerId);
@@ -41,22 +39,28 @@ public class DoodadCoffer : Doodad
         switch (permission)
         {
             case HousingPermission.Private:
-                if (ItemContainer?.CofferType == ChestType.Otherworldly)
-                    return (character.Id == OwnerId) && base.AllowedToInteract(character);
-                else
                 {
+                    if (ItemContainer?.CofferType == ChestType.Otherworldly)
+                        return character.Id == OwnerId && base.AllowedToInteract(character);
+
                     var ownerAccountId = NameManager.Instance.GetCharaterAccount(OwnerId);
-                    return (character.AccountId == ownerAccountId) && base.AllowedToInteract(character);
+                    return character.AccountId == ownerAccountId && base.AllowedToInteract(character);
                 }
             case HousingPermission.Family:
-                var ownerFamily = owner?.Family ?? FamilyManager.Instance.GetFamilyOfCharacter(OwnerId);
-                return ((ownerFamily != 0) && (character.Family != 0) && (ownerFamily == character.Family)) && base.AllowedToInteract(character);
+                {
+                    var ownerFamily = owner?.Family ?? FamilyManager.Instance.GetFamilyOfCharacter(OwnerId);
+                    return ownerFamily != 0 && character.Family != 0 && ownerFamily == character.Family && base.AllowedToInteract(character);
+                }
             case HousingPermission.Guild:
-                var ownerGuild = owner?.Expedition?.Id ?? ExpeditionManager.Instance.GetExpeditionOfCharacter(OwnerId);
-                return ((ownerGuild != 0) && (character.Expedition != null) && (character.Expedition.Id != 0) && (character.Expedition.Id == ownerGuild)) && base.AllowedToInteract(character);
+                {
+                    var ownerGuild = owner?.Expedition?.Id ?? ExpeditionManager.Instance.GetExpeditionOfCharacter(OwnerId);
+                    return ownerGuild != 0 && character.Expedition != null && character.Expedition.Id != 0 && character.Expedition.Id == ownerGuild && base.AllowedToInteract(character);
+                }
             case HousingPermission.Public:
             default:
-                return base.AllowedToInteract(character);
+                {
+                    return base.AllowedToInteract(character);
+                }
         }
     }
 

@@ -665,6 +665,25 @@ public class DoodadManager : Singleton<DoodadManager>
                 }
             }
 
+            // doodad_func_private_coffers
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM doodad_func_private_coffers";
+                command.Prepare();
+                using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
+                {
+                    while (reader.Read())
+                    {
+                        var func = new DoodadFuncPrivateCoffer
+                        {
+                            Id = reader.GetUInt32("id"),
+                            Capacity = reader.GetInt32("capacity")
+                        };
+                        _phaseFuncTemplates["DoodadFuncPrivateCoffer"].Add(func.Id, func);
+                    }
+                }
+            }
+
             // doodad_func_conditional_uses
             using (var command = connection.CreateCommand())
             {
@@ -2859,7 +2878,7 @@ public class DoodadManager : Singleton<DoodadManager>
     }
 
     /// <summary>
-    /// Checks if a DoodadTemplateId has a doodad_func_coffer attached to it
+    /// Checks if a DoodadTemplateId has a doodad_func_coffer and doodad_func_private_coffer attached to it
     /// </summary>
     /// <param name="templateId"></param>
     /// <returns>Returns the Coffer Capacity if true, otherwise returns -1</returns>
@@ -2867,6 +2886,7 @@ public class DoodadManager : Singleton<DoodadManager>
     {
         if (templateId == 0)
         {
+            Logger.Warn("Received templateId is 0, returning -1.");
             return -1;
         }
 
@@ -2880,6 +2900,7 @@ public class DoodadManager : Singleton<DoodadManager>
 
             if (!_funcsByGroups.TryGetValue(funcGroup.Id, out var funcList))
             {
+                Logger.Warn($"No function list found for funcGroup Id: {funcGroup.Id}");
                 continue;
             }
 
@@ -2887,21 +2908,33 @@ public class DoodadManager : Singleton<DoodadManager>
             {
                 if (!_phaseFuncTemplates.TryGetValue(func.FuncType, out var phaseFuncTemplates))
                 {
+                    Logger.Warn($"No phase function templates found for FuncType: {func.FuncType}");
                     continue;
                 }
 
                 if (!phaseFuncTemplates.TryGetValue(func.FuncId, out var phaseFuncTemplate))
                 {
+                    Logger.Warn($"No phase function template found for FuncId: {func.FuncId}");
                     continue;
                 }
 
-                if (phaseFuncTemplate is DoodadFuncCoffer funcCoffer)
+                switch (phaseFuncTemplate)
                 {
-                    return funcCoffer.Capacity;
+                    case DoodadFuncCoffer funcCoffer:
+                        {
+                            Logger.Debug($"Found DoodadFuncCoffer with capacity: {funcCoffer.Capacity}");
+                            return funcCoffer.Capacity;
+                        }
+                    case DoodadFuncPrivateCoffer funcPrivateCoffer:
+                        {
+                            Logger.Debug($"Found DoodadFuncPrivateCoffer with capacity: {funcPrivateCoffer.Capacity}");
+                            return funcPrivateCoffer.Capacity;
+                        }
                 }
             }
         }
 
+        Logger.Warn($"No coffer functions found for templateId: {templateId}, returning -1.");
         return -1;
     }
 
@@ -3164,8 +3197,7 @@ public class DoodadManager : Singleton<DoodadManager>
         foreach (var item in items)
         {
             character.ItemUse(preferredItem);
-            character.Inventory.ConsumeItem([SlotType.Bag], ItemTaskType.DoodadCreate, item, 1,
-                preferredItem);
+            character.Inventory.ConsumeItem([SlotType.Bag], ItemTaskType.DoodadCreate, item, 1, preferredItem);
         }
 
         doodad.InitDoodad();
@@ -3178,58 +3210,91 @@ public class DoodadManager : Singleton<DoodadManager>
 
     public static bool OpenCofferDoodad(Character character, uint objId)
     {
+        // Проверка на null для персонажа
+        if (character == null)
+        {
+            Logger.Warn("Character is null. Cannot open coffer.");
+            return false;
+        }
+
+        Logger.Debug($"Attempting to open coffer with objId: {objId} by character: {character.Name}");
+
+        // Получаем Coffer по objId
         var doodad = WorldManager.Instance.GetDoodad(objId);
         if (doodad is not DoodadCoffer coffer)
         {
+            Logger.Warn($"Doodad with objId: {objId} is not a Coffer.");
             return false;
         }
 
-        // Somebody already using this ?
+        // Проверяем, можно ли взаимодействовать с Coffer
+        if (!coffer.AllowedToInteract(character))
+        {
+            Logger.Warn($"{character.Name} does not have permission to open coffer {coffer.ObjId}.");
+            return false;
+        }
+
+        // Проверяем, был ли Coffer уже открыт
         if (coffer.OpenedBy != null)
         {
-            return false;
+            Logger.Warn($"Coffer already opened by {coffer.OpenedBy.Name}. Close and open again.");
+            if (!CloseCofferDoodad(character, coffer.ObjId))
+            {
+                Logger.Warn($"Doodad with objId: {objId} is not a Coffer.");
+                return false;
+            }
         }
 
-        // TODO: Check permissions
-
+        Logger.Debug($"Setting OpenedBy to {character.Name} for coffer objId: {coffer.ObjId}");
         coffer.OpenedBy = character;
 
-        if (character == null)
-        {
-            return true;
-        }
-
+        Logger.Debug($"Sending contents update for coffer objId: {coffer.ObjId}");
         byte firstSlot = 0;
         while (firstSlot < coffer.Capacity)
         {
             character.SendPacket(new SCCofferContentsUpdatePacket(coffer, firstSlot));
+            Logger.Debug($"Sent packet for slots starting at {firstSlot} for coffer objId: {coffer.ObjId}");
             firstSlot += SCCofferContentsUpdatePacket.MaxSlotsToSend;
         }
 
+        Logger.Debug($"Successfully opened coffer objId: {coffer.ObjId} by character: {character.Name}");
         return true;
     }
 
     public static bool CloseCofferDoodad(Character character, uint objId)
     {
+        Logger.Debug($"Attempting to close coffer with objId: {objId} by character: {character?.Name}");
+
         var doodad = WorldManager.Instance.GetDoodad(objId);
         if (doodad is not DoodadCoffer coffer)
         {
+            Logger.Warn($"Doodad with objId: {objId} is not a Coffer.");
             return false;
         }
 
-        // Used for GM commands
-        if (character is null)
+        // Если character равен null, это может быть команда GM
+        if (character == null)
         {
+            Logger.Debug("Character is null. Resetting OpenedBy to null for coffer.");
             coffer.OpenedBy = null;
             return true;
         }
 
-        // Only the person who opened it, can close it
-        if (coffer.OpenedBy is not null && coffer.OpenedBy.Id != character.Id)
+        // Проверка, что только тот, кто открыл сундук, может его закрыть
+        if (coffer.OpenedBy == null)
         {
+            Logger.Warn($"Coffer objId: {coffer.ObjId} is not currently opened by anyone.");
             return false;
         }
 
+        if (coffer.OpenedBy.Id != character.Id)
+        {
+            Logger.Warn($"Character {character.Name} is not allowed to close this coffer. Opened by {coffer.OpenedBy.Name}.");
+            return false;
+        }
+
+        // Закрываем сундук
+        Logger.Debug($"Character {character.Name} is closing coffer objId: {coffer.ObjId}.");
         coffer.OpenedBy = null;
 
         return true;
@@ -3237,29 +3302,35 @@ public class DoodadManager : Singleton<DoodadManager>
 
     public static bool ChangeDoodadData(Character player, Doodad doodad, int data)
     {
-        // TODO: Can non-coffer doodads that use this packet only be changed by their owner ?
+        // Проверка, является ли игрок владельцем Doodad
         if (doodad.OwnerId != player.Id)
         {
+            Logger.Warn($"Player {player.Name} attempted to change data of doodad {doodad.ObjId} without ownership.");
             return false;
         }
 
-        // For Coffers validate if select option is applicable
+        // Проверка прав доступа для DoodadCoffer
         if (doodad is DoodadCoffer)
         {
             switch (data)
             {
                 case (int)HousingPermission.Family when player.Family <= 0:
-                    player.SendErrorMessage(ErrorMessageType.FamilyNotExist); // Not sure
+                    player.SendErrorMessage(ErrorMessageType.FamilyNotExist);
+                    Logger.Warn($"Player {player.Name} tried to set Family permission but does not belong to any family.");
                     return false;
+
                 case (int)HousingPermission.Guild when player.Expedition is not { Id: > 0 }:
-                    player.SendErrorMessage(ErrorMessageType.OnlyExpeditionMember); // Not sure
+                    player.SendErrorMessage(ErrorMessageType.OnlyExpeditionMember);
+                    Logger.Warn($"Player {player.Name} tried to set Guild permission without being an expedition member.");
                     return false;
             }
         }
 
+        // Изменение данных Doodad и уведомление об этом
         doodad.Data = data;
-
         doodad.BroadcastPacket(new SCDoodadChangedPacket(doodad.ObjId, doodad.Data), false);
+
+        Logger.Debug($"Player {player.Name} successfully changed data of doodad {doodad.ObjId} to {data}.");
 
         return true;
     }
@@ -3274,45 +3345,65 @@ public class DoodadManager : Singleton<DoodadManager>
     /// <summary>
     /// Deletes a persistent doodad directly from DB (do not use on spawned doodads)
     /// </summary>
-    /// <param name="connection"></param>
-    /// <param name="transaction"></param>
+    /// <param name="connection">Database connection</param>
+    /// <param name="transaction">Database transaction</param>
     /// <param name="dbId">Doodad DB Id</param>
     public void DeleteDoodadById(MySqlConnection connection, MySqlTransaction transaction, uint dbId)
     {
-        // First grab the doodad data from the DB to check if there are items attached
+        if (connection == null)
+        {
+            Logger.Error("Database connection is null.");
+            return;
+        }
+
+        if (transaction == null)
+        {
+            Logger.Warn("Transaction is null, proceeding without transaction.");
+        }
+
         ulong attachedItemId = 0u;
-        ulong attachedContainer = 0u;
+        ulong attachedContainerId = 0u;
+
         using (var command = connection.CreateCommand())
         {
-            if (transaction != null)
-                command.Transaction = transaction;
+            command.Transaction = transaction;
 
-            // First grab item related data
-            command.CommandText = "SELECT * FROM doodads WHERE id = @id LIMIT 1";
+            // Grab doodad data to check for attached items
+            command.CommandText = "SELECT item_id, item_container_id FROM doodads WHERE id = @id LIMIT 1";
             command.Parameters.AddWithValue("@id", dbId);
             command.Prepare();
+
             using (var reader = command.ExecuteReader())
             {
-                while (reader.Read())
+                if (reader.Read())
                 {
                     attachedItemId = reader.GetUInt32("item_id");
-                    attachedContainer = reader.GetUInt32("item_container_id");
+                    attachedContainerId = reader.GetUInt32("item_container_id");
                 }
             }
 
-            // Actually delete the doodad from DB
+            // Delete the doodad from DB
             command.CommandText = "DELETE FROM doodads WHERE id = @id";
-            // command.Parameters.AddWithValue("@id", dbId); // recycled from above
             command.Prepare();
             if (command.ExecuteNonQuery() <= 0)
             {
-                Logger.Error($"Failed to delete doodad from DB Id: {dbId}");
+                Logger.Error($"Failed to delete doodad from DB with Id: {dbId}");
                 return;
             }
         }
+
         DoodadIdManager.Instance.ReleaseId(dbId); // Free up the Id
+        Logger.Debug($"Deleted doodad with Id: {dbId} from the database.");
 
         // Handle attached items
+        HandleAttachedItems(attachedItemId);
+
+        // Delete attached container
+        HandleAttachedContainer(attachedContainerId);
+    }
+
+    private void HandleAttachedItems(ulong attachedItemId)
+    {
         if (attachedItemId > 0)
         {
             var item = ItemManager.Instance.GetItemByItemId(attachedItemId);
@@ -3320,15 +3411,29 @@ public class DoodadManager : Singleton<DoodadManager>
             {
                 item.HoldingContainer = null;
                 ItemManager.Instance.ReleaseId(item.Id);
+                Logger.Debug($"Released item with Id: {item.Id} that was attached to the doodad.");
+            }
+            else
+            {
+                Logger.Warn($"No item found with Id: {attachedItemId}.");
             }
         }
+    }
 
-        // Delete attached container
-        if (attachedContainer > 0)
+    private void HandleAttachedContainer(ulong attachedContainerId)
+    {
+        if (attachedContainerId > 0)
         {
-            var container = ItemManager.Instance.GetItemContainerByDbId(attachedContainer);
+            var container = ItemManager.Instance.GetItemContainerByDbId(attachedContainerId);
             if (container != null)
+            {
                 ItemManager.Instance.DeleteItemContainer(container);
+                Logger.Debug($"Deleted attached container with Id: {attachedContainerId}.");
+            }
+            else
+            {
+                Logger.Warn($"No container found with Id: {attachedContainerId}.");
+            }
         }
     }
 

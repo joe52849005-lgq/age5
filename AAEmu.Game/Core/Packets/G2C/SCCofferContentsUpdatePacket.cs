@@ -1,4 +1,6 @@
-﻿using AAEmu.Commons.Network;
+﻿using System;
+
+using AAEmu.Commons.Network;
 using AAEmu.Game.Core.Network.Game;
 using AAEmu.Game.Models.Game.DoodadObj;
 
@@ -11,36 +13,39 @@ public class SCCofferContentsUpdatePacket : GamePacket
     private readonly byte _firstSlot;
     private readonly byte _slotCount;
 
-    public SCCofferContentsUpdatePacket(DoodadCoffer cofferDoodad, byte firstSlot) : base(SCOffsets.SCCofferContentsUpdatePacket, 5)
+    public SCCofferContentsUpdatePacket(DoodadCoffer cofferDoodad, byte firstSlot)
+        : base(SCOffsets.SCCofferContentsUpdatePacket, 5)
     {
-        _cofferDoodad = cofferDoodad;
+        _cofferDoodad = cofferDoodad ?? throw new ArgumentNullException(nameof(cofferDoodad), "CofferDoodad cannot be null.");
         _firstSlot = firstSlot;
-        var lastSlot = _firstSlot + MaxSlotsToSend;
-        if (lastSlot >= _cofferDoodad.Capacity)
-            lastSlot = _cofferDoodad.Capacity;
-        var slotCount = lastSlot - _firstSlot;
-        if (slotCount >= MaxSlotsToSend)
-            slotCount = MaxSlotsToSend;
-        _slotCount = (byte)slotCount;
+
+        // Calculate the last slot and the count of slots to send
+        var lastSlot = (byte)(Math.Min(_firstSlot + MaxSlotsToSend, _cofferDoodad.Capacity));
+        var slotCount = (byte)Math.Min(lastSlot - _firstSlot, MaxSlotsToSend);
+        _slotCount = slotCount;
     }
 
     public override PacketStream Write(PacketStream stream)
     {
-        if (_cofferDoodad?.ItemContainer == null)
-            Logger.Warn($"No ItemContainer assigned to Coffer, objId: {_cofferDoodad?.ObjId} dbId: {_cofferDoodad?.DbId}");
+        stream.WriteBc(_cofferDoodad.ObjId);              // cofferDoodadId
+        stream.Write((byte)1);                            // ownerType
+        stream.Write(_cofferDoodad.GetItemContainerId()); // ownerId
+        stream.Write(_slotCount);                         // count, max 30
 
-        stream.WriteBc(_cofferDoodad?.ObjId ?? 0);
-        stream.Write(_cofferDoodad?.GetItemContainerId() ?? 0);
-        stream.Write(_slotCount);
         for (byte i = 0; i < _slotCount; i++)
         {
             var slot = (byte)(_firstSlot + i);
-            stream.Write(slot);
-            var item = _cofferDoodad?.ItemContainer?.GetItemBySlot(slot);
+            stream.Write(slot);                           // slotIndex
+
+            var item = _cofferDoodad.ItemContainer.GetItemBySlot(slot);
             if (item == null)
-                stream.Write(0u); // uint
+            {
+                stream.Write(0u); // Write default value when no item is found
+            }
             else
-                stream.Write(item);
+            {
+                stream.Write(item); // Write the item data
+            }
         }
 
         return stream;

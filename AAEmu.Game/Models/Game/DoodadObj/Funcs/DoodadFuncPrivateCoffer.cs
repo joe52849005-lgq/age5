@@ -5,7 +5,7 @@ using AAEmu.Game.Models.Game.Units;
 
 namespace AAEmu.Game.Models.Game.DoodadObj.Funcs;
 
-public class DoodadFuncCoffer : DoodadPhaseFuncTemplate
+public class DoodadFuncPrivateCoffer : DoodadPhaseFuncTemplate
 {
     // doodad_phase_funcs
     // Максимальная вместимость Coffer
@@ -13,7 +13,7 @@ public class DoodadFuncCoffer : DoodadPhaseFuncTemplate
 
     public override bool Use(BaseUnit caster, Doodad owner)
     {
-        Logger.Debug("Entering DoodadFuncCoffer");
+        Logger.Debug("Entering DoodadFuncPrivateCoffer");
 
         // Устанавливаем, что Coffer не переходит в следующую фазу
         owner.ToNextPhase = false;
@@ -36,7 +36,7 @@ public class DoodadFuncCoffer : DoodadPhaseFuncTemplate
         }
         else
         {
-            Logger.Warn("Invalid caster or owner type in DoodadFuncCoffer.");
+            Logger.Warn("Invalid caster or owner type in DoodadFuncPrivateCoffer.");
         }
 
         return false; // Возвращаем false, если действие не было успешным

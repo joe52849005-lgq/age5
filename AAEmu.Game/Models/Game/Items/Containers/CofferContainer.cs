@@ -1,5 +1,4 @@
-﻿using System;
-using AAEmu.Game.Models.Game.Items.Actions;
+﻿using AAEmu.Game.Models.Game.Items.Actions;
 using AAEmu.Game.Models.Game.Items.Templates;
 
 namespace AAEmu.Game.Models.Game.Items.Containers;
@@ -18,8 +17,8 @@ public class CofferContainer : ItemContainer
     private bool CanAcceptTemplate(ItemTemplate itemTemplate)
     {
         // All Chests will not accept timed items 
-        if ((itemTemplate.ExpAbsLifetime > 0) ||
-            (itemTemplate.ExpOnlineLifetime > 0) ||
+        if (itemTemplate.ExpAbsLifetime > 0 ||
+            itemTemplate.ExpOnlineLifetime > 0 ||
             itemTemplate.ExpDate > 0) // (itemTemplate.ExpDate > DateTime.MinValue))
             return false;
 
@@ -30,6 +29,7 @@ public class CofferContainer : ItemContainer
         // Normal Coffer/Chest will accept anything that can't be bound 
         if (itemTemplate.BindType == ItemBindType.BindOnPickup)
             return false;
+        
         if (itemTemplate.BindType == ItemBindType.BindOnPickupPack)
             return false;
 
@@ -39,9 +39,10 @@ public class CofferContainer : ItemContainer
 
     public override bool CanAccept(Item item, int targetSlot)
     {
-        return (item == null) || (!item.HasFlag(ItemFlag.SoulBound) &&
-               CanAcceptTemplate(item.Template) &&
-               base.CanAccept(item, targetSlot));
+        return item == null ||
+               (!item.HasFlag(ItemFlag.SoulBound) &&
+                CanAcceptTemplate(item.Template) &&
+                base.CanAccept(item, targetSlot));
     }
 
     public override void Delete()
