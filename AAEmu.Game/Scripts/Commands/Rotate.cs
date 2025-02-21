@@ -1,12 +1,10 @@
 ﻿using AAEmu.Game.Core.Managers;
-using AAEmu.Game.Models.Game.Units.Movements;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
-using AAEmu.Game.Utils;
-using AAEmu.Commons.Utils;
 using AAEmu.Game.Models.Game.Models;
-using NLog;
+using AAEmu.Game.Models.Game.Units.Movements;
+using AAEmu.Game.Utils;
 using AAEmu.Game.Utils.Scripts;
 
 namespace AAEmu.Game.Scripts.Commands;
@@ -34,8 +32,7 @@ public class Rotate : ICommand
     {
         if (character.CurrentTarget != null)
         {
-            character.SendMessage(
-                $"[Rotate] Unit: {character.CurrentTarget.Name}, ObjId: {character.CurrentTarget.ObjId}");
+            character.SendDebugMessage($"[Rotate] Unit: {character.CurrentTarget.Name}, ObjId: {character.CurrentTarget.ObjId}");
 
             // var Seq = (uint)Rand.Next(0, 10000);
             var moveType = (UnitMoveType)MoveType.GetType(MoveTypeEnum.Unit);
@@ -44,8 +41,7 @@ public class Rotate : ICommand
             moveType.Y = character.CurrentTarget.Transform.World.Position.Y;
             moveType.Z = character.CurrentTarget.Transform.World.Position.Z;
 
-            var angle = (float)MathUtil.CalculateAngleFrom(character.CurrentTarget.Transform.World.Position,
-                character.Transform.World.Position) - 90f;
+            var angle = (float)MathUtil.CalculateAngleFrom(character.CurrentTarget.Transform.World.Position, character.Transform.World.Position) - 90f;
             var rotZ = MathUtil.ConvertDegreeToSByteDirection(angle);
 
             character.CurrentTarget.Transform.Local.SetRotationDegree(0f, 0f, angle);
@@ -66,10 +62,8 @@ public class Rotate : ICommand
             moveType.Time += 50; // has to change all the time for normal motion.
 
             character.BroadcastPacket(new SCOneUnitMovementPacket(character.CurrentTarget.ObjId, moveType), true);
-            CommandManager.SendNormalText(this, messageOutput,
-                $"New rotation {angle}° ({character.CurrentTarget.Transform.Local.Rotation.Z:0.00} rad, sbyte {rotZ}) for {character.CurrentTarget.ObjId}");
-            CommandManager.SendNormalText(this, messageOutput,
-                $"New position {character.CurrentTarget.Transform.Local}");
+            CommandManager.SendNormalText(this, messageOutput, $"New rotation {angle}° ({character.CurrentTarget.Transform.Local.Rotation.Z:0.00} rad, sbyte {rotZ}) for {character.CurrentTarget.ObjId}");
+            CommandManager.SendNormalText(this, messageOutput, $"New position {character.CurrentTarget.Transform.Local}");
         }
         else
         {

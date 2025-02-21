@@ -36,7 +36,7 @@ namespace AAEmu.Game.Models.Game.Items.Containers
                 SlotType = ContainerType,
                 SlotNumber = (byte)item.Slot,
             };
-            // Owner.SendMessage($"MateEquipmentContainer - {petItem} -> {inventoryItem}, MateTl: {mate.TlId}");
+            // Owner.SendDebugMessage($"MateEquipmentContainer - {petItem} -> {inventoryItem}, MateTl: {mate.TlId}");
             Owner.SendPacket(new SCMateEquipmentChangedPacket(petItem, inventoryItem, mate.TlId, Owner.Id, 0, false, true, DateTime.MinValue));
         }
 
@@ -62,7 +62,7 @@ namespace AAEmu.Game.Models.Game.Items.Containers
                 SlotType = ContainerType,
                 SlotNumber = previousSlot,
             };
-            // Owner.SendMessage($"MateEquipmentContainer - {petItem} -> {inventoryItem}, MateTl: {mate.TlId}");
+            // Owner.SendDebugMessage($"MateEquipmentContainer - {petItem} -> {inventoryItem}, MateTl: {mate.TlId}");
             Owner.SendPacket(new SCMateEquipmentChangedPacket(petItem, inventoryItem, mate.TlId, Owner.Id, 0, false, true, DateTime.MinValue));
         }
     }

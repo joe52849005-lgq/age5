@@ -20,7 +20,7 @@ public class CSRequestSpecialtyCurrentPacket : GamePacket
         var items = SpecialtyManager.Instance.GetRatiosForTargetRoute(fromZoneGroupId, toZoneGroupId);
         /*
         foreach (var (itemId, rate) in items)
-            Connection.ActiveChar.SendMessage($"@ITEM_NAME({itemId}) => {rate}%");
+            Connection.ActiveChar.SendDebugMessage($"@ITEM_NAME({itemId}) => {rate}%");
         */
         Connection.ActiveChar.SendPacket(new SCSpecialtyCurrentPacket(fromZoneGroupId, toZoneGroupId, items));
     }

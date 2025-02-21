@@ -30,7 +30,7 @@ public class SoloParty : ICommand
         var currentTeam = TeamManager.Instance.GetActiveTeamByUnit(character.Id);
         if (currentTeam != null)
         {
-            character.SendMessage("|cFFFFFF00[SoloParty] You are already in a party !|r");
+            character.SendDebugMessage("|cFFFFFF00[SoloParty] You are already in a party !|r");
         }
         else
         {

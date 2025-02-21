@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using AAEmu.Game.Core.Managers;
-using AAEmu.Game.Models.Game.Char;
-using AAEmu.Game.Utils.Scripts.SubCommands;
 using AAEmu.Game.Core.Packets.G2C;
+using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Utils.Scripts;
+using AAEmu.Game.Utils.Scripts.SubCommands;
 
 namespace AAEmu.Game.Scripts.SubCommands.Items;
 
@@ -23,8 +24,7 @@ public class ItemExpireSubCommand : SubCommandBase
             });
     }
 
-    public override void Execute(ICharacter character, string triggerArgument,
-        IDictionary<string, ParameterValue> parameters, IMessageOutput messageOutput)
+    public override void Execute(ICharacter character, string triggerArgument, IDictionary<string, ParameterValue> parameters, IMessageOutput messageOutput)
     {
         //Character addTarget;
         var selfCharacter = (Character)character;
@@ -36,7 +36,7 @@ public class ItemExpireSubCommand : SubCommandBase
 
         if (item == null)
         {
-            character.SendMessage($"No item could be found with Id: {itemId}");
+            character.SendDebugMessage($"No item could be found with Id: {itemId}");
             return;
         }
 
@@ -45,13 +45,13 @@ public class ItemExpireSubCommand : SubCommandBase
         {
             item.ExpirationTime = newTime;
             character.SendPacket(new SCSyncItemLifespanPacket(true, item.Id, item.TemplateId, newTime));
-            character.SendMessage($"Item @ITEM_NAME({item.TemplateId})'s expire time updated to {newTime}");
+            character.SendDebugMessage($"Item @ITEM_NAME({item.TemplateId})'s expire time updated to {newTime}");
         }
         else
         {
             item.ExpirationTime = DateTime.MinValue;
             character.SendPacket(new SCSyncItemLifespanPacket(false, item.Id, item.TemplateId, DateTime.MinValue));
-            character.SendMessage($"Item @ITEM_NAME({item.TemplateId})'s expire set to invalid");
+            character.SendDebugMessage($"Item @ITEM_NAME({item.TemplateId})'s expire set to invalid");
         }
     }
 }

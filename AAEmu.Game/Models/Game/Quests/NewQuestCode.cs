@@ -178,13 +178,13 @@ public partial class Quest
         if (value == _step)
             return;
         // var oldValue = _step;
-        // Owner?.SendMessage($"Quest {TemplateId}, Begin Step Change {oldValue} => {value}");
+        // Owner?.SendDebugMessage($"Quest {TemplateId}, Begin Step Change {oldValue} => {value}");
 
         // Finalize old Step (if any)
         if (QuestSteps.TryGetValue(_step, out var oldQuestSteps))
             oldQuestSteps.FinalizeStep();
 
-        // Owner?.SendMessage($"Quest {TemplateId}, Set _step => {value}");
+        // Owner?.SendDebugMessage($"Quest {TemplateId}, Set _step => {value}");
         // Set new Value
         _step = value;
 
@@ -197,7 +197,7 @@ public partial class Quest
 
         // Trigger OnQuestStepChanged event, even if this step is not available
         Owner?.Events?.OnQuestStepChanged(Owner, new OnQuestStepChangedArgs() { QuestId = TemplateId, Step = value });
-        // Owner?.SendMessage($"Quest {TemplateId}, Step {oldValue} => {value}");
+        // Owner?.SendDebugMessage($"Quest {TemplateId}, Step {oldValue} => {value}");
         // Logger.Debug($"Player {Owner?.Name ?? "???"}, Quest {TemplateId}, Step => {value}");
         RequestEvaluation();
     }

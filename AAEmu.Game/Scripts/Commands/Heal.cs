@@ -1,9 +1,8 @@
-﻿using System;
-using AAEmu.Game.Core.Managers;
+﻿using AAEmu.Game.Core.Managers;
+using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
-using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Models.Game.Units.Static;
 using AAEmu.Game.Utils.Scripts;
@@ -45,8 +44,7 @@ public class Heal : ICommand
             if (targetPlayer.Hp == 0)
             {
                 // This check is needed otherwise the player will be kicked
-                CommandManager.SendErrorText(this, messageOutput,
-                    "Cannot heal a dead target, use the revive command instead");
+                CommandManager.SendErrorText(this, messageOutput, "Cannot heal a dead target, use the revive command instead");
             }
             else
             {
@@ -70,7 +68,7 @@ public class Heal : ICommand
                 unit.Hp = unit.MaxHp;
                 unit.Mp = unit.MaxMp;
                 unit.BroadcastPacket(new SCUnitPointsPacket(unit.ObjId, unit.Hp, unit.Mp, unit.HighAbilityRsc), true);
-                character.SendMessage($"{unit.Name} => {unit.Hp}/{unit.MaxHp} HP, {unit.Mp}/{unit.MaxMp} MP");
+                character.SendDebugMessage($"{unit.Name} => {unit.Hp}/{unit.MaxHp} HP, {unit.Mp}/{unit.MaxMp} MP");
                 unit.PostUpdateCurrentHp(unit, oldHp, unit.Hp, KillReason.Unknown);
             }
         }

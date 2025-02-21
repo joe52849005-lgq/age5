@@ -709,7 +709,7 @@ public class Skill
         //
         //         if (caster is Character chr)
         //         {
-        //             chr.SendMessage("Target is too far ...");
+        //             chr.SendDebugMessage("Target is too far ...");
         //         }
         //         return;
         //     }
@@ -1165,7 +1165,7 @@ public class Skill
         if (weightedTotal > 0)
             selectedWeight = Random.Shared.Next(weightedTotal);
         var currentWeight = 0;
-        // (caster as Character)?.SendMessage($"Effect Random {selectedWeight+1}/{weightedTotal}");
+        // (caster as Character)?.SendDebugMessage($"Effect Random {selectedWeight+1}/{weightedTotal}");
 
         // Apply the effects that need to happen
         foreach (var (target, effect) in effectsToApply)
@@ -1186,7 +1186,7 @@ public class Skill
                     continue;
                 }
 
-                // (caster as Character)?.SendMessage($"Selected Effect {effect.EffectId} ({currentWeight}) using {selectedWeight} / {weightedTotal} - Buff {effect.Template.BuffId}");
+                // (caster as Character)?.SendDebugMessage($"Selected Effect {effect.EffectId} ({currentWeight}) using {selectedWeight} / {weightedTotal} - Buff {effect.Template.BuffId}");
                 selectedWeight = -1;
             }
 

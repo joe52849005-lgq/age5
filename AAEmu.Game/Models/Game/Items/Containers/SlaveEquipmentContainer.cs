@@ -35,7 +35,7 @@ namespace AAEmu.Game.Models.Game.Items.Containers
                 SlotType = ContainerType,
                 SlotNumber = previousSlot,
             };
-            // Owner.SendMessage($"SlaveEquipmentContainer - {slaveItem} -> {inventoryItem}, SlaveTl: {slave.TlId}");
+            // Owner.SendDebugMessage($"SlaveEquipmentContainer - {slaveItem} -> {inventoryItem}, SlaveTl: {slave.TlId}");
             Owner.SendPacket(new SCSlaveEquipmentChangedPacket(slaveItem, inventoryItem, slave.TlId, Owner.Id, 0, false, true, DateTime.MinValue));
         }
 
@@ -61,7 +61,7 @@ namespace AAEmu.Game.Models.Game.Items.Containers
                 SlotType = ContainerType,
                 SlotNumber = previousSlot,
             };
-            // Owner.SendMessage($"SlaveEquipmentContainer - {slaveItem} -> {inventoryItem}, SlaveTl: {slave.TlId}");
+            // Owner.SendDebugMessage($"SlaveEquipmentContainer - {slaveItem} -> {inventoryItem}, SlaveTl: {slave.TlId}");
             Owner.SendPacket(new SCSlaveEquipmentChangedPacket(slaveItem, inventoryItem, slave.TlId, Owner.Id, 0, false, true, DateTime.MinValue));
         }
     }

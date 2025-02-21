@@ -79,9 +79,9 @@ public class CommandManager : Singleton<CommandManager>
     {
         CommandManager.Instance.Clear();
         if (ScriptCompiler.Compile())
-            character.SendMessage("[Force Scripts Reload] Success");
+            character.SendDebugMessage("[Force Scripts Reload] Success");
         else
-            character.SendMessage("|cFFFF0000[Force Scripts Reload] There were errors !|r");
+            character.SendDebugMessage("|cFFFF0000[Force Scripts Reload] There were errors !|r");
     }
 
     private static string[] SplitCommandString(string baseString)
@@ -127,11 +127,11 @@ public class CommandManager : Singleton<CommandManager>
         {
             // Only display extended error to admins
             if (characterAccessLevel >= 100)
-                messageOutput.SendMessage(
+                messageOutput.SendDebugMessage(
                     "|cFFFF0000[Error] No commands have been loaded, this is usually because of compile errors. Try using \"" +
                     CommandManager.CommandPrefix + "scripts reload\" after the issues have been fixed.|r");
             else
-                messageOutput.SendMessage(
+                messageOutput.SendDebugMessage(
                     "[Error] No commands available.");
             return false;
         }
@@ -152,7 +152,7 @@ public class CommandManager : Singleton<CommandManager>
 
         if (AccessLevelManager.Instance.GetLevel(thisCommand) > characterAccessLevel)
         {
-            messageOutput.SendMessage("|cFFFF0000Insufficient privileges.|r");
+            messageOutput.SendDebugMessage("|cFFFF0000Insufficient privileges.|r");
             return true;
         }
 
@@ -173,7 +173,7 @@ public class CommandManager : Singleton<CommandManager>
         }
         catch (Exception e)
         {
-            character.SendMessage(ChatType.System, e.Message, Color.Red);
+            character.SendDebugMessage(ChatType.System, e.Message, Color.Red);
             Logger.Error(e.Message);
             Logger.Error(e.StackTrace);
         }
@@ -188,21 +188,21 @@ public class CommandManager : Singleton<CommandManager>
 
     public static void SendDefaultHelpText(ICommand command, IMessageOutput messageOutput)
     {
-        messageOutput.SendMessage(ChatType.System, command.CommandNames.Length > 0
+        messageOutput.SendDebugMessage(ChatType.System, command.CommandNames.Length > 0
             ? $"Help for |cFFFFFFFF{CommandPrefix}{command.CommandNames[0]}|r |cFFEEEEAA{command.GetCommandLineHelp()}|r\n|cFF888888{command.GetCommandHelpText()}|r"
             : "Invalid Command");
     }
 
     public static void SendErrorText(ICommand command, IMessageOutput messageOutput, string errorDetails)
     {
-        messageOutput.SendMessage(ChatType.System, command.CommandNames.Length > 0
+        messageOutput.SendDebugMessage(ChatType.System, command.CommandNames.Length > 0
             ? $"|cFFFFFFFF[{command.CommandNames[0]}]|r |cFFFF0000{errorDetails}|r"
             : $"|cFFFF0000Invalid Command - {errorDetails}|r");
     }
 
     public static void SendNormalText(ICommand command, IMessageOutput messageOutput, string text)
     {
-        messageOutput.SendMessage(ChatType.System, command.CommandNames.Length > 0
+        messageOutput.SendDebugMessage(ChatType.System, command.CommandNames.Length > 0
             ? $"[{command.CommandNames[0]}] {text}"
             : $"[Invalid Command] {text}");
     }

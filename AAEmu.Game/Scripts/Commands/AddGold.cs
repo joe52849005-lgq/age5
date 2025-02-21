@@ -63,13 +63,11 @@ public class AddGold : ICommand
         if (argTotal != 0)
         {
             targetPlayer.Money += argTotal;
-            targetPlayer.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.AutoLootDoodadItem,
-                new List<ItemTask> { new MoneyChange(argTotal) }, new List<ulong>()));
+            targetPlayer.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.AutoLootDoodadItem, new List<ItemTask> { new MoneyChange(argTotal) }, new List<ulong>()));
             if (character.Id != targetPlayer.Id)
             {
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"changed {targetPlayer.Name}'s money by {argGold}g {argSilver}s {argCopper}c");
-                targetPlayer.SendMessage($"[GM] {character.Name} has adjusted your money");
+                CommandManager.SendNormalText(this, messageOutput, $"changed {targetPlayer.Name}'s money by {argGold}g {argSilver}s {argCopper}c");
+                targetPlayer.SendDebugMessage($"[GM] {character.Name} has adjusted your money");
             }
         }
         else

@@ -21,20 +21,20 @@ public class CharacterMessageOutput : IMessageOutput
         _character = character;
     }
 
-    public void SendMessage(string message) => SendMessage(ChatType.System, message, null);
+    public void SendDebugMessage(string message) => SendDebugMessage(ChatType.System, message, null);
 
-    public void SendMessage(ChatType chatType, string message, Color? color = null)
+    public void SendDebugMessage(ChatType chatType, string message, Color? color = null)
     {
         if (color != null)
             message = $"|c{color.Value.A:X2}{color.Value.R:X2}{color.Value.G:X2}{color.Value.B:X2}{message}|r";
         _messages.Add(message);
-        _character.SendMessage(chatType, message);
+        _character.SendDebugMessage(chatType, message);
     }
 
-    public void SendMessage(ICharacter target, string message)
+    public void SendDebugMessage(ICharacter target, string message)
     {
         _messages.Add($"Target: {target.Name} - {message}");
-        target.SendMessage(message);
+        target.SendDebugMessage(message);
     }
 
     public void SendErrorMessage(ErrorMessageType messageType, uint type, bool isNotify)

@@ -164,7 +164,7 @@ public class Simulation : Patrol
         if (pointsList == null || pointsList.Count == 0)
         {
             //Logger.Warn("no route data...");
-            //Character.SendMessage("[MoveTo] no route data...");
+            //Character.SendDebugMessage("[MoveTo] no route data...");
             return -1;
         }
 
@@ -197,13 +197,13 @@ public class Simulation : Patrol
         if (MoveToPathEnabled)
         {
             //Logger.Warn("while following the route, recording is not possible.");
-            //Character.SendMessage("[MoveTo] while following the route, recording is not possible.");
+            //Character.SendDebugMessage("[MoveTo] while following the route, recording is not possible.");
             return;
         }
         RecordPath.Clear();
         PointsCount = 0;
         //Logger.Warn("route recording started ...");
-        //Character.SendMessage("[MoveTo] route recording started ...");
+        //Character.SendDebugMessage("[MoveTo] route recording started ...");
         SavePathEnabled = true;
         RepeatTo(ch, MoveTrigerDelay, sim);
     }
@@ -214,7 +214,7 @@ public class Simulation : Patrol
         RecordPath.Add(s);
         PointsCount++;
         //Logger.Warn($"added checkpoint #{PointsCount}");
-        //Character.SendMessage("[MoveTo] добавлен чекпоинт #" + PointsCount);
+        //Character.SendDebugMessage("[MoveTo] добавлен чекпоинт #" + PointsCount);
         RepeatTo(ch, MoveTrigerDelay, sim);
     }
     //***************************************************************
@@ -229,7 +229,7 @@ public class Simulation : Patrol
             }
         }
         //Logger.Warn("Route recording completed.");
-        //Character.SendMessage("[MoveTo] запись маршрута завершена.");
+        //Character.SendDebugMessage("[MoveTo] запись маршрута завершена.");
         SavePathEnabled = false;
     }
     //***************************************************************
@@ -255,7 +255,7 @@ public class Simulation : Patrol
         RecordPath.Add(s);
         PointsCount++;
         //Logger.Warn("добавлен чекпоинт # {0}", PointsCount);
-        //Character.SendMessage("[MoveTo] добавлен чекпоинт #" + PointsCount);
+        //Character.SendDebugMessage("[MoveTo] добавлен чекпоинт #" + PointsCount);
     }
     //***************************************************************
     public void GoToPath(Npc npc, bool toForward, uint skillId = 0, uint timeout = 0)
@@ -265,7 +265,7 @@ public class Simulation : Patrol
         if (!MoveToPathEnabled)
         {
             //Logger.Warn("the route is stopped...");
-            //Character.SendMessage("[MoveTo] the route is stopped...");
+            //Character.SendDebugMessage("[MoveTo] the route is stopped...");
             StopMove(npc);
             return;
         }
@@ -277,7 +277,7 @@ public class Simulation : Patrol
 
         // presumably the path is already registered in MovePath
         //Logger.Warn("trying to get on the path...");
-        //Character.SendMessage("[MoveTo] trying to get on the path...");
+        //Character.SendDebugMessage("[MoveTo] trying to get on the path...");
         // first go to the closest checkpoint
         npc.BroadcastPacket(new SCUnitModelPostureChangedPacket(npc, npc.AnimActionId, false), true);
         Path = GetPaths(MoveFileName);
@@ -292,16 +292,16 @@ public class Simulation : Patrol
         if (i < 0)
         {
             //Logger.Warn("checkpoint not found...");
-            //Character.SendMessage("[MoveTo] checkpoint not found...");
+            //Character.SendDebugMessage("[MoveTo] checkpoint not found...");
             StopMove(npc);
             return;
         }
         //Logger.Warn($"found nearest checkpoint #{i} run there ...");
-        //Character.SendMessage($"[MoveTo] found nearest checkpoint #{i} run there ...");
+        //Character.SendDebugMessage($"[MoveTo] found nearest checkpoint #{i} run there ...");
         MoveToPathEnabled = true;
         MoveStepIndex = i;
         //Logger.Warn($"checkpoint #{i}");
-        //Character.SendMessage($"[MoveTo] checkpoint #{i}");
+        //Character.SendDebugMessage($"[MoveTo] checkpoint #{i}");
         var s = MovePath[MoveStepIndex];
         TargetPosition = new Vector3(ExtractValue(s, 1), ExtractValue(s, 2), ExtractValue(s, 3));
         if (Math.Abs(OldPos.X - TargetPosition.X) > tolerance && Math.Abs(OldPos.Y - TargetPosition.Y) > tolerance && Math.Abs(OldPos.Z - TargetPosition.Z) > tolerance)
@@ -321,7 +321,7 @@ public class Simulation : Patrol
 
         // presumably the path is already registered in MovePath
         //Logger.Warn("trying to get on the path...");
-        //Character.SendMessage("[MoveTo] trying to get on the path...");
+        //Character.SendDebugMessage("[MoveTo] trying to get on the path...");
         // first go to the closest checkpoint
         npc.BroadcastPacket(new SCUnitModelPostureChangedPacket(npc, npc.AnimActionId, false), true);
         Path = GetPaths(MoveFileName);
@@ -336,16 +336,16 @@ public class Simulation : Patrol
         if (i < 0)
         {
             //Logger.Warn("checkpoint not found...");
-            //Character.SendMessage("[MoveTo] checkpoint not found...");
+            //Character.SendDebugMessage("[MoveTo] checkpoint not found...");
             StopMove(npc);
             return;
         }
         //Logger.Warn($"found nearest checkpoint #{i} run there ...");
-        //Character.SendMessage($"[MoveTo] found nearest checkpoint #{i} run there ...");
+        //Character.SendDebugMessage($"[MoveTo] found nearest checkpoint #{i} run there ...");
         MoveToPathEnabled = true;
         MoveStepIndex = i;
         //Logger.Warn($"checkpoint #{i}");
-        //Character.SendMessage($"[MoveTo] checkpoint #{i}");
+        //Character.SendDebugMessage($"[MoveTo] checkpoint #{i}");
         var s = MovePath[MoveStepIndex];
         TargetPosition = new Vector3(ExtractValue(s, 1), ExtractValue(s, 2), ExtractValue(s, 3));
         if (Math.Abs(OldPos.X - TargetPosition.X) > tolerance && Math.Abs(OldPos.Y - TargetPosition.Y) > tolerance && Math.Abs(OldPos.Z - TargetPosition.Z) > tolerance)
@@ -464,7 +464,7 @@ public class Simulation : Patrol
     public void StopMove(Npc npc)
     {
         //Logger.Warn("stop moving...");
-        //Character.SendMessage("[MoveTo] stop moving ...");
+        //Character.SendDebugMessage("[MoveTo] stop moving ...");
         npc.StopMovement();
         MoveToPathEnabled = false;
         npc.IsInPatrol = false;
@@ -488,7 +488,7 @@ public class Simulation : Patrol
     public static void PauseMove(Npc npc)
     {
         //Logger.Warn("let's stand a little...");
-        //Character.SendMessage("[MoveTo] let's stand a little...");
+        //Character.SendDebugMessage("[MoveTo] let's stand a little...");
         npc.StopMovement();
     }
 
@@ -503,7 +503,7 @@ public class Simulation : Patrol
         if (MovePath == null || MovePath.Count == 0)
         {
             //Logger.Warn("Error: Path data is missing");
-            //Character.SendMessage("[MoveTo]Error: Path data is missing);
+            //Character.SendDebugMessage("[MoveTo]Error: Path data is missing);
             StopMove(npc);
             return;
         }
@@ -519,11 +519,11 @@ public class Simulation : Patrol
             if (MoveStepIndex == MovePath.Count - 1)
             {
                 //Logger.Warn("we are at the end point...");
-                //Character.SendMessage("[MoveTo] we are at the end point...");
+                //Character.SendDebugMessage("[MoveTo] we are at the end point...");
                 MoveToForward = false; // turn back
                 MoveStepIndex--;
                 //Logger.Warn($"walk to #{MoveStepIndex}");
-                //Character.SendMessage("[MoveTo] бежим к #" + MoveStepIndex);
+                //Character.SendDebugMessage("[MoveTo] бежим к #" + MoveStepIndex);
                 TargetPosition = Path[MoveStepIndex];
                 if (Cycle)
                 {
@@ -567,7 +567,7 @@ public class Simulation : Patrol
             }
             MoveStepIndex++;
             //Logger.Warn("we have reached checkpoint go on...");
-            //Character.SendMessage("[MoveTo] we have reached checkpoint go on...");
+            //Character.SendDebugMessage("[MoveTo] we have reached checkpoint go on...");
         }
         else
         {
@@ -575,16 +575,16 @@ public class Simulation : Patrol
             {
                 MoveStepIndex--;
                 //Logger.Warn("we reached checkpoint go further...");
-                //Character.SendMessage("[MoveTo] we reached checkpoint go further...");
+                //Character.SendDebugMessage("[MoveTo] we reached checkpoint go further...");
             }
             else
             {
                 //Logger.Warn("we are at the starting point...");
-                //Character.SendMessage("[MoveTo] we are at the starting point...");
+                //Character.SendDebugMessage("[MoveTo] we are at the starting point...");
                 MoveToForward = true; // turn back
                 MoveStepIndex++;
                 //Logger.Warn($"walk to #{MoveStepIndex}");
-                //Character.SendMessage("[MoveTo] walk to #{MoveStepIndex});
+                //Character.SendDebugMessage("[MoveTo] walk to #{MoveStepIndex});
                 TargetPosition = Path[MoveStepIndex];
                 if (Cycle)
                 {
@@ -618,7 +618,7 @@ public class Simulation : Patrol
             }
         }
         //Logger.Warn($"walk to #{MoveStepIndex}");
-        //Character.SendMessage("[MoveTo] walk to #{MoveStepIndex});
+        //Character.SendDebugMessage("[MoveTo] walk to #{MoveStepIndex});
         TargetPosition = Path[MoveStepIndex];
         RepeatMove(this, npc, TargetPosition);
     }
@@ -681,7 +681,7 @@ public class Simulation : Patrol
         catch (Exception e)
         {
             Logger.Warn($"Error in read RecordPath: {e.Message}");
-            //Character.SendMessage($"[MoveTo] Error in read MovePath: {e.Message}");
+            //Character.SendDebugMessage($"[MoveTo] Error in read MovePath: {e.Message}");
             StopMove(Npc);
         }
     }

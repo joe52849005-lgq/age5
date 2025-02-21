@@ -810,7 +810,7 @@ public partial class Npc : Unit
                 {
                     if (mate == null) continue;
                     mate.AddExp(KillExp);
-                    characterKiller.SendMessage($"Pet gained {KillExp} XP");
+                    characterKiller.SendDebugMessage($"Pet gained {KillExp} XP");
                 }
             }
         }
@@ -911,7 +911,7 @@ public partial class Npc : Unit
                         {
                             if (mate == null) continue;
                             mate.AddExp(mateKillXP);
-                            pl.SendMessage($"Pet gained {mateKillXP} XP");
+                            pl.SendDebugMessage($"Pet gained {mateKillXP} XP");
                         }
                     }
                 }
@@ -980,7 +980,7 @@ public partial class Npc : Unit
         // {
         //     player = (Character)unit;
         // }
-        // player?.SendMessage(ChatType.System, $"AddUnitAggro {player.Name} + {amount} for {this.ObjId}");
+        // player?.SendDebugMessage(ChatType.System, $"AddUnitAggro {player.Name} + {amount} for {this.ObjId}");
 
         // check self buff tags
         if (Buffs.CheckBuffTag((uint)TagsEnum.NoFight) || Buffs.CheckBuffTag((uint)TagsEnum.Returning))
@@ -1056,7 +1056,7 @@ public partial class Npc : Unit
         }
 
         // var player = unit as Character;
-        // player?.SendMessage($"ClearAggroOfUnit {player.Name} for {this.ObjId}");
+        // player?.SendDebugMessage($"ClearAggroOfUnit {player.Name} for {this.ObjId}");
 
         var lastAggroCount = AggroTable.Count;
         if (lastAggroCount <= 0)

@@ -1,4 +1,4 @@
-using AAEmu.Game.Core.Managers;
+﻿using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.UnitManagers;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
@@ -31,12 +31,10 @@ public class Help : ICommand
         if (args.Length > 0)
         {
             var thisCommand = args[0].ToLower();
-            if (AccessLevelManager.Instance.GetLevel(CommandManager.Instance.GetCommandNameBase(thisCommand)) >
-                character.AccessLevel)
+            if (AccessLevelManager.Instance.GetLevel(CommandManager.Instance.GetCommandNameBase(thisCommand)) > character.AccessLevel)
             {
                 // deliberately the same error as command not found 
-                character.SendMessage("Help for: |cFFFFFFFF" + CommandManager.CommandPrefix + thisCommand +
-                                      "|r not available!");
+                character.SendDebugMessage("Help for: |cFFFFFFFF" + CommandManager.CommandPrefix + thisCommand + "|r not available!");
             }
             else
             {
@@ -44,21 +42,19 @@ public class Help : ICommand
                 if (cmd == null)
                 {
                     // deliberately the same error as insufficient rights 
-                    character.SendMessage("Help for: |cFFFFFFFF" + CommandManager.CommandPrefix + thisCommand +
-                                          "|r not available!");
+                    character.SendDebugMessage("Help for: |cFFFFFFFF" + CommandManager.CommandPrefix + thisCommand + "|r not available!");
                     return;
                 }
 
                 var helpLineText = cmd.GetCommandLineHelp();
                 var helpText = cmd.GetCommandHelpText();
-                character.SendMessage("Help for: |cFFFFFFFF" + CommandManager.CommandPrefix + thisCommand + " " +
-                                      helpLineText + "|r\n|cFF999999" + helpText + "|r");
+                character.SendDebugMessage("Help for: |cFFFFFFFF" + CommandManager.CommandPrefix + thisCommand + " " + helpLineText + "|r\n|cFF999999" + helpText + "|r");
             }
 
             return;
         }
 
-        character.SendMessage("|cFF80FFFFList of available GM Commands|r\n-------------------------\n");
+        character.SendDebugMessage("|cFF80FFFFList of available GM Commands|r\n-------------------------\n");
         var list = CommandManager.Instance.GetCommandKeys();
         list.Sort();
         var characterAccessLevel = CharacterManager.Instance.GetEffectiveAccessLevel(character);
@@ -83,11 +79,11 @@ public class Help : ICommand
             var helpLineText = cmd.GetCommandLineHelp();
             if (helpLineText != string.Empty)
             {
-                character.SendMessage(CommandManager.CommandPrefix + command + " |cFF999999" + helpLineText + "|r");
+                character.SendDebugMessage(CommandManager.CommandPrefix + command + " |cFF999999" + helpLineText + "|r");
             }
             else
             {
-                character.SendMessage(CommandManager.CommandPrefix + command);
+                character.SendDebugMessage(CommandManager.CommandPrefix + command);
             }
         }
     }

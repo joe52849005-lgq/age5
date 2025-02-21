@@ -22,7 +22,7 @@ public class MateXpUpdateTask : Task
         _mate.MateXpUpdateTask?.Cancel();
         _mate.MateXpUpdateTask = null;
         _mate?.AddExp(Exp);
-        _owner.SendMessage($"pet received {Exp} experience points");
+        _owner.SendDebugMessage($"pet received {Exp} experience points");
         Logger.Debug($"[MateXpUpdateTask] Id {_mate?.Id}, ObjId {_mate?.ObjId}, DbInfo.Xp {_mate?.DbInfo.Xp}, AddExp {Exp}");
     }
 }

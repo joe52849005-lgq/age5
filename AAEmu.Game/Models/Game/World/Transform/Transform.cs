@@ -300,7 +300,7 @@ public class Transform : IDisposable
 
                     if ((_owningObject is Character player) &&
                         (_parentTransform?._owningObject != parent?._owningObject))
-                        player.SendMessage($"|cFF88FF88Changing parent - {oldS} => {newS}|r");
+                        player.SendDebugMessage($"|cFF88FF88Changing parent - {oldS} => {newS}|r");
                     // Console.WriteLine("Transform {0} - Changing parent - {1} => {2}", GameObject?.ObjId.ToString() ?? "<null>", oldS, newS);
                 }
                 */
@@ -309,7 +309,7 @@ public class Transform : IDisposable
                 _parentTransform?.InternalAttachChild(this);
 
                 if ((_owningObject is Character aPlayer))
-                    aPlayer.SendMessage($"NewPos: {ToFullString(true, true)}");
+                    aPlayer.SendDebugMessage($"NewPos: {ToFullString(true, true)}");
             }
         }
     }
@@ -400,13 +400,13 @@ public class Transform : IDisposable
         //    foreach (var character in _debugTrackers)
         //    {
         //        /*
-        //        character.SendMessage("{0} - Delta: ({2}  {3}  {4}) - {1}",
+        //        character.SendDebugMessage("{0} - Delta: ({2}  {3}  {4}) - {1}",
         //            _owningObject.ObjId,
         //            (_owningObject is BaseUnit bu) ? bu.Name : "<gameobject>",
         //            worldPosDelta.X.ToString("F1"),worldPosDelta.Y.ToString("F1"),worldPosDelta.Z.ToString("F1"));
         //        */
         //        /*
-        //        character.SendMessage("["+DateTime.UtcNow.ToString("HH:mm:ss") + "] {0} - ZoneKey: {2} Region: ({3} {4}) - {1}",
+        //        character.SendDebugMessage("["+DateTime.UtcNow.ToString("HH:mm:ss") + "] {0} - ZoneKey: {2} Region: ({3} {4}) - {1}",
         //            _owningObject.ObjId,
         //            (_owningObject is BaseUnit bu) ? bu.Name : "<gameobject>",
         //            ZoneId, _owningObject?.Region?.X.ToString() ?? "??", _owningObject?.Region?.Y.ToString() ?? "??");
@@ -652,7 +652,7 @@ public class Transform : IDisposable
                 }
 
                 if (GameObject is Character player)
-                    player.SendMessage($"|cFFFF88FFChanging Sticky - {oldS} => {newS}|r");
+                    player.SendDebugMessage($"|cFFFF88FFChanging Sticky - {oldS} => {newS}|r");
                 //Console.WriteLine("Transform {0} - Changing Sticky - {1} => {2}", GameObject?.ObjId.ToString() ?? "<null>", oldS, newS);
             }
             */

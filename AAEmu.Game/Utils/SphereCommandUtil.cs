@@ -114,12 +114,12 @@ public class SphereCommandUtil
         {
             foreach (var x in sphereIds)
             {
-                character.SendMessage($"Found SphereId: {x} for QuestId: {questId}");
+                character.SendDebugMessage($"Found SphereId: {x} for QuestId: {questId}");
             }
         }
         else
         {
-            character.SendMessage($"No Spheres required for QuestId: {questId}");
+            character.SendDebugMessage($"No Spheres required for QuestId: {questId}");
         }
     }
 
@@ -182,7 +182,7 @@ public class SphereCommandUtil
                 var json = JsonConvert.SerializeObject(spheres.ToArray(), Formatting.Indented);
                 File.WriteAllText(path, json);
 
-                character.SendMessage("Sphere successfully added!");
+                character.SendDebugMessage("Sphere successfully added!");
             }
         }
     }
@@ -198,11 +198,11 @@ public class SphereCommandUtil
             if ((questId > 0) && (questTrigger.Quest.Id != questId))
                 continue;
             var currentDistance = MathUtil.CalculateDistance(character.Transform.World.Position,questTrigger.Sphere.Xyz, true);
-            character.SendMessage($"[Sphere] Quest {questTrigger.Quest.TemplateId} - Component: {questTrigger.Sphere.ComponentId} - TriggerSphere  xyz:{questTrigger.Sphere.Xyz} , radius:{questTrigger.Sphere.Radius}m, at {currentDistance:F1}m away");
+            character.SendDebugMessage($"[Sphere] Quest {questTrigger.Quest.TemplateId} - Component: {questTrigger.Sphere.ComponentId} - TriggerSphere  xyz:{questTrigger.Sphere.Xyz} , radius:{questTrigger.Sphere.Radius}m, at {currentDistance:F1}m away");
             count++;
         }
         if (count <= 0)
-            character.SendMessage($"[Sphere] No active sphere triggers found" + (questId > 0 ? $" for QuestId {questId}" : ""));
+            character.SendDebugMessage($"[Sphere] No active sphere triggers found" + (questId > 0 ? $" for QuestId {questId}" : ""));
     }
 
     public static void RemoveQuestSphere(Character character, uint jsonId)
@@ -247,7 +247,7 @@ public class SphereCommandUtil
 
                     if (!found)
                     {
-                        character.SendMessage($"Json entry with ID {jsonId} does not exist!");
+                        character.SendDebugMessage($"Json entry with ID {jsonId} does not exist!");
                     }
                 }
                 else
@@ -258,7 +258,7 @@ public class SphereCommandUtil
                 File.WriteAllText(path, json);
 
                 if (found)
-                    character.SendMessage($"Removed Json entry with ID {jsonId} successfully");
+                    character.SendDebugMessage($"Removed Json entry with ID {jsonId} successfully");
             }
         }
     }
@@ -299,7 +299,7 @@ public class SphereCommandUtil
 
                     if (!found)
                     {
-                        character.SendMessage($"Json entry with ID {jsonId} does not exist!");
+                        character.SendDebugMessage($"Json entry with ID {jsonId} does not exist!");
                     }
                 }
                 else

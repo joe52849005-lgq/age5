@@ -1,5 +1,4 @@
-﻿using NLog;
-using AAEmu.Game.Core.Managers;
+﻿using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.NPChar;
@@ -48,7 +47,7 @@ public class MoveTo : ICommand
 
         if (args.Length < 1)
         {
-            character.SendMessage("[MoveTo] /moveto <rec||save filename||go filename||back filename||stop||run||walk>");
+            character.SendDebugMessage("[MoveTo] /moveto <rec||save filename||go filename||back filename||stop||run||walk>");
             return;
         }
 
@@ -63,8 +62,7 @@ public class MoveTo : ICommand
         }
         else
         {
-            CommandManager.SendErrorText(this, messageOutput,
-                "there should be two parameters, a command and a file_name...");
+            CommandManager.SendErrorText(this, messageOutput, "there should be two parameters, a command and a file_name...");
             return;
         }
 
@@ -105,7 +103,7 @@ public class MoveTo : ICommand
                     moveTo.RunningMode = true;
                     break;
                 //case "walk":
-                //    character.SendMessage("[MoveTo] turned off running mode...");
+                //    character.SendDebugMessage("[MoveTo] turned off running mode...");
                 //    moveTo.RunningMode = walk;
                 //    break;
                 case "stop":

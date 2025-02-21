@@ -1,10 +1,8 @@
-﻿using System.Drawing;
-using AAEmu.Game.Core.Managers;
-using AAEmu.Game.Models.Game;
-using AAEmu.Game.Models.Game.Char;
+﻿using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Packets.G2C;
-using AAEmu.Game.Models.Game.Chat;
+using AAEmu.Game.Models.Game;
+using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Teleport;
 using AAEmu.Game.Utils.Scripts;
 
@@ -61,12 +59,12 @@ public class Move : ICommand
                       2f; // drop them slightly above you to avoid weird collision stuff
             if (targetPlayer != character)
             {
-                targetPlayer.SendMessage($"[GM] |cFFFFFFFF{character.Name}|r has called upon your presence !");
+                targetPlayer.SendDebugMessage($"[GM] |cFFFFFFFF{character.Name}|r has called upon your presence !");
             }
 
             targetPlayer.DisabledSetPosition = true;
             targetPlayer.SendPacket(new SCTeleportUnitPacket(TeleportReason.Portal, ErrorMessageType.NoErrorMessage, myX, myY, myZ, 0f));
-            character.SendMessage($"[Move] Moved |cFFFFFFFF{targetPlayer.Name}|r to your location.");
+            character.SendDebugMessage($"[Move] Moved |cFFFFFFFF{targetPlayer.Name}|r to your location.");
             return;
         }
 
@@ -74,12 +72,10 @@ public class Move : ICommand
         {
             var targetX = targetPlayer.Transform.World.Position.X;
             var targetY = targetPlayer.Transform.World.Position.Y;
-            var targetZ =
-                targetPlayer.Transform.World.Position.Z +
-                2f; // drop me slightly above them to avoid weird collision stuff
+            var targetZ = targetPlayer.Transform.World.Position.Z + 2f; // drop me slightly above them to avoid weird collision stuff
             character.DisabledSetPosition = true;
             character.SendPacket(new SCTeleportUnitPacket(TeleportReason.Portal, ErrorMessageType.NoErrorMessage, targetX, targetY, targetZ, 0f));
-            character.SendMessage($"[Move] Moved to |cFFFFFFFF{targetPlayer.Name}|r.");
+            character.SendDebugMessage($"[Move] Moved to |cFFFFFFFF{targetPlayer.Name}|r.");
             return;
         }
 
@@ -88,13 +84,12 @@ public class Move : ICommand
         {
             if (targetPlayer != character)
             {
-                targetPlayer.SendMessage(
-                    $"[GM] |cFFFFFFFF{character.Name}|r has moved you do position X: {newX}, Y: {newY}, Z: {newZ}");
+                targetPlayer.SendDebugMessage($"[GM] |cFFFFFFFF{character.Name}|r has moved you do position X: {newX}, Y: {newY}, Z: {newZ}");
             }
 
             targetPlayer.DisabledSetPosition = true;
             targetPlayer.SendPacket(new SCTeleportUnitPacket(TeleportReason.Portal, ErrorMessageType.NoErrorMessage, newX, newY, newZ, 0f));
-            character.SendMessage($"[Move] |cFFFFFFFF{targetPlayer.Name}|r moved to X: {newX}, Y: {newY}, Z: {newZ}");
+            character.SendDebugMessage($"[Move] |cFFFFFFFF{targetPlayer.Name}|r moved to X: {newX}, Y: {newY}, Z: {newZ}");
         }
         else
         {

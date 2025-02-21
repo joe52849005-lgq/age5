@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using AAEmu.Game.Core.Managers;
+using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Items.Actions;
-using AAEmu.Game.Utils.Scripts.SubCommands;
-using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game.Items.Templates;
 using AAEmu.Game.Utils.Scripts;
+using AAEmu.Game.Utils.Scripts.SubCommands;
 
 namespace AAEmu.Game.Scripts.SubCommands.Items;
 
@@ -26,8 +27,7 @@ public class ItemUnwrapSubCommand : SubCommandBase
             });
     }
 
-    public override void Execute(ICharacter character, string triggerArgument,
-        IDictionary<string, ParameterValue> parameters, IMessageOutput messageOutput)
+    public override void Execute(ICharacter character, string triggerArgument, IDictionary<string, ParameterValue> parameters, IMessageOutput messageOutput)
     {
         //Character addTarget;
         var selfCharacter = (Character)character;
@@ -39,18 +39,18 @@ public class ItemUnwrapSubCommand : SubCommandBase
 
         if (item == null)
         {
-            character.SendMessage($"No item could be found with Id: {itemId}");
+            character.SendDebugMessage($"No item could be found with Id: {itemId}");
             return;
         }
 
         if (!(item.Template is EquipItemTemplate equipItemTemplate))
         {
-            character.SendMessage($"Item @ITEM_NAME({item.TemplateId}) is not a equipment item, Id: {itemId}");
+            character.SendDebugMessage($"Item @ITEM_NAME({item.TemplateId}) is not a equipment item, Id: {itemId}");
             return;
         }
 
         var newTime = DateTime.UtcNow;
-        character.SendMessage($"Item unwrap using {minutes}");
+        character.SendDebugMessage($"Item unwrap using {minutes}");
         if (minutes >= 0 && equipItemTemplate.ChargeLifetime > 0)
         {
             newTime = newTime.AddMinutes(equipItemTemplate.ChargeLifetime * -1).AddMinutes(minutes);
@@ -64,15 +64,13 @@ public class ItemUnwrapSubCommand : SubCommandBase
             item.SetFlag(ItemFlag.SoulBound);
         }
 
-        var updateItemTask = new ItemUpdateSecurity(item, (byte)item.ItemFlags, 0, item.HasFlag(ItemFlag.Secure),
-            item.HasFlag(ItemFlag.Secure), item.ItemFlags.HasFlag(ItemFlag.Unpacked));
-        character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.ItemTaskThistimeUnpack, updateItemTask,
-            new List<ulong>()));
+        var updateItemTask = new ItemUpdateSecurity(item, (byte)item.ItemFlags, 0, item.HasFlag(ItemFlag.Secure), item.HasFlag(ItemFlag.Secure), item.ItemFlags.HasFlag(ItemFlag.Unpacked));
+        character.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.ItemTaskThistimeUnpack, updateItemTask, new List<ulong>()));
         if (equipItemTemplate.ChargeLifetime > 0)
         {
             character.SendPacket(new SCSyncItemLifespanPacket(true, item.Id, item.TemplateId, item.UnpackTime));
         }
 
-        character.SendMessage($"Item @ITEM_NAME({item.TemplateId}) unwrap time set to {newTime}");
+        character.SendDebugMessage($"Item @ITEM_NAME({item.TemplateId}) unwrap time set to {newTime}");
     }
 }

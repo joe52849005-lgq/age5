@@ -22,7 +22,7 @@ public class CraftTask : Task
     {
         if (_count > 0)
         {
-            // _character.SendMessage($"CraftTask: {_craftId}");
+            // _character.SendDebugMessage($"CraftTask: {_craftId}");
             var craft = CraftManager.Instance.GetCraftById(_craftId);
             _character?.Craft.Craft(craft, _count, _objId);
         }

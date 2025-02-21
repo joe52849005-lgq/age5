@@ -1,4 +1,4 @@
-using AAEmu.Game.Core.Managers;
+﻿using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
@@ -34,7 +34,7 @@ public class ChangeLevel : ICommand
         if (args.Length == 0)
         {
             CommandManager.SendDefaultHelpText(this, messageOutput);
-            //character.SendMessage("[Level] level: 1-100");
+            //character.SendDebugMessage("[Level] level: 1-100");
             return;
         }
 
@@ -50,8 +50,7 @@ public class ChangeLevel : ICommand
         {
             if (level <= 1 || level > ExperienceManager.MaxMateLevel)
             {
-                CommandManager.SendErrorText(this, messageOutput,
-                    $"Allowed level range: 2-{ExperienceManager.MaxMateLevel}|r");
+                CommandManager.SendErrorText(this, messageOutput, $"Allowed level range: 2-{ExperienceManager.MaxMateLevel}|r");
                 return;
             }
 
@@ -70,8 +69,7 @@ public class ChangeLevel : ICommand
         {
             if (level <= 1 || level > ExperienceManager.MaxPlayerLevel)
             {
-                CommandManager.SendErrorText(this, messageOutput,
-                    $"Allowed level range: 2-{ExperienceManager.MaxPlayerLevel}|r");
+                CommandManager.SendErrorText(this, messageOutput, $"Allowed level range: 2-{ExperienceManager.MaxPlayerLevel}|r");
                 return;
             }
 
@@ -79,9 +77,7 @@ public class ChangeLevel : ICommand
 
             if (targetPlayer.Ability1 != AbilityType.None)
             {
-                var expForA1 =
-                    ExperienceManager.Instance.GetExpNeededToGivenLevel(
-                        targetPlayer.Abilities.Abilities[targetPlayer.Ability1].Exp, level);
+                var expForA1 = ExperienceManager.Instance.GetExpNeededToGivenLevel(targetPlayer.Abilities.Abilities[targetPlayer.Ability1].Exp, level);
                 if (expForA1 > maxExpToAdd)
                 {
                     maxExpToAdd = expForA1;
@@ -90,9 +86,7 @@ public class ChangeLevel : ICommand
 
             if (targetPlayer.Ability2 != AbilityType.None)
             {
-                var expForA2 =
-                    ExperienceManager.Instance.GetExpNeededToGivenLevel(
-                        targetPlayer.Abilities.Abilities[targetPlayer.Ability2].Exp, level);
+                var expForA2 = ExperienceManager.Instance.GetExpNeededToGivenLevel(targetPlayer.Abilities.Abilities[targetPlayer.Ability2].Exp, level);
                 if (expForA2 > maxExpToAdd)
                 {
                     maxExpToAdd = expForA2;
@@ -101,9 +95,7 @@ public class ChangeLevel : ICommand
 
             if (targetPlayer.Ability3 != AbilityType.None)
             {
-                var expForA3 =
-                    ExperienceManager.Instance.GetExpNeededToGivenLevel(
-                        targetPlayer.Abilities.Abilities[targetPlayer.Ability3].Exp, level);
+                var expForA3 = ExperienceManager.Instance.GetExpNeededToGivenLevel(targetPlayer.Abilities.Abilities[targetPlayer.Ability3].Exp, level);
                 if (expForA3 > maxExpToAdd)
                 {
                     maxExpToAdd = expForA3;

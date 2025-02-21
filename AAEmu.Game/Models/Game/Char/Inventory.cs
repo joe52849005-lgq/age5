@@ -552,7 +552,7 @@ public class Inventory
                 return false;
         }
 
-        // Owner.SendMessage($"ItemMove {action}: {fromItemId} {fromType}:{fromSlot} => {toItemId} {toType}:{toSlot} - {count}");
+        // Owner.SendDebugMessage($"ItemMove {action}: {fromItemId} {fromType}:{fromSlot} => {toItemId} {toType}:{toSlot} - {count}");
         // Actually execute what we need to do
         var itemTasks = new List<ItemTask>();
         switch (action)
@@ -643,7 +643,7 @@ public class Inventory
             case SwapAction.doNothing:
             default:
                 // Should be impossible to get here
-                Owner.SendMessage("|cFFFF0000SplitOrMoveItem swap action not implemented " + action + "|r");
+                Owner.SendDebugMessage("|cFFFF0000SplitOrMoveItem swap action not implemented " + action + "|r");
                 Logger.Error("SplitOrMoveItem swap action not implemented " + action);
                 EncryptionManager.needNewkey1 = true;
                 break;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.GameData;
@@ -69,27 +69,23 @@ public class AddBuff : ICommand
             var tags = new List<uint>();
             if (goodBuffs.Count + badBuffs.Count + hiddenBuffs.Count > 0)
             {
-                character.SendMessage(
-                    $"[AddBuff] Listing buffs for {targetUnit.ObjId} - {targetUnit.Name} {userFriendlyName} !");
+                character.SendDebugMessage($"[AddBuff] Listing buffs for {targetUnit.ObjId} - {targetUnit.Name} {userFriendlyName} !");
                 foreach (var b in goodBuffs)
                 {
                     tags.AddRange(TagsGameData.Instance.GetTagsByTargetId(TagsGameData.TagType.Buffs, b.Template.Id));
-                    CommandManager.SendNormalText(this, messageOutput,
-                        $"|cFF00FF00{(b.Passive ? "Passive " : "")}{b.Template.Id} - {LocalizationManager.Instance.Get("buffs", "name", b.Template.Id)}|r");
+                    CommandManager.SendNormalText(this, messageOutput, $"|cFF00FF00{(b.Passive ? "Passive " : "")}{b.Template.Id} - {LocalizationManager.Instance.Get("buffs", "name", b.Template.Id)}|r");
                 }
 
                 foreach (var b in badBuffs)
                 {
                     tags.AddRange(TagsGameData.Instance.GetTagsByTargetId(TagsGameData.TagType.Buffs, b.Template.Id));
-                    CommandManager.SendNormalText(this, messageOutput,
-                        $"|cFFFF0000{(b.Passive ? "Passive " : "")}{b.Template.Id} - {LocalizationManager.Instance.Get("buffs", "name", b.Template.Id)}|r");
+                    CommandManager.SendNormalText(this, messageOutput, $"|cFFFF0000{(b.Passive ? "Passive " : "")}{b.Template.Id} - {LocalizationManager.Instance.Get("buffs", "name", b.Template.Id)}|r");
                 }
 
                 foreach (var b in hiddenBuffs)
                 {
                     tags.AddRange(TagsGameData.Instance.GetTagsByTargetId(TagsGameData.TagType.Buffs, b.Template.Id));
-                    CommandManager.SendNormalText(this, messageOutput,
-                        $"|cFF6666FF{(b.Passive ? "Passive " : "")}{b.Template.Id} - {LocalizationManager.Instance.Get("buffs", "name", b.Template.Id)}|r");
+                    CommandManager.SendNormalText(this, messageOutput, $"|cFF6666FF{(b.Passive ? "Passive " : "")}{b.Template.Id} - {LocalizationManager.Instance.Get("buffs", "name", b.Template.Id)}|r");
                 }
 
                 if (tags.Count > 0)
@@ -99,8 +95,7 @@ public class AddBuff : ICommand
             }
             else
             {
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"No buffs on {selectedUnit.ObjId} - {selectedUnit.Name}");
+                CommandManager.SendNormalText(this, messageOutput, $"No buffs on {selectedUnit.ObjId} - {selectedUnit.Name}");
             }
 
             return;
@@ -145,8 +140,7 @@ public class AddBuff : ICommand
             var targetObj = SkillCastTarget.GetByType(SkillCastTargetType.Unit);
             targetObj.ObjId = targetUnit.ObjId;
 
-            var newBuff =
-                new Buff(targetUnit, sourceUnit, casterObj, buffTemplate, null, DateTime.UtcNow) { AbLevel = abLevel };
+            var newBuff = new Buff(targetUnit, sourceUnit, casterObj, buffTemplate, null, DateTime.UtcNow) { AbLevel = abLevel };
             targetUnit.Buffs.AddBuff(newBuff);
         }
 

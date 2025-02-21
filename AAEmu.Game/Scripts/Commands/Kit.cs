@@ -1,18 +1,20 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
+
 using AAEmu.Commons.IO;
 using AAEmu.Game.Core.Managers;
+using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
-using AAEmu.Game.Models.Game.Items.Actions;
-using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game.Chat;
-using Newtonsoft.Json;
-using NLog;
+using AAEmu.Game.Models.Game.Items.Actions;
 using AAEmu.Game.Utils.Scripts;
-using NLog.Targets;
+
+using Newtonsoft.Json;
+
+using NLog;
 
 namespace AAEmu.Game.Scripts.Commands;
 
@@ -82,9 +84,8 @@ public class AddKit : ICommand
     {
         if (args.Length == 0)
         {
-            character.SendMessage("[Items] " + CommandManager.CommandPrefix + "kit (target) <kitname>");
-            CommandManager.SendNormalText(this, messageOutput,
-                $"{kitconfig.itemkitnames.Count} kits have been loaded, use {CommandManager.CommandPrefix}{CommandNames[0]} ? to get a list of kits");
+            character.SendDebugMessage("[Items] " + CommandManager.CommandPrefix + "kit (target) <kitname>");
+            CommandManager.SendNormalText(this, messageOutput, $"{kitconfig.itemkitnames.Count} kits have been loaded, use {CommandManager.CommandPrefix}{CommandNames[0]} ? to get a list of kits");
             return;
         }
 
@@ -100,14 +101,14 @@ public class AddKit : ICommand
 
         if (kitname == "?")
         {
-            character.SendMessage("[Items] " + CommandManager.CommandPrefix + "kit has the following kits registered:");
+            character.SendDebugMessage("[Items] " + CommandManager.CommandPrefix + "kit has the following kits registered:");
             var s = string.Empty;
             foreach (var n in kitconfig.itemkitnames)
             {
                 s += n + "  ";
             }
 
-            character.SendMessage("|cFFFFFFFF" + s + "|r");
+            character.SendDebugMessage("|cFFFFFFFF" + s + "|r");
             return;
         }
 
@@ -125,7 +126,7 @@ public class AddKit : ICommand
             var itemTemplate = ItemManager.Instance.GetTemplate(kit.itemId);
             if (itemTemplate == null)
             {
-                character.SendMessage(ChatType.System, $"Item could not be created, ID: {kit.itemId} !");
+                character.SendDebugMessage(ChatType.System, $"Item could not be created, ID: {kit.itemId} !");
                 Logger.Error($"itemId not found: {kit.itemId}");
                 continue;
             }
@@ -134,14 +135,14 @@ public class AddKit : ICommand
                 if (!targetPlayer.Inventory.Bag.AcquireDefaultItem(ItemTaskType.Gm, kit.itemId, kit.itemCount,
                         kit.itemGrade))
                 {
-                    character.SendMessage(ChatType.System, "Item could not be created!", Color.Red);
+                    character.SendDebugMessage(ChatType.System, "Item could not be created!", Color.Red);
                     continue;
                 }
 
                 if (character.Id != targetPlayer.Id)
                 {
-                    character.SendMessage($"[Items] added item {kit.itemId} to {targetPlayer.Name}'s inventory");
-                    targetPlayer.SendMessage($"[GM] {character.Name} has added a item to your inventory");
+                    character.SendDebugMessage($"[Items] added item {kit.itemId} to {targetPlayer.Name}'s inventory");
+                    targetPlayer.SendDebugMessage($"[GM] {character.Name} has added a item to your inventory");
                 }
 
                 itemsAdded++;
@@ -153,13 +154,13 @@ public class AddKit : ICommand
         {
             if (character.Id != targetPlayer.Id)
             {
-                character.SendMessage($"[Items] added {itemsAdded} items to {targetPlayer.Name}'s inventory");
-                targetPlayer.SendMessage($"[GM] {character.Name} has added a {itemsAdded} item to your inventory");
+                character.SendDebugMessage($"[Items] added {itemsAdded} items to {targetPlayer.Name}'s inventory");
+                targetPlayer.SendDebugMessage($"[GM] {character.Name} has added a {itemsAdded} item to your inventory");
             }
         }
         else
         {
-            character.SendMessage($"[Items] No items in kit \"{kitname}\"");
+            character.SendDebugMessage($"[Items] No items in kit \"{kitname}\"");
         }
     }
 

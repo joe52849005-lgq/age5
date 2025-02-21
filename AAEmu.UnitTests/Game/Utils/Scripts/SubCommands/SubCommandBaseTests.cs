@@ -106,7 +106,7 @@ public class SubCommandBaseTests
             Assert.Equal(arguments[counter], parameterKeyValue.Value);
             counter++;
         }
-        mockCharacter.Verify(c => c.SendMessage(It.IsAny<ChatType>(), It.IsAny<string>(), It.IsAny<Color>()), Times.Never);
+        mockCharacter.Verify(c => c.SendDebugMessage(It.IsAny<ChatType>(), It.IsAny<string>(), It.IsAny<Color>()), Times.Never);
     }
 
     [Theory]
@@ -156,7 +156,7 @@ public class SubCommandBaseTests
             Assert.Equal(arguments[counter], parameterKeyValue.Value);
             counter++;
         }
-        mockCharacter.Verify(c => c.SendMessage(It.IsAny<ChatType>(), It.IsAny<string>(), It.IsAny<Color>()), Times.Never);
+        mockCharacter.Verify(c => c.SendDebugMessage(It.IsAny<ChatType>(), It.IsAny<string>(), It.IsAny<Color>()), Times.Never);
     }
 
     [Theory]
@@ -196,7 +196,7 @@ public class SubCommandBaseTests
         Assert.Single(subCommand.Parameters);
         Assert.Equal(argumentValue, subCommand.Parameters["param1"]);
 
-        mockCharacter.Verify(c => c.SendMessage(It.IsAny<ChatType>(), It.IsAny<string>(), It.IsAny<Color>()), Times.Never);
+        mockCharacter.Verify(c => c.SendDebugMessage(It.IsAny<ChatType>(), It.IsAny<string>(), It.IsAny<Color>()), Times.Never);
     }
 
     [Theory]
@@ -267,7 +267,7 @@ public class SubCommandBaseTests
             }
             counter++;
         }
-        mockCharacter.Verify(c => c.SendMessage(It.IsAny<ChatType>(), It.IsAny<string>(), It.IsAny<Color>()), Times.Never);
+        mockCharacter.Verify(c => c.SendDebugMessage(It.IsAny<ChatType>(), It.IsAny<string>(), It.IsAny<Color>()), Times.Never);
     }
 
     [Theory]
@@ -319,7 +319,7 @@ public class SubCommandBaseTests
         subCommand.BaseSendHelpMessage(new CharacterMessageOutput(mockCharacter.Object));
 
         // Assert
-        mockCharacter.Verify(c => c.SendMessage(ChatType.System, It.Is<string>(call => call.Contains(expectedCallExample)), It.IsAny<Color?>()), Times.Once);
+        mockCharacter.Verify(c => c.SendDebugMessage(ChatType.System, It.Is<string>(call => call.Contains(expectedCallExample)), It.IsAny<Color?>()), Times.Once);
     }
 
     [Theory]
@@ -339,7 +339,7 @@ public class SubCommandBaseTests
         subCommand.BaseSendHelpMessage(new CharacterMessageOutput(mockCharacter.Object));
 
         // Assert
-        mockCharacter.Verify(c => c.SendMessage(ChatType.System, It.Is<string>(call => call.Contains(expectedCallExample)), It.IsAny<Color?>()), Times.Once);
+        mockCharacter.Verify(c => c.SendDebugMessage(ChatType.System, It.Is<string>(call => call.Contains(expectedCallExample)), It.IsAny<Color?>()), Times.Once);
     }
 
     [Theory]

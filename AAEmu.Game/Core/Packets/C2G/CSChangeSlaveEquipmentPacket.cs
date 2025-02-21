@@ -75,7 +75,7 @@ namespace AAEmu.Game.Core.Packets.C2G
                 slaveItem.Item = targetContainer.GetItemBySlot(slaveItem.SlotNumber);
 
                 // Logger.Debug($"{playerItem.SlotType} #{playerItem.SlotNumber} ItemId:{playerItem.Item?.Id ?? 0} -> {mateItem.SlotType} #{mateItem.SlotNumber} ItemId:{mateItem.Item?.Id ?? 0}");
-                // character.SendMessage($"MateEquip: {playerItem.SlotType} #{playerItem.SlotNumber} ItemId:{playerItem.Item?.Id ?? 0} -> {mateItem.SlotType} #{mateItem.SlotNumber} ItemId:{mateItem.Item?.Id ?? 0}");
+                // character.SendDebugMessage($"MateEquip: {playerItem.SlotType} #{playerItem.SlotNumber} ItemId:{playerItem.Item?.Id ?? 0} -> {mateItem.SlotType} #{mateItem.SlotNumber} ItemId:{mateItem.Item?.Id ?? 0}");
 
                 // If un-equipping, swap the items around
                 if (!isEquip)
@@ -92,7 +92,7 @@ namespace AAEmu.Game.Core.Packets.C2G
                         playerItem.Item.Id, playerItem.SlotType, playerItem.SlotNumber,
                         0, slaveItem.SlotType, slaveItem.SlotNumber);
 
-                    // character.SendMessage($"SCMateEquipmentChanged - {(isEquip ? playerItem : mateItem)} -> {(isEquip ? mateItem : playerItem)}, MateTl: {mateTl} => Success {res}");
+                    // character.SendDebugMessage($"SCMateEquipmentChanged - {(isEquip ? playerItem : mateItem)} -> {(isEquip ? mateItem : playerItem)}, MateTl: {mateTl} => Success {res}");
                     //if (!res)
                     {
                         character.SendPacket(new SCSlaveEquipmentChangedPacket(

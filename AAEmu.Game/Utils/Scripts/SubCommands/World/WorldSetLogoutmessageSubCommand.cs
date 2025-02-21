@@ -23,7 +23,7 @@ public class WorldSetLogoutmessageSubCommand : SubCommandBase
             return;
         }
         character.SetLogoutMessage(logoutMessage);
-        SendMessage(messageOutput, $"Set LogoutMessage {logoutMessage}");
+        SendDebugMessage(messageOutput, $"Set LogoutMessage {logoutMessage}");
         Logger.Warn($"{Title}: {logoutMessage}");
     }
 }

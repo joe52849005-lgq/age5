@@ -36,6 +36,6 @@ public class TestEcho : ICommand
         // It is required if you want to test things like @NPC_NAME() and |cFF00FFFF text colors |r
         // s = s.Replace("@@", "@").Replace("||", "|");
 
-        character.SendMessage("|cFFFFFFFF[Echo]|r " + s);
+        character.SendDebugMessage("|cFFFFFFFF[Echo]|r " + s);
     }
 }

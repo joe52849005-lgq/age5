@@ -34,7 +34,7 @@ public class GainLootPackItemEffect : EffectTemplate
 
         // Get Pack data
         Logger.Debug($"GainLootPackItemEffect: LootPackId={LootPackId}, ConsumeSourceItem={ConsumeSourceItem}, ConsumeItemId={ConsumeItemId}, ConsumeCount={ConsumeCount}, InheritGrade={InheritGrade}");
-        character.SendMessage($"LootPackId={LootPackId}");
+        character.SendDebugMessage($"LootPackId={LootPackId}");
 
         var pack = LootGameData.Instance.GetPack(LootPackId);
         if (pack == null || pack.Loots.Count <= 0)
@@ -49,7 +49,7 @@ public class GainLootPackItemEffect : EffectTemplate
             character.Inventory.Bag.ConsumeItem(ItemTaskType.ConsumeSkillSource, ConsumeItemId, ConsumeCount, null);
             pack.GiveLootPack(character, actAbility, ItemTaskType.SkillEffectGainItem);
             Logger.Warn($"GainLootPackItemEffect: LootPackId={LootPackId}");
-            character.SendMessage($"LootPackId={LootPackId}");
+            character.SendDebugMessage($"LootPackId={LootPackId}");
 
             return;
         }
@@ -78,6 +78,6 @@ public class GainLootPackItemEffect : EffectTemplate
         // Give the results
         pack.GiveLootPack(character, actAbility, ItemTaskType.SkillEffectGainItem);
         Logger.Warn($"GainLootPackItemEffect: LootPackId={LootPackId}");
-        character.SendMessage($"LootPackId={LootPackId}");
+        character.SendDebugMessage($"LootPackId={LootPackId}");
     }
 }

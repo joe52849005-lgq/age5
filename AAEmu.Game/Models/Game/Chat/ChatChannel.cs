@@ -33,7 +33,7 @@ public class ChatChannel
         if (Members.Contains(character))
             return false;
 
-        // character.SendMessage(ChatType.System, "ChatManager.JoinChannel {0} - {1} - {2}", chatType, internalId, internalName);
+        // character.SendDebugMessage(ChatType.System, "ChatManager.JoinChannel {0} - {1} - {2}", chatType, internalId, internalName);
         Members.Add(character);
         character.SendPacket(new SCJoinedChatChannelPacket(ChatType, SubType, Faction));
 
@@ -44,7 +44,7 @@ public class ChatChannel
     {
         if (character == null)
             return false;
-        // character.SendMessage(ChatType.System, "ChatManager.LeaveChannel {0} - {1} - {2}", chatType, internalId, internalName);
+        // character.SendDebugMessage(ChatType.System, "ChatManager.LeaveChannel {0} - {1} - {2}", chatType, internalId, internalName);
         if (Members.Remove(character))
         {
             character.SendPacket(new SCLeavedChatChannelPacket(ChatType, SubType, Faction));
@@ -61,7 +61,7 @@ public class ChatChannel
     /// <param name="ability"></param>
     /// <param name="languageType"></param>
     /// <returns>Number of members the message was sent to</returns>
-    public int SendMessage(Character origin, string msg, int ability = 0, byte languageType = 0)
+    public int SendDebugMessage(Character origin, string msg, int ability = 0, byte languageType = 0)
     {
         var res = 0;
         foreach (var m in Members)

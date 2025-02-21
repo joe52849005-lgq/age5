@@ -67,7 +67,7 @@ public class NpcSaveSubCommand : SubCommandBase
         // Проверка на выполнение записи
         if (_isSavingInProgress)
         {
-            SendMessage(messageOutput, "Save operation is already in progress.");
+            SendDebugMessage(messageOutput, "Save operation is already in progress.");
             return;
         }
 
@@ -75,7 +75,7 @@ public class NpcSaveSubCommand : SubCommandBase
         {
             if (_isSavingInProgress)
             {
-                SendMessage(messageOutput, "Save operation is already in progress.");
+                SendDebugMessage(messageOutput, "Save operation is already in progress.");
                 return;
             }
 
@@ -182,7 +182,7 @@ public class NpcSaveSubCommand : SubCommandBase
             var addedCount = addNpcs.Count;
             var finalCount = npcSpawnersToFile.Count;
 
-            SendMessage(messageOutput, $"All npcs have been saved! Time taken: {stopwatch.ElapsedMilliseconds} ms\n" +
+            SendDebugMessage(messageOutput, $"All npcs have been saved! Time taken: {stopwatch.ElapsedMilliseconds} ms\n" +
                                        $"Initial count: {initialCount}\n" +
                                        $"Removed count: {removedCount}\n" +
                                        $"Added count: {addedCount}\n" +
@@ -251,7 +251,7 @@ public class NpcSaveSubCommand : SubCommandBase
         var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name, "npc_spawns_new.json");
         var json = JsonConvert.SerializeObject(spawnersFromFile.Values.ToArray(), Formatting.Indented, new JsonModelsConverter());
         File.WriteAllText(jsonPathOut, json);
-        SendMessage(messageOutput, $"All npcs have been saved with added npc ObjId:{npc.ObjId}, TemplateId:{npc.TemplateId}");
+        SendDebugMessage(messageOutput, $"All npcs have been saved with added npc ObjId:{npc.ObjId}, TemplateId:{npc.TemplateId}");
         Logger.Info($"All npcs have been saved with added npc ObjId:{npc.ObjId}, TemplateId:{npc.TemplateId}");
     }
 

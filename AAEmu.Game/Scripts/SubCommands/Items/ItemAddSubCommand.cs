@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game.Char;
@@ -16,8 +17,7 @@ public class ItemAddSubCommand : SubCommandBase
     public ItemAddSubCommand()
     {
         Title = "[Item]";
-        Description =
-            "Adds to self or a player name or a selected target an amount of a specific item template of a specific [grade].";
+        Description = "Adds to self or a player name or a selected target an amount of a specific item template of a specific [grade].";
         CallPrefix = $"{CommandManager.CommandPrefix}item add";
         AddParameter(new StringSubCommandParameter("target", "player name||target||self", true));
         AddParameter(new NumericSubCommandParameter<uint>("templateId", "template id", true));
@@ -25,8 +25,7 @@ public class ItemAddSubCommand : SubCommandBase
         AddParameter(new NumericSubCommandParameter<byte>("grade", "item grade=0", false, (byte)ItemGrade.Basic, (byte)ItemGrade.Ethernal) { DefaultValue = (byte)ItemGrade.Basic });
     }
 
-    public override void Execute(ICharacter character, string triggerArgument,
-        IDictionary<string, ParameterValue> parameters, IMessageOutput messageOutput)
+    public override void Execute(ICharacter character, string triggerArgument, IDictionary<string, ParameterValue> parameters, IMessageOutput messageOutput)
     {
         Character addTarget;
         var selfCharacter = (Character)character;
@@ -92,8 +91,8 @@ public class ItemAddSubCommand : SubCommandBase
 
         if (selfCharacter.Id != addTarget.Id)
         {
-            SendMessage(messageOutput, $"Added item {ChatConverter.ConvertAsChatMessageReference(templateId, itemGrade)} to {addTarget.Name}'s inventory");
-            SendMessage(addTarget, messageOutput, $"[GM] {selfCharacter.Name} added {ChatConverter.ConvertAsChatMessageReference(templateId, itemGrade)} to your inventory");
+            SendDebugMessage(messageOutput, $"Added item {ChatConverter.ConvertAsChatMessageReference(templateId, itemGrade)} to {addTarget.Name}'s inventory");
+            SendDebugMessage(addTarget, messageOutput, $"[GM] {selfCharacter.Name} added {ChatConverter.ConvertAsChatMessageReference(templateId, itemGrade)} to your inventory");
         }
     }
 }

@@ -29,7 +29,7 @@ public class TestTransfer : ICommand
         CommandManager.SendErrorText(this, messageOutput, $"function disabled");
         //if (args.Length < 1)
         //{
-        //    character.SendMessage("[test_transfer] /test_transfer unitId (1..6{124})");
+        //    character.SendDebugMessage("[test_transfer] /test_transfer unitId (1..6{124})");
         //    return;
         //}
         //var transfer = new Transfer();
@@ -77,7 +77,7 @@ public class TestTransfer : ICommand
         //if ((args.Length <= 2) || (!sbyte.TryParse(args[2], out newRotZ)))
         //{
         //    newRotZ = MathUtil.ConvertDegreeToDirection(angle);
-        //    character.SendMessage("[Spawn] Transfer {0} using angle {1}°", transfer.ModelId, angle);
+        //    character.SendDebugMessage("[Spawn] Transfer {0} using angle {1}°", transfer.ModelId, angle);
         //}
         //transfer.Position.RotationX = 0;
         //transfer.Position.RotationY = 0;

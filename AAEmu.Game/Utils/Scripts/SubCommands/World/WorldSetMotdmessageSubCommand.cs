@@ -23,7 +23,7 @@ public class WorldSetMotdmessageSubCommand : SubCommandBase
             return;
         }
         character.SetMotdMessage(motd);
-        SendMessage(messageOutput, $"Set MOTD {motd}");
+        SendDebugMessage(messageOutput, $"Set MOTD {motd}");
         Logger.Warn($"{Title}: {motd}");
     }
 }

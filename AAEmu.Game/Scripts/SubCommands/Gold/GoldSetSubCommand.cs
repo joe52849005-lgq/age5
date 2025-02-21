@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Packets.G2C;
@@ -15,8 +16,7 @@ public class GoldSetSubCommand : SubCommandBase
     public GoldSetSubCommand()
     {
         Title = "[Gold Set]";
-        Description =
-            "Changes to self or a player name or a selected target an specific amount of gold, silver and copper.";
+        Description = "Changes to self or a player name or a selected target an specific amount of gold, silver and copper.";
         CallPrefix = $"{CommandManager.CommandPrefix}gold <add||set||remove>";
         AddParameter(new StringSubCommandParameter("target", "player name||target||self", true));
         AddParameter(new NumericSubCommandParameter<int>("gold", "gold amount", true));
@@ -24,8 +24,7 @@ public class GoldSetSubCommand : SubCommandBase
         AddParameter(new NumericSubCommandParameter<int>("copper", "copper amount", false));
     }
 
-    public override void Execute(ICharacter character, string triggerArgument,
-        IDictionary<string, ParameterValue> parameters, IMessageOutput messageOutput)
+    public override void Execute(ICharacter character, string triggerArgument, IDictionary<string, ParameterValue> parameters, IMessageOutput messageOutput)
     {
         Character targetCharacter;
         var selfCharacter = (Character)character;
@@ -78,11 +77,10 @@ public class GoldSetSubCommand : SubCommandBase
             targetCharacter.Money += totalAmount;
             targetCharacter.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.AutoLootDoodadItem,
                 new List<ItemTask> { new MoneyChange(totalAmount) }, new List<ulong>()));
-            SendMessage(messageOutput,
-                $"Changed {targetCharacter.Name}'s money by {goldAmount}g {silverAmount}s {copperAmount}c");
+            SendDebugMessage(messageOutput, $"Changed {targetCharacter.Name}'s money by {goldAmount}g {silverAmount}s {copperAmount}c");
             if (selfCharacter.Id != targetCharacter.Id)
             {
-                SendMessage(targetCharacter, messageOutput, $"[GM] {selfCharacter.Name} has changed your gold");
+                SendDebugMessage(targetCharacter, messageOutput, $"[GM] {selfCharacter.Name} has changed your gold");
             }
         }
         else

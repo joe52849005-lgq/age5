@@ -215,7 +215,7 @@ public class CSMoveUnitPacket : GamePacket
                         var oldParentObj = targetUnit.Transform.Parent.GameObject?.ObjId ?? 0;
                         targetUnit.Transform.Parent = null;
 
-                        character.SendMessage(
+                        character.SendDebugMessage(
                             $"|cFF884444{targetUnit.Name} ({targetUnit.ObjId}) no longer standing on Object {oldParentObj} " +
                             $"@ x{dmt.X:F1} y{dmt.Y:F1} z{dmt.Z:F1} || World: {targetUnit.Transform.World}|r");
                     }
@@ -224,7 +224,7 @@ public class CSMoveUnitPacket : GamePacket
                         // Standing on a new object ?
                         targetUnit.Transform.Parent = parentObject.Transform;
 
-                        character.SendMessage(
+                        character.SendDebugMessage(
                             $"|cFF448844{targetUnit.Name} ({targetUnit.ObjId}) standing on Object {parentObject.Name} ({parentObject.ObjId}) " +
                             $"@ x{dmt.X:F1} y{dmt.Y:F1} z{dmt.Z:F1} || World: {targetUnit.Transform.World}|r");
                     }
@@ -236,7 +236,7 @@ public class CSMoveUnitPacket : GamePacket
                         // Changed to standing on different object ?
                         targetUnit.Transform.Parent = parentObject.Transform;
 
-                        character.SendMessage(
+                        character.SendDebugMessage(
                             $"|cFF448888{targetUnit.Name} ({targetUnit.ObjId}) moved to standing on new Object {parentObject.Name} ({parentObject.ObjId}) " +
                             $"@ x{dmt.X:F1} y{dmt.Y:F1} z{dmt.Z:F1} || World: {targetUnit.Transform.World}|r");
                     }
@@ -282,7 +282,7 @@ public class CSMoveUnitPacket : GamePacket
                     if ((dmt.FallVel > 0) && (targetUnit is Unit unit))
                     {
                         var fallDmg = unit.DoFallDamage(dmt.FallVel);
-                        // character.SendMessage("{0} took {1} fall damage {2}/{3} HP left", unit.Name, fallDmg, unit.Hp, unit.MaxHp);
+                        // character.SendDebugMessage("{0} took {1} fall damage {2}/{3} HP left", unit.Name, fallDmg, unit.Hp, unit.MaxHp);
                     }
 
                     break;

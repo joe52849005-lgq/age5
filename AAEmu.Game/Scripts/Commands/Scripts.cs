@@ -33,8 +33,8 @@ public class Scripts : ICommand
     {
         if (args.Length == 0)
         {
-            character.SendMessage("[Scripts] Using: " + CommandManager.CommandPrefix + "scripts <action>");
-            //character.SendMessage("[Scripts] Action: reload");
+            character.SendDebugMessage("[Scripts] Using: " + CommandManager.CommandPrefix + "scripts <action>");
+            //character.SendDebugMessage("[Scripts] Action: reload");
             return;
         }
 
@@ -49,8 +49,7 @@ public class Scripts : ICommand
                 }
                 else
                 {
-                    CommandManager.SendErrorText(this, messageOutput,
-                        "Reload - There were errors, please check the server logs for details !");
+                    CommandManager.SendErrorText(this, messageOutput, "Reload - There were errors, please check the server logs for details !");
                 }
 
                 break;
@@ -61,15 +60,13 @@ public class Scripts : ICommand
                 }
                 else
                 {
-                    CommandManager.SendErrorText(this, messageOutput,
-                        "Save - Failed saving user database, was possible already in the process of saving, please check server console for details.");
+                    CommandManager.SendErrorText(this, messageOutput, "Save - Failed saving user database, was possible already in the process of saving, please check server console for details.");
                 }
 
                 break;
             case "reloadslavepoints":
                 SlaveManager.Instance.LoadSlaveAttachmentPointLocations();
-                CommandManager.SendNormalText(this, messageOutput,
-                    "Slave Attachment Point Locations reloaded from .json file");
+                CommandManager.SendNormalText(this, messageOutput, "Slave Attachment Point Locations reloaded from .json file");
                 break;
             case "shutdown":
                 var shutdownTime = DateTime.UtcNow.AddMinutes(30);
@@ -96,8 +93,7 @@ public class Scripts : ICommand
                 {
                     SaveManager.Instance.ShutdownTask.Cancel();
                     CommandManager.SendNormalText(this, messageOutput, $"Shutdown cancelled.");
-                    WorldManager.Instance.BroadcastPacketToServer(new SCNoticeMessagePacket(3, Color.Aqua, 10000,
-                        "The server shutdown has been cancelled!"));
+                    WorldManager.Instance.BroadcastPacketToServer(new SCNoticeMessagePacket(3, Color.Aqua, 10000, "The server shutdown has been cancelled!"));
                     SaveManager.Instance.ShutdownTask = null;
                     return;
                 }
@@ -110,30 +106,25 @@ public class Scripts : ICommand
 
                 if (SaveManager.Instance.ShutdownTask != null)
                 {
-                    CommandManager.SendNormalText(this, messageOutput,
-                        $"Shutdown was already in progress, changed to {shutdownTimeRemaining.TotalMinutes:F0} minutes from now.");
+                    CommandManager.SendNormalText(this, messageOutput, $"Shutdown was already in progress, changed to {shutdownTimeRemaining.TotalMinutes:F0} minutes from now.");
                     SaveManager.Instance.ShutdownTask.ChangeShutdownTime(shutdownTime.AddSeconds(1));
                     return;
                 }
 
                 if (SaveManager.Instance.DoSave())
                 {
-                    SaveManager.Instance.ShutdownTask =
-                        new ShutdownTask(shutdownTime.AddSeconds(5), -1); // Manual Normal Shutdown (-1)
+                    SaveManager.Instance.ShutdownTask = new ShutdownTask(shutdownTime.AddSeconds(5), -1); // Manual Normal Shutdown (-1)
                     TaskManager.Instance.Schedule(SaveManager.Instance.ShutdownTask, null, TimeSpan.FromSeconds(1));
-                    CommandManager.SendNormalText(this, messageOutput,
-                        $"Shutdown sequence started, shutting down in |nn;{shutdownTimeRemaining.TotalMinutes:F0}|r minutes");
+                    CommandManager.SendNormalText(this, messageOutput, $"Shutdown sequence started, shutting down in |nn;{shutdownTimeRemaining.TotalMinutes:F0}|r minutes");
                 }
                 else
                 {
-                    CommandManager.SendNormalText(this, messageOutput,
-                        "Shutdown cancelled because there were save errors, if you want to shutdown regardless without saving, use |nn;/scripts forcedshutdown|r instead.");
+                    CommandManager.SendNormalText(this, messageOutput, "Shutdown cancelled because there were save errors, if you want to shutdown regardless without saving, use |nn;/scripts forcedshutdown|r instead.");
                 }
 
                 break;
             case "forcedshutdown":
-                WorldManager.Instance.BroadcastPacketToServer(new SCNoticeMessagePacket(3, Color.Magenta, 15000,
-                    "The server is shutting down right now!"));
+                WorldManager.Instance.BroadcastPacketToServer(new SCNoticeMessagePacket(3, Color.Magenta, 15000, "The server is shutting down right now!"));
                 CommandManager.SendNormalText(this, messageOutput, "Shutting down immediately!");
                 Environment.Exit(-2); // Manual Forced Shutdown (-2)
                 break;

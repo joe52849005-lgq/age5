@@ -24,8 +24,8 @@ public interface ICharacter : IUnit
     short NumBankSlots { get; set; }
     public UnitEvents Events { get; }
 
-    void SendMessage(ChatType type, string message, Color? color = null);
-    void SendMessage(string message);
+    void SendDebugMessage(ChatType type, string message, Color? color = null);
+    void SendDebugMessage(string message);
     void SendErrorMessage(ErrorMessageType errorMsgType, uint type = 0, bool isNotify = true);
     void ChangeLabor(short change, int actabilityId);
     void AddExp(int exp, bool shouldAddAbilityExp);

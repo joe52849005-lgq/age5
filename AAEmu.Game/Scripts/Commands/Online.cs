@@ -1,10 +1,10 @@
-using System;
+﻿using System;
+
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Faction;
-using AAEmu.Game.Models.StaticValues;
 using AAEmu.Game.Utils.Scripts;
 
 namespace AAEmu.Game.Scripts.Commands;
@@ -25,8 +25,7 @@ public class Online : ICommand
 
     public string GetCommandHelpText()
     {
-        return
-            "Lists the number of online players. If a filter or * is provided, it will be used as a filter to show up to 100 names as well.";
+        return "Lists the number of online players. If a filter or * is provided, it will be used as a filter to show up to 100 names as well.";
     }
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)
@@ -70,9 +69,8 @@ public class Online : ICommand
                 }
             }
 
-            messageOutput.SendMessage(finalMessage);
-            CommandManager.SendNormalText(this, messageOutput,
-                showCount != characters.Count
+            messageOutput.SendDebugMessage(finalMessage);
+            CommandManager.SendNormalText(this, messageOutput, showCount != characters.Count
                     ? $"Showing {showCount}/{characters.Count} online players."
                     : $"{characters.Count} players online."
             );

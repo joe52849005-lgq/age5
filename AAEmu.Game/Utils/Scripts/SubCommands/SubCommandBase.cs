@@ -249,9 +249,9 @@ public abstract class SubCommandBase : ICommandV2
     /// </summary>
     /// <param name="messageOutput">Output handler</param>
     /// <param name="message">Message to send to the character</param>
-    protected void SendMessage(IMessageOutput messageOutput, string message)
+    protected void SendDebugMessage(IMessageOutput messageOutput, string message)
     {
-        messageOutput.SendMessage($"{Title} {message}");
+        messageOutput.SendDebugMessage($"{Title} {message}");
     }
 
     /// <summary>
@@ -260,9 +260,9 @@ public abstract class SubCommandBase : ICommandV2
     /// <param name="target">character reference</param>
     /// <param name="messageOutput">Output handler</param>
     /// <param name="message">Message to send to the character</param>
-    protected void SendMessage(ICharacter target, IMessageOutput messageOutput, string message)
+    protected void SendDebugMessage(ICharacter target, IMessageOutput messageOutput, string message)
     {
-        messageOutput.SendMessage(target, $"{Title} {message}");
+        messageOutput.SendDebugMessage(target, $"{Title} {message}");
     }
 
     /// <summary>
@@ -273,7 +273,7 @@ public abstract class SubCommandBase : ICommandV2
     /// <param name="message">Message to send to the character</param>
     protected void SendColorMessage(IMessageOutput messageOutput, Color color, string message)
     {
-        messageOutput.SendMessage(ChatType.System, $"{Title} {message}", color);
+        messageOutput.SendDebugMessage(ChatType.System, $"{Title} {message}", color);
     }
 
     protected static string GetOptionalArgumentValue(string[] args, string argumentName, string defaultArgumentValue)

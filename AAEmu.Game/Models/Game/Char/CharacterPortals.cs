@@ -48,7 +48,7 @@ public class CharacterPortals
             if (PrivatePortals.ContainsKey(portal.Id) && PrivatePortals.Remove(portal.Id))
             {
                 _removedPrivatePortals.Add(portal.Id);
-                //Owner.SendMessage("Recorded Portal deleted.");
+                //Owner.SendDebugMessage("Recorded Portal deleted.");
             }
         }
         else
@@ -56,7 +56,7 @@ public class CharacterPortals
             if (VisitedDistricts.ContainsKey(portal.SubZoneId) && VisitedDistricts.Remove(portal.SubZoneId))
             {
                 _removedVisitedDistricts.Add(portal.SubZoneId);
-                //Owner.SendMessage("Default Portal deleted.");
+                //Owner.SendDebugMessage("Default Portal deleted.");
             }
         }
     }
@@ -81,7 +81,7 @@ public class CharacterPortals
             PopulateDistrictPortals();
             Send();
             Logger.Info($"{portal.Name}:{subZoneId} added to return district list");
-            Owner.SendMessage($"{portal.Name}:{subZoneId} added to visited district list in the portal book");
+            Owner.SendDebugMessage($"{portal.Name}:{subZoneId} added to visited district list in the portal book");
         }
     }
 

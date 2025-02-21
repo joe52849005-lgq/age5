@@ -68,7 +68,7 @@ public class ItemEvolving : SpecialEffectAction
         if (item.Id == item1.Id || item.Id == item2.Id)
         {
             Logger.Warn($"You cannot use the same item for improvement! Item={item.Id}, Item1={item1.Id}, Item2={item2.Id}");
-            character.SendMessage($"You cannot use the same item for improvement! Item @ITEM_NAME({item.TemplateId})'s");
+            character.SendDebugMessage($"You cannot use the same item for improvement! Item @ITEM_NAME({item.TemplateId})'s");
             return;
         }
 

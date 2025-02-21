@@ -82,8 +82,7 @@ public class CofferActions : ICommand
             return;
         }
 
-        CommandManager.SendNormalText(this, messageOutput,
-            $"objId: {coffer.ObjId}, DoodadDbId: {coffer.DbId}, ItemContainerDbId: {coffer.ItemContainer.ContainerId}, UsedBy: {coffer.OpenedBy?.Name ?? "<nobody>"}");
+        CommandManager.SendNormalText(this, messageOutput, $"objId: {coffer.ObjId}, DoodadDbId: {coffer.DbId}, ItemContainerDbId: {coffer.ItemContainer.ContainerId}, UsedBy: {coffer.OpenedBy?.Name ?? "<nobody>"}");
 
         switch (action)
         {
@@ -97,12 +96,10 @@ public class CofferActions : ICommand
                         countName = string.Empty;
                     }
 
-                    character.SendMessage(
-                        $"[|nd;@DOODAD_NAME({coffer.TemplateId})|r][{slotName}] |nb;{item.Id}|r {countName}|nn;{item.TemplateId}|r = @ITEM_NAME({item.TemplateId})");
+                    character.SendDebugMessage($"[|nd;@DOODAD_NAME({coffer.TemplateId})|r][{slotName}] |nb;{item.Id}|r {countName}|nn;{item.TemplateId}|r = @ITEM_NAME({item.TemplateId})");
                 }
 
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"[|nd;@DOODAD_NAME({coffer.TemplateId})|r][{coffer.ItemContainer.ContainerType}] {coffer.ItemContainer.Items.Count} entries");
+                CommandManager.SendNormalText(this, messageOutput, $"[|nd;@DOODAD_NAME({coffer.TemplateId})|r][{coffer.ItemContainer.ContainerType}] {coffer.ItemContainer.Items.Count} entries");
                 break;
             case "close":
                 if (!DoodadManager.CloseCofferDoodad(null, coffer.ObjId))

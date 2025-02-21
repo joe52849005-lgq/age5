@@ -127,7 +127,7 @@ public class CSSendChatMessagePacket : GamePacket
                 var partyRaid = TeamManager.Instance.GetActiveTeamByUnit(Connection.ActiveChar.Id);
                 if (partyRaid != null)
                 {
-                    ChatManager.Instance.GetPartyChat(partyRaid, Connection.ActiveChar).SendMessage(Connection.ActiveChar, message, ability, languageType);
+                    ChatManager.Instance.GetPartyChat(partyRaid, Connection.ActiveChar).SendDebugMessage(Connection.ActiveChar, message, ability, languageType);
                 }
                 else
                 {
@@ -145,7 +145,7 @@ public class CSSendChatMessagePacket : GamePacket
             case ChatType.Clan:
                 if (Connection.ActiveChar.Expedition != null)
                 {
-                    ChatManager.Instance.GetGuildChat(Connection.ActiveChar.Expedition).SendMessage(Connection.ActiveChar, message, ability, languageType);
+                    ChatManager.Instance.GetGuildChat(Connection.ActiveChar.Expedition).SendDebugMessage(Connection.ActiveChar, message, ability, languageType);
                 }
                 else
                 {
@@ -156,7 +156,7 @@ public class CSSendChatMessagePacket : GamePacket
             case ChatType.Family:
                 if (Connection.ActiveChar.Family > 0)
                 {
-                    ChatManager.Instance.GetFamilyChat(Connection.ActiveChar.Family).SendMessage(Connection.ActiveChar, message, ability, languageType);
+                    ChatManager.Instance.GetFamilyChat(Connection.ActiveChar.Family).SendDebugMessage(Connection.ActiveChar, message, ability, languageType);
                 }
                 else
                 {
@@ -173,10 +173,10 @@ public class CSSendChatMessagePacket : GamePacket
             break;
             */
             case ChatType.Region: //nation (birth place/race, includes pirates etc)
-                ChatManager.Instance.GetNationChat(Connection.ActiveChar.Race).SendMessage(Connection.ActiveChar, message, ability, languageType);
+                ChatManager.Instance.GetNationChat(Connection.ActiveChar.Race).SendDebugMessage(Connection.ActiveChar, message, ability, languageType);
                 break;
             case ChatType.Ally: //faction (by current allegiance)
-                ChatManager.Instance.GetFactionChat(Connection.ActiveChar.Faction.MotherId).SendMessage(Connection.ActiveChar, message, ability, languageType);
+                ChatManager.Instance.GetFactionChat(Connection.ActiveChar.Faction.MotherId).SendDebugMessage(Connection.ActiveChar, message, ability, languageType);
                 break;
             default:
                 Logger.Warn("Unsupported chat type {0} from {1}", type, Connection.ActiveChar.Name);

@@ -1,19 +1,20 @@
-﻿using AAEmu.Game.Core.Managers;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+
+using AAEmu.Commons.IO;
+using AAEmu.Commons.Utils;
+using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.DoodadObj;
 using AAEmu.Game.Models.Game.NPChar;
 using AAEmu.Game.Models.Json;
-using NLog;
-using System;
-using System.Collections.Generic;
-using AAEmu.Commons.IO;
-using AAEmu.Commons.Utils;
-using Newtonsoft.Json;
-using System.IO;
-using AAEmu.Game.Utils.Scripts;
 using AAEmu.Game.Utils;
+using AAEmu.Game.Utils.Scripts;
+
+using Newtonsoft.Json;
 
 namespace AAEmu.Game.Scripts.Commands;
 
@@ -80,15 +81,13 @@ public class Nwrite : ICommand
             {
                 foreach (var world in worlds)
                 {
-                    var jsonPath = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name,
-                        "doodad_spawns.json");
+                    var jsonPath = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name, "doodad_spawns.json");
                     if (doodad.Spawner.Position.WorldId == world.Id)
                     {
                         var contents = FileManager.GetFileContents(jsonPath);
                         if (string.IsNullOrWhiteSpace(contents))
                         {
-                            CommandManager.SendErrorText(this, messageOutput,
-                                $"File {jsonPath} doesn't exists or is empty.");
+                            CommandManager.SendErrorText(this, messageOutput, $"File {jsonPath} doesn't exists or is empty.");
                         }
                         else
                         {
@@ -105,12 +104,9 @@ public class Nwrite : ICommand
                                     X = doodad.Transform.World.Position.X,
                                     Y = doodad.Transform.World.Position.Y,
                                     Z = doodad.Transform.World.Position.Z,
-                                    Roll =
-                                        (float)MathUtil.ClampDegAngle(doodad.Transform.Local.Rotation.X.RadToDeg()),
-                                    Pitch =
-                                        (float)MathUtil.ClampDegAngle(doodad.Transform.Local.Rotation.Y.RadToDeg()),
-                                    Yaw = (float)MathUtil.ClampDegAngle(
-                                        doodad.Transform.Local.Rotation.Z.RadToDeg())
+                                    Roll = (float)MathUtil.ClampDegAngle(doodad.Transform.Local.Rotation.X.RadToDeg()),
+                                    Pitch = (float)MathUtil.ClampDegAngle(doodad.Transform.Local.Rotation.Y.RadToDeg()),
+                                    Yaw = (float)MathUtil.ClampDegAngle(doodad.Transform.Local.Rotation.Z.RadToDeg())
                                 };
 
                                 var newEntry = new JsonDoodadSpawns
@@ -130,12 +126,9 @@ public class Nwrite : ICommand
                                         spawner.Position.X = doodad.Transform.World.Position.X;
                                         spawner.Position.Y = doodad.Transform.World.Position.Y;
                                         spawner.Position.Z = doodad.Transform.World.Position.Z;
-                                        spawner.Position.Roll =
-                                            (float)MathUtil.ClampDegAngle(doodad.Transform.Local.Rotation.X.RadToDeg());
-                                        spawner.Position.Pitch =
-                                            (float)MathUtil.ClampDegAngle(doodad.Transform.Local.Rotation.Y.RadToDeg());
-                                        spawner.Position.Yaw =
-                                            (float)MathUtil.ClampDegAngle(doodad.Transform.Local.Rotation.Z.RadToDeg());
+                                        spawner.Position.Roll = (float)MathUtil.ClampDegAngle(doodad.Transform.Local.Rotation.X.RadToDeg());
+                                        spawner.Position.Pitch = (float)MathUtil.ClampDegAngle(doodad.Transform.Local.Rotation.Y.RadToDeg());
+                                        spawner.Position.Yaw = (float)MathUtil.ClampDegAngle(doodad.Transform.Local.Rotation.Z.RadToDeg());
                                         break;
                                     }
                                 }
@@ -143,8 +136,7 @@ public class Nwrite : ICommand
 
                             var json = JsonConvert.SerializeObject(spawners.ToArray(), Formatting.Indented);
                             File.WriteAllText(jsonPath, json);
-                            CommandManager.SendNormalText(this, messageOutput,
-                                $"Doodad ObjId: {doodad.ObjId} has been saved!");
+                            CommandManager.SendNormalText(this, messageOutput, $"Doodad ObjId: {doodad.ObjId} has been saved!");
                         }
                     }
                 }
@@ -163,14 +155,12 @@ public class Nwrite : ICommand
                 {
                     if (character.Transform.WorldId == world.Id)
                     {
-                        var jsonPath = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name,
-                            "npc_spawns.json");
+                        var jsonPath = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name, "npc_spawns.json");
 
                         var contents = FileManager.GetFileContents(jsonPath);
                         if (string.IsNullOrWhiteSpace(contents))
                         {
-                            CommandManager.SendErrorText(this, messageOutput,
-                                $"File {jsonPath} doesn't exists or is empty.");
+                            CommandManager.SendErrorText(this, messageOutput, $"File {jsonPath} doesn't exists or is empty.");
                         }
                         else
                         {
@@ -202,8 +192,7 @@ public class Nwrite : ICommand
                                         newEntry.Position.X = pos.Position.X;
                                         newEntry.Position.Y = pos.Position.Y;
                                         newEntry.Position.Z = pos.Position.Z;
-                                        newEntry.Position.Yaw =
-                                            (float)MathUtil.ClampDegAngle(pos.Rotation.Z.RadToDeg());
+                                        newEntry.Position.Yaw = (float)MathUtil.ClampDegAngle(pos.Rotation.Z.RadToDeg());
                                         //var (rx, ry, rz) = pos.ToRollPitchYawSBytesMovement();
                                         //newEntry.Position.RotationX = rx;
                                         //newEntry.Position.RotationY = ry;
@@ -224,8 +213,7 @@ public class Nwrite : ICommand
                                                 spawner.Position.X = pos.Position.X;
                                                 spawner.Position.Y = pos.Position.Y;
                                                 spawner.Position.Z = pos.Position.Z;
-                                                spawner.Position.Yaw =
-                                                    (float)MathUtil.ClampDegAngle(pos.Rotation.Z.RadToDeg());
+                                                spawner.Position.Yaw = (float)MathUtil.ClampDegAngle(pos.Rotation.Z.RadToDeg());
                                                 //var (rx, ry, rz) = pos.ToRollPitchYawSBytesMovement();
                                                 //spawner.Position.RotationX = rx;
                                                 //spawner.Position.RotationY = ry;
@@ -262,8 +250,7 @@ public class Nwrite : ICommand
                         var contents = FileManager.GetFileContents(jsonPath);
                         if (string.IsNullOrWhiteSpace(contents))
                         {
-                            CommandManager.SendErrorText(this, messageOutput,
-                                $"File {jsonPath} doesn't exists or is empty.");
+                            CommandManager.SendErrorText(this, messageOutput, $"File {jsonPath} doesn't exists or is empty.");
                         }
                         else
                         {
@@ -327,7 +314,7 @@ public class Nwrite : ICommand
         }
         else
         {
-            character.SendMessage("[Nwrite] I don't know what to do here");
+            character.SendDebugMessage("[Nwrite] I don't know what to do here");
         }
     }
 }

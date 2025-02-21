@@ -38,7 +38,7 @@ public class GiveCashPoint : SpecialEffectAction
                     if (!AccountManager.Instance.AddCredits(character.AccountId, value2))
                         Logger.Error($"Failed to credit Account:{character.AccountId} with {value2} credits.");
                     else
-                        character.SendMessage($"You received {value2} credits.");
+                        character.SendDebugMessage($"You received {value2} credits.");
                 }
                 var points = AccountManager.Instance.GetAccountDetails(character.AccountId);
                 character.SendPacket(new SCICSCashPointPacket(points.Credits));

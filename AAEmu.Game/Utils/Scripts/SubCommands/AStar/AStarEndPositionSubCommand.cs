@@ -50,6 +50,6 @@ public class AStarEndPositionSubCommand : SubCommandBase
 
         npc.Ai.PathNode.pos2 = new Point(x, y, z);
 
-        messageOutput.SendMessage($"AStar: the endpoint is set X:{npc.Ai.PathNode.pos2.X}, Y:{npc.Ai.PathNode.pos2.Y}, Z:{npc.Ai.PathNode.pos2.Z}");
+        messageOutput.SendDebugMessage($"AStar: the endpoint is set X:{npc.Ai.PathNode.pos2.X}, Y:{npc.Ai.PathNode.pos2.Y}, Z:{npc.Ai.PathNode.pos2.Z}");
     }
 }

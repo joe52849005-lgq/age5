@@ -271,7 +271,7 @@ public abstract class Behavior
         // if (target is Character player)
         // {
         //     var degree = MathUtil.ClampDegAngle(MathUtil.CalculateAngleFrom(Ai.Owner, player));
-        //     player.SendMessage($"ObjId {Ai.Owner.ObjId} has seen you at a angle of {degree:F0}°");
+        //     player.SendDebugMessage($"ObjId {Ai.Owner.ObjId} has seen you at a angle of {degree:F0}°");
         // }
 
         // TODO: Tweak these values, or grab them from DB somewhere?

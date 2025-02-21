@@ -2232,7 +2232,7 @@ public class ItemManager : Singleton<ItemManager>
         var item = character.Inventory.GetItem((SlotType)slotType, slotIndex);
         if (item == null)
         {
-            character.SendMessage("Item cannot be created. Failed To Use Item.");
+            character.SendDebugMessage("Item cannot be created. Failed To Use Item.");
             character.SendErrorMessage(ErrorMessageType.FailedToUseItem);
             Logger.Debug($"Failed To Use Item from slotType {(SlotType)slotType}, slotIndex {slotIndex}");
             return;
@@ -2244,7 +2244,7 @@ public class ItemManager : Singleton<ItemManager>
             var selectedItem = selectiveItems.ItemSelections[data[7] - 1];
             if (selectedItem == null)
             {
-                character.SendMessage("Item cannot be created. Failed To Use Item.");
+                character.SendDebugMessage("Item cannot be created. Failed To Use Item.");
                 character.SendErrorMessage(ErrorMessageType.FailedToUseItem);
                 Logger.Debug($"Failed To Use Item {item.Template.Id} with UseSkillId {item.Template.UseSkillId}");
                 return;
@@ -2252,7 +2252,7 @@ public class ItemManager : Singleton<ItemManager>
 
             if (item.Count < selectiveItems.ConsumeItemCount)
             {
-                character.SendMessage("Item cannot be created.");
+                character.SendDebugMessage("Item cannot be created.");
                 character.SendErrorMessage(ErrorMessageType.NotEnoughItem);
                 Logger.Debug($"Not Enough Item {item.Template.Id} with UseSkillId {item.Template.UseSkillId} count {selectiveItems.ConsumeItemCount}");
                 return;
@@ -2260,7 +2260,7 @@ public class ItemManager : Singleton<ItemManager>
 
             if (character.Inventory.Bag.ConsumeItem(ItemTaskType.SkillEffectGainItem, item.TemplateId, selectiveItems.ConsumeItemCount, null) <= 0)
             {
-                character.SendMessage("Item cannot be created. Not Enough Item.");
+                character.SendDebugMessage("Item cannot be created. Not Enough Item.");
                 character.SendErrorMessage(ErrorMessageType.NotEnoughItem);
                 Logger.Debug($"Not Enough Item {item.Template.Id} with UseSkillId {item.Template.UseSkillId}");
                 return;
@@ -2268,14 +2268,14 @@ public class ItemManager : Singleton<ItemManager>
 
             if (!character.Inventory.Bag.AcquireDefaultItem(ItemTaskType.SelectiveItem, selectedItem.Item, selectedItem.Count, item.Grade))
             {
-                character.SendMessage("Item cannot be created. Bag Full.");
+                character.SendDebugMessage("Item cannot be created. Bag Full.");
                 character.SendErrorMessage(ErrorMessageType.BagFull);
                 Logger.Debug($"The Selective Item {item.Template.Id} with UseSkillId {item.Template.UseSkillId} cannot be created. Bag Full.");
             }
         }
         else
         {
-            character.SendMessage("The Selective Item could not be found.");
+            character.SendDebugMessage("The Selective Item could not be found.");
             character.SendErrorMessage(ErrorMessageType.CraftInteractionItemNotFound);
             Logger.Debug($"The Selective Item {item.Template.Id} with UseSkillId {item.Template.UseSkillId} could not be found.");
         }

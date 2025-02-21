@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game.Char;
-using AAEmu.Game.Models.Game.NPChar;
 using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Utils.Scripts;
 using AAEmu.Game.Utils.Scripts.SubCommands;
@@ -49,12 +49,10 @@ public class SlaveRemoveSubCommand : SubCommandBase
         // Remove Slave
         if (slave.Spawner != null)
         {
-            slave.Spawner.Id =
-                0xffffffff; // removed from the game manually (укажем, что не надо сохранять в файл npc_spawns_new.json командой /save all)
+            slave.Spawner.Id = 0xffffffff; // removed from the game manually (укажем, что не надо сохранять в файл npc_spawns_new.json командой /save all)
         }
 
         slave.Hide();
-        SendMessage(messageOutput,
-            $"Slave ({slave.Name}), ObjId: {slave.ObjId}, TemplateId:{slave.TemplateId} removed successfully");
+        SendDebugMessage(messageOutput, $"Slave ({slave.Name}), ObjId: {slave.ObjId}, TemplateId:{slave.TemplateId} removed successfully");
     }
 }

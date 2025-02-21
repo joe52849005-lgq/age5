@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
+
 using AAEmu.Game.Core.Managers;
+using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Items;
-using AAEmu.Game.Core.Managers.World;
-using AAEmu.Game.Models.Game.Chat;
-using AAEmu.Game.Models.Game.Items.Actions;
-using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Models.Game.NPChar;
+using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Utils.Scripts;
 
 namespace AAEmu.Game.Scripts.Commands;
@@ -31,8 +29,7 @@ public class ShowInventory : ICommand
 
     public string GetCommandHelpText()
     {
-        return
-            "Show content of target's item container.\rEquipment = 1, Inventory = 2 (default), Bank = 3, Trade = 4, Mail = 5";
+        return "Show content of target's item container.\rEquipment = 1, Inventory = 2 (default), Bank = 3, Trade = 4, Mail = 5";
     }
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)
@@ -55,8 +52,7 @@ public class ShowInventory : ICommand
                     countName = string.Empty;
                 }
 
-                messageOutput.SendMessage(
-                    $"[{templateName}][{slotName}] {countName}|nn;{item.TemplateId}|r = @ITEM_NAME({item.TemplateId})");
+                messageOutput.SendDebugMessage($"[{templateName}][{slotName}] {countName}|nn;{item.TemplateId}|r = @ITEM_NAME({item.TemplateId})");
             }
 
             CommandManager.SendNormalText(this, messageOutput,
@@ -125,8 +121,7 @@ public class ShowInventory : ICommand
                         countName = string.Empty;
                     }
 
-                    messageOutput.SendMessage(
-                        $"[|nd;{targetPlayer.Name}|r][{slotName}] |nb;{item.Id}|r {countName}|nn;{item.TemplateId}|r = @ITEM_NAME({item.TemplateId})");
+                    messageOutput.SendDebugMessage($"[|nd;{targetPlayer.Name}|r][{slotName}] |nb;{item.Id}|r {countName}|nn;{item.TemplateId}|r = @ITEM_NAME({item.TemplateId})");
                     lastSlotNumber = item.Slot;
                 }
 

@@ -67,7 +67,7 @@ public class Fly : ICommand
         }
 
         targetPlayer.SendPacket(new SCUnitFlyingStateChangedPacket(targetPlayer.ObjId, isFlying));
-        targetPlayer.SendMessage($"State changed to |cFFFFFFFF{isFlying}|r.");
+        targetPlayer.SendDebugMessage($"State changed to |cFFFFFFFF{isFlying}|r.");
         SetCacheState(targetPlayer.Id, isFlying);
     }
 }

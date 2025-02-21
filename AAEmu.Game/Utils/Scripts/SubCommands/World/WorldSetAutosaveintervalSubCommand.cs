@@ -25,7 +25,7 @@ public class WorldSetAutosaveintervalSubCommand : SubCommandBase
         character.SetAutoSaveInterval(autoSaveInterval);
         SaveManager.Instance.SetAutoSaveInterval();
 
-        SendMessage(messageOutput, $"Set AutoSaveInterval {autoSaveInterval}");
+        SendDebugMessage(messageOutput, $"Set AutoSaveInterval {autoSaveInterval}");
         Logger.Warn($"{Title}: {autoSaveInterval}");
     }
 }

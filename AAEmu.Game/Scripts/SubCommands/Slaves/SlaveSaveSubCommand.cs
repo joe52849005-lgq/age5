@@ -2,6 +2,8 @@
 using System.Drawing;
 using System.IO;
 using System.Linq;
+
+using AAEmu.Commons.Exceptions;
 using AAEmu.Commons.IO;
 using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers;
@@ -9,12 +11,12 @@ using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.World;
 using AAEmu.Game.Models.Json;
-using AAEmu.Game.Utils.Converters;
-using Newtonsoft.Json;
-using AAEmu.Game.Utils.Scripts.SubCommands;
-using AAEmu.Commons.Exceptions;
-using AAEmu.Game.Utils.Scripts;
 using AAEmu.Game.Utils;
+using AAEmu.Game.Utils.Converters;
+using AAEmu.Game.Utils.Scripts;
+using AAEmu.Game.Utils.Scripts.SubCommands;
+
+using Newtonsoft.Json;
 
 namespace AAEmu.Game.Scripts.SubCommands.Slaves;
 
@@ -29,8 +31,7 @@ public class SlaveSaveSubCommand : SubCommandBase
         AddParameter(new NumericSubCommandParameter<uint>("ObjId", "object Id", false));
     }
 
-    public override void Execute(ICharacter character, string triggerArgument,
-        IDictionary<string, ParameterValue> parameters, IMessageOutput messageOutput)
+    public override void Execute(ICharacter character, string triggerArgument, IDictionary<string, ParameterValue> parameters, IMessageOutput messageOutput)
     {
         if (parameters.TryGetValue("ObjId", out var objId))
         {
@@ -107,12 +108,10 @@ public class SlaveSaveSubCommand : SubCommandBase
             }
         }
 
-        var jsonPathOut =
-            Path.Combine(FileManager.AppPath, "Data", "Worlds", currentWorld.Name, "slave_spawns_new.json");
-        var json = JsonConvert.SerializeObject(slaveSpawnersToFile.ToArray(), Formatting.Indented,
-            new JsonModelsConverter());
+        var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", currentWorld.Name, "slave_spawns_new.json");
+        var json = JsonConvert.SerializeObject(slaveSpawnersToFile.ToArray(), Formatting.Indented, new JsonModelsConverter());
         File.WriteAllText(jsonPathOut, json);
-        SendMessage(messageOutput, "All slaves have been saved!");
+        SendDebugMessage(messageOutput, "All slaves have been saved!");
     }
 
     private void SaveById(ICharacter character, uint objId, IMessageOutput messageOutput)
@@ -163,11 +162,9 @@ public class SlaveSaveSubCommand : SubCommandBase
         }
 
         var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name, "slave_spawns_new.json");
-        var json = JsonConvert.SerializeObject(spawnersFromFile.Values.ToArray(), Formatting.Indented,
-            new JsonModelsConverter());
+        var json = JsonConvert.SerializeObject(spawnersFromFile.Values.ToArray(), Formatting.Indented, new JsonModelsConverter());
         File.WriteAllText(jsonPathOut, json);
-        SendMessage(messageOutput,
-            $"All slaves have been saved with added slave ObjId:{slave.ObjId}, TemplateId:{slave.TemplateId}");
+        SendDebugMessage(messageOutput, $"All slaves have been saved with added slave ObjId:{slave.ObjId}, TemplateId:{slave.TemplateId}");
     }
 
     private List<JsonSlaveSpawns> LoadSlavesFromFileByWorld(World world)

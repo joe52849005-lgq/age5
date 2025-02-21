@@ -59,7 +59,7 @@ public class AddLabor : ICommand
         if (character.Id != targetPlayer.Id)
         {
             CommandManager.SendNormalText(this, messageOutput, $"added {amount} labor to {targetPlayer.Name}");
-            targetPlayer.SendMessage($"[GM] {character.Name} has changed your labor by {amount}");
+            targetPlayer.SendDebugMessage($"[GM] {character.Name} has changed your labor by {amount}");
         }
     }
 }

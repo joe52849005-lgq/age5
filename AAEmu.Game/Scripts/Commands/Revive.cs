@@ -42,12 +42,12 @@ public class Revive : ICommand
             }
             else
             {
-                character.SendMessage("Target is already alive");
+                character.SendDebugMessage("Target is already alive");
             }
         }
         else
         {
-            character.SendMessage("Cannot revive this target");
+            character.SendDebugMessage("Cannot revive this target");
         }
     }
 }

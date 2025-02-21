@@ -49,7 +49,7 @@ public class TestHeight : ICommand
         {
             targetPlayer.DisabledSetPosition = true;
             targetPlayer.SendPacket(new SCTeleportUnitPacket(TeleportReason.Portal, ErrorMessageType.NoErrorMessage, TargetX, TargetY, TargetZ, 0f));
-            targetPlayer.SendMessage($"[Move] |cFFFFFFFF{targetPlayer.Name}|r moved to X: {TargetX}, Y: {TargetY}, Z: {TargetZ}");
+            targetPlayer.SendDebugMessage($"[Move] |cFFFFFFFF{targetPlayer.Name}|r moved to X: {TargetX}, Y: {TargetY}, Z: {TargetZ}");
         }
         else if (args.Length > firstarg && args[firstarg] == "mark")
         {
@@ -73,8 +73,7 @@ public class TestHeight : ICommand
                 doodadSpawner.Position = character.Transform.CloneAsSpawnPosition();
                 doodadSpawner.Position.X = x;
                 doodadSpawner.Position.Y = y;
-                doodadSpawner.Position.Z =
-                    WorldManager.Instance.GetWorldByZone(targetPlayer.Transform.ZoneId).GetHeight(x, y);
+                doodadSpawner.Position.Z = WorldManager.Instance.GetWorldByZone(targetPlayer.Transform.ZoneId).GetHeight(x, y);
                 doodadSpawner.Position.Yaw = 0;
                 doodadSpawner.Position.Pitch = 0;
                 doodadSpawner.Position.Roll = 0;
@@ -84,10 +83,8 @@ public class TestHeight : ICommand
         else if (args.Length > firstarg && args[firstarg] == "line")
         {
             // Place markers
-            var rXX = (int)Math.Floor(targetPlayer.Transform.World.Position.X);
-            rXX = rXX - rXX % 2;
-            var rYY = (int)Math.Floor(targetPlayer.Transform.World.Position.Y);
-            rYY = rYY - rYY % 2;
+            var rXX = (int)Math.Floor(targetPlayer.Transform.World.Position.X); rXX = rXX - rXX % 2;
+            var rYY = (int)Math.Floor(targetPlayer.Transform.World.Position.Y); rYY = rYY - rYY % 2;
 
             float rX = rXX;
             float rY = rYY;
@@ -105,8 +102,7 @@ public class TestHeight : ICommand
                 doodadSpawner.Position = character.Transform.CloneAsSpawnPosition();
                 doodadSpawner.Position.X = x;
                 doodadSpawner.Position.Y = rY;
-                doodadSpawner.Position.Z =
-                    WorldManager.Instance.GetWorldByZone(targetPlayer.Transform.ZoneId).GetHeight(x, rY);
+                doodadSpawner.Position.Z = WorldManager.Instance.GetWorldByZone(targetPlayer.Transform.ZoneId).GetHeight(x, rY);
                 doodadSpawner.Position.Yaw = 0;
                 doodadSpawner.Position.Pitch = 0;
                 doodadSpawner.Position.Roll = 0;
@@ -126,8 +122,7 @@ public class TestHeight : ICommand
                 doodadSpawner.Position = character.Transform.CloneAsSpawnPosition();
                 doodadSpawner.Position.X = rX;
                 doodadSpawner.Position.Y = y;
-                doodadSpawner.Position.Z =
-                    WorldManager.Instance.GetWorldByZone(targetPlayer.Transform.ZoneId).GetHeight(rX, y);
+                doodadSpawner.Position.Z = WorldManager.Instance.GetWorldByZone(targetPlayer.Transform.ZoneId).GetHeight(rX, y);
                 doodadSpawner.Position.Yaw = 0;
                 doodadSpawner.Position.Pitch = 0;
                 doodadSpawner.Position.Roll = 0;
@@ -139,13 +134,10 @@ public class TestHeight : ICommand
             // Show info
             var world = WorldManager.Instance.GetWorldByZone(targetPlayer.Transform.ZoneId);
 
-            var height = world.GetHeight(targetPlayer.Transform.World.Position.X,
-                targetPlayer.Transform.World.Position.Y);
+            var height = world.GetHeight(targetPlayer.Transform.World.Position.X, targetPlayer.Transform.World.Position.Y);
             var hDelta = character.Transform.World.Position.Z - height;
-            CommandManager.SendNormalText(this, messageOutput,
-                $"{targetPlayer.Name} Z-Pos: {character.Transform.World.Position.Z} - Floor: {height} - HeightmapDelta: {hDelta}");
-            CommandManager.SendNormalText(this, messageOutput,
-                $"|cFFFFFFFF{targetPlayer.Name}|r X: |cFFFFFFFF{targetPlayer.Transform.World.Position.X:F1}|r  Y: |cFFFFFFFF{targetPlayer.Transform.World.Position.Y:F1}|r  Z: |cFFFFFFFF{targetPlayer.Transform.World.Position.Z:F1}|r ");
+            CommandManager.SendNormalText(this, messageOutput, $"{targetPlayer.Name} Z-Pos: {character.Transform.World.Position.Z} - Floor: {height} - HeightmapDelta: {hDelta}");
+            CommandManager.SendNormalText(this, messageOutput, $"|cFFFFFFFF{targetPlayer.Name}|r X: |cFFFFFFFF{targetPlayer.Transform.World.Position.X:F1}|r  Y: |cFFFFFFFF{targetPlayer.Transform.World.Position.Y:F1}|r  Z: |cFFFFFFFF{targetPlayer.Transform.World.Position.Z:F1}|r ");
 
             var borderLeft = (int)Math.Floor(targetPlayer.Transform.World.Position.X);
             borderLeft = borderLeft - borderLeft % 2;

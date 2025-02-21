@@ -103,7 +103,7 @@ public class WaterEdit : ICommand
             centerDoodad.Transform.Local.SetPosition(SelectedWater.GetCenter(true));
             centerDoodad.Show();
             Markers.Add(centerDoodad);
-            // character.SendMessage("--" + centerDoodad.Transform.ToFullString());
+            // character.SendDebugMessage("--" + centerDoodad.Transform.ToFullString());
 
             for (var p = 0; p < SelectedWater.Points.Count - 1; p++)
             {
@@ -376,7 +376,7 @@ public class WaterEdit : ICommand
         {
             if (SelectedWater == null)
             {
-                character.SendMessage($"[WaterEdit] You had nothing selected.");
+                character.SendDebugMessage($"[WaterEdit] You had nothing selected.");
             }
 
             SelectedWater = null;

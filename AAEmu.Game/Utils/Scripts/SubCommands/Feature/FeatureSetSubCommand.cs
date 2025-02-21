@@ -35,7 +35,7 @@ public class FeatureSetSubCommand : SubCommandBase
         if (FeaturesManager.Fsets.Set((Models.Game.Features.Feature)feature, enable))
         {
             //TODO: There is much more potential information to show on this command.
-            SendMessage(messageOutput, $"Feature set {feature}, {enable}. Need reload character");
+            SendDebugMessage(messageOutput, $"Feature set {feature}, {enable}. Need reload character");
         }
         else
         {

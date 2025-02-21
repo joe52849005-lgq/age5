@@ -18,7 +18,7 @@ public class DoodadFuncLootPack : DoodadFuncTemplate
             return;
 
         Logger.Debug($"DoodadFuncLootPack: LootPackId={LootPackId}");
-        character.SendMessage($"LootPackId={LootPackId}");
+        character.SendDebugMessage($"LootPackId={LootPackId}");
 
         var actAbility = SkillManager.Instance.GetSkillActAbility(skillId);
 
@@ -38,9 +38,9 @@ public class DoodadFuncLootPack : DoodadFuncTemplate
         else
         {
             character.SendErrorMessage(ErrorMessageType.NotEnoughItem);
-            character.SendMessage($"DoodadFuncLootPack: There is no such LootPackId={LootPackId} in the database!");
+            character.SendDebugMessage($"DoodadFuncLootPack: There is no such LootPackId={LootPackId} in the database!");
             Logger.Info($"DoodadFuncLootPack: There is no such LootPackId={LootPackId} in the database!");
-            character.SendMessage($"LootPackId={LootPackId}");
+            character.SendDebugMessage($"LootPackId={LootPackId}");
 
             return;
         }

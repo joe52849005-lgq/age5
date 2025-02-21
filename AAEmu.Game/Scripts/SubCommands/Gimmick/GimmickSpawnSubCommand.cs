@@ -20,8 +20,7 @@ public class GimmickSpawnSubCommand : SubCommandBase
         // AddParameter(new NumericSubCommandParameter<float>("yaw", "yaw=<facing degrees>", false, "yaw", 0, 360));
     }
 
-    public override void Execute(ICharacter character, string triggerArgument,
-        IDictionary<string, ParameterValue> parameters, IMessageOutput messageOutput)
+    public override void Execute(ICharacter character, string triggerArgument, IDictionary<string, ParameterValue> parameters, IMessageOutput messageOutput)
     {
         uint gimmickTemplateId = parameters["GimmickTemplateId"];
 
@@ -37,6 +36,6 @@ public class GimmickSpawnSubCommand : SubCommandBase
         var spawnEffect = SkillManager.Instance.GetSpawnGimmickEffect(gimmickTemplateId);
         var gimmickSpawner = new GimmickSpawner(spawnEffect, creatorUnit);
 
-        usingCharacter?.SendMessage($"Spawned Gimmick TemplateId: {gimmickSpawner.GimmickId} originating from {creatorUnit?.DebugName()}.");
+        usingCharacter?.SendDebugMessage($"Spawned Gimmick TemplateId: {gimmickSpawner.GimmickId} originating from {creatorUnit?.DebugName()}.");
     }
 }

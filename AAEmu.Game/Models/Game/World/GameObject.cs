@@ -72,9 +72,9 @@ public class GameObject : IGameObject
         /*
         if (this is Character c)
         {
-            c.SendMessage("SetPositionRaw(x{0:0.##} y{1:0.##} z{2:0.##} rx{3:0.##} ry{4:0.##} rz{5:0.##})", x, y, z,
+            c.SendDebugMessage("SetPositionRaw(x{0:0.##} y{1:0.##} z{2:0.##} rx{3:0.##} ry{4:0.##} rz{5:0.##})", x, y, z,
                 rotationX.RadToDeg(), rotationY.RadToDeg(), rotationZ.RadToDeg());
-            c.SendMessage("SetPosition(x{0:0.##} y{1:0.##} z{2:0.##} rx{3:0.##} ry{4:0.##} rz{5:0.##})", x, y, z, rX, rY, rZ);
+            c.SendDebugMessage("SetPosition(x{0:0.##} y{1:0.##} z{2:0.##} rx{3:0.##} ry{4:0.##} rz{5:0.##})", x, y, z, rX, rY, rZ);
         }
         */
 

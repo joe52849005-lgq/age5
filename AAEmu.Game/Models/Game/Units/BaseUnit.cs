@@ -118,7 +118,7 @@ public class BaseUnit : GameObject, IBaseUnit
             var targetName = target.Name;
             if (target is Npc npc)
                 targetName = "@NPC_NAME(" + npc.TemplateId.ToString() + ")";
-            player.SendMessage(ChatType.Shout, $"CanAttack? in Zone:{zoneFaction.Name} => {player.Name} {player.Faction?.Name} => {targetName} ({target.ObjId}) {target.Faction?.Name} = {relation}");
+            player.SendDebugMessage(ChatType.Shout, $"CanAttack? in Zone:{zoneFaction.Name} => {player.Name} {player.Faction?.Name} => {targetName} ({target.ObjId}) {target.Faction?.Name} = {relation}");
         }
         */
 

@@ -69,7 +69,7 @@ public class CSChangeMateEquipmentPacket : GamePacket
             mateItem.Item = (EquipItem)targetContainer.GetItemBySlot(mateItem.SlotNumber);
 
             // Logger.Debug($"{playerItem.SlotType} #{playerItem.SlotNumber} ItemId:{playerItem.Item?.Id ?? 0} -> {mateItem.SlotType} #{mateItem.SlotNumber} ItemId:{mateItem.Item?.Id ?? 0}");
-            // character.SendMessage($"MateEquip: {playerItem.SlotType} #{playerItem.SlotNumber} ItemId:{playerItem.Item?.Id ?? 0} -> {mateItem.SlotType} #{mateItem.SlotNumber} ItemId:{mateItem.Item?.Id ?? 0}");
+            // character.SendDebugMessage($"MateEquip: {playerItem.SlotType} #{playerItem.SlotNumber} ItemId:{playerItem.Item?.Id ?? 0} -> {mateItem.SlotType} #{mateItem.SlotNumber} ItemId:{mateItem.Item?.Id ?? 0}");
 
             // If un-equipping, swap the items around
             if (!isEquip)
@@ -86,7 +86,7 @@ public class CSChangeMateEquipmentPacket : GamePacket
                     playerItem.Item.Id, playerItem.SlotType, playerItem.SlotNumber,
                     0, mateItem.SlotType, mateItem.SlotNumber);
 
-                // character.SendMessage($"SCMateEquipmentChanged - {(isEquip ? playerItem : mateItem)} -> {(isEquip ? mateItem : playerItem)}, MateTl: {mateTl} => Success {res}");
+                // character.SendDebugMessage($"SCMateEquipmentChanged - {(isEquip ? playerItem : mateItem)} -> {(isEquip ? mateItem : playerItem)}, MateTl: {mateTl} => Success {res}");
                 if (!res)
                 {
                     character.SendPacket(new SCMateEquipmentChangedPacket(

@@ -41,11 +41,11 @@ public class TestTracker : ICommand
         {
             var toggleResult = targetObject.Transform.ToggleDebugTracker(character) ? "Now" : "No longer";
             var unitName = targetObject is BaseUnit bu ? bu.Name : "<gameobject>";
-            character.SendMessage($"[TestTracking] {toggleResult} tracking {targetObject.ObjId} - {unitName}");
+            character.SendDebugMessage($"[TestTracking] {toggleResult} tracking {targetObject.ObjId} - {unitName}");
         }
         else
         {
-            character.SendMessage("[TestTracking] Invalid object");
+            character.SendDebugMessage("[TestTracking] Invalid object");
         }
     }
 }

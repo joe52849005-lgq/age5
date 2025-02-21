@@ -23,9 +23,9 @@ public class FeatureCheckSubCommand : SubCommandBase
         {
             var f = (Models.Game.Features.Feature)fObj;
             if (FeaturesManager.Fsets.Check(f))
-                messageOutput.SendMessage("[Feature] |cFF00FF00ON  |cFF80FF80" + f.ToString() + "|r");
+                messageOutput.SendDebugMessage("[Feature] |cFF00FF00ON  |cFF80FF80" + f.ToString() + "|r");
             else
-                messageOutput.SendMessage("[Feature] |cFFFF0000OFF |cFF802020" + f.ToString() + "|r");
+                messageOutput.SendDebugMessage("[Feature] |cFFFF0000OFF |cFF802020" + f.ToString() + "|r");
         }
     }
 }

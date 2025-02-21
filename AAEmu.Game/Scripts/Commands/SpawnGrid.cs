@@ -1,15 +1,13 @@
-﻿using System.Drawing;
+﻿using System.Globalization;
+
 using AAEmu.Game.Core.Managers;
-using AAEmu.Game.Core.Managers.Id;
-using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Managers.UnitManagers;
+using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.DoodadObj;
 using AAEmu.Game.Models.Game.NPChar;
 using AAEmu.Game.Utils;
-using System.Globalization;
-using AAEmu.Game.Models.Game.Chat;
 using AAEmu.Game.Utils.Scripts;
 
 namespace AAEmu.Game.Scripts.Commands;
@@ -43,14 +41,12 @@ public class SpawnGrid : ICommand
         doodadSpawner.Position = character.Transform.CloneAsSpawnPosition();
         doodadSpawner.Position.Y = newY;
         doodadSpawner.Position.X = newX;
-        var angle = (float)MathUtil.CalculateAngleFrom(doodadSpawner.Position.X, doodadSpawner.Position.Y,
-            character.Transform.World.Position.X, character.Transform.World.Position.Y);
-        doodadSpawner.Position.Yaw =
-            angle.DegToRad(); // TODO: this seems wrong for now, will need to replace with a LookAt() at some later point
+        var angle = (float)MathUtil.CalculateAngleFrom(doodadSpawner.Position.X, doodadSpawner.Position.Y, character.Transform.World.Position.X, character.Transform.World.Position.Y);
+        doodadSpawner.Position.Yaw = angle.DegToRad(); // TODO: this seems wrong for now, will need to replace with a LookAt() at some later point
         doodadSpawner.Position.Pitch = 0;
         doodadSpawner.Position.Roll = 0;
         doodadSpawner.Spawn(0);
-        // character.SendMessage(doodadSpawner.Position.ToString());
+        // character.SendDebugMessage(doodadSpawner.Position.ToString());
     }
 
     public static void SpawnNPC(uint unitId, Character character, float newX, float newY)
@@ -61,8 +57,7 @@ public class SpawnGrid : ICommand
         npcSpawner.Position = character.Transform.CloneAsSpawnPosition();
         npcSpawner.Position.Y = newY;
         npcSpawner.Position.X = newX;
-        var angle = (float)MathUtil.CalculateAngleFrom(npcSpawner.Position.X, npcSpawner.Position.Y,
-            character.Transform.World.Position.X, character.Transform.World.Position.Y);
+        var angle = (float)MathUtil.CalculateAngleFrom(npcSpawner.Position.X, npcSpawner.Position.Y, character.Transform.World.Position.X, character.Transform.World.Position.Y);
         npcSpawner.Position.Yaw = angle.DegToRad();
         npcSpawner.Position.Pitch = 0;
         npcSpawner.Position.Roll = 0;
@@ -127,8 +122,7 @@ public class SpawnGrid : ICommand
         }
 
         // Origin point for spawns
-        var (startX, startY) = MathUtil.AddDistanceToFront(3f, character.Transform.World.Position.X,
-            character.Transform.World.Position.Y, character.Transform.World.Rotation.Z);
+        var (startX, startY) = MathUtil.AddDistanceToFront(3f, character.Transform.World.Position.X, character.Transform.World.Position.Y, character.Transform.World.Rotation.Z);
         for (var y = 0; y < rows; y++)
         {
             var sizeY = rows * spacing;

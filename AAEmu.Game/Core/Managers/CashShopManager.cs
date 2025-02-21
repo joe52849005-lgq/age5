@@ -31,7 +31,7 @@ public class CashShopManager : Singleton<CashShopManager>
         foreach (var character in characters)
         {
             AccountManager.Instance.AddCredits(character.AccountId, 100);
-            character.SendMessage("You have received 100 credits.");
+            character.SendDebugMessage("You have received 100 credits.");
         }
     }
 

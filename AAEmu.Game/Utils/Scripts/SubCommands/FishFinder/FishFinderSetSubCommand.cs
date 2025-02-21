@@ -21,12 +21,12 @@ public class FishFinderSetSubCommand : SubCommandBase
         if (start == "true")
         {
             RadarManager.Instance.RegisterForFishSchool((Character)character, 1000f);
-            SendMessage(messageOutput, $"FishFinder set start: true");
+            SendDebugMessage(messageOutput, $"FishFinder set start: true");
         }
         else
         {
             RadarManager.Instance.RegisterForFishSchool((Character)character, 0f);
-            SendMessage(messageOutput, $"FishFinder set start: false");
+            SendDebugMessage(messageOutput, $"FishFinder set start: false");
         }
 
         //TODO: There is much more potential information to show on this command.

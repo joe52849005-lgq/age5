@@ -60,7 +60,7 @@ public class QuestCommandUtil
                 foreach (var quest in character.Quests.ActiveQuests.Values)
                 {
                     var objectives = quest.GetObjectives(quest.Step).Select(t => t.ToString()).ToList();
-                    messageOutput.SendMessage($"Quest {quest.Template.Id}: Step({quest.Step}), Status({quest.Status}), ComponentId({quest.ComponentId}), Objectives({string.Join(", ", objectives)}) - @QUEST_NAME({quest.Template.Id})");
+                    messageOutput.SendDebugMessage($"Quest {quest.Template.Id}: Step({quest.Step}), Status({quest.Status}), ComponentId({quest.ComponentId}), Objectives({string.Join(", ", objectives)}) - @QUEST_NAME({quest.Template.Id})");
                 }
                 break;
             case "step":
@@ -147,7 +147,7 @@ public class QuestCommandUtil
                 }
                 else
                 {
-                    character.SendMessage("[Quest] Proper usage: /quest remove <questId>");
+                    character.SendDebugMessage("[Quest] Proper usage: /quest remove <questId>");
                 }
                 break;
             case "uncomplete":
@@ -267,47 +267,47 @@ public class QuestCommandUtil
                     var questTemplate = QuestManager.Instance.GetTemplate(questVal);
                     if (questTemplate == null)
                     {
-                        character.SendMessage(ChatType.System, $"[Quest] No such quest {questVal}", Color.Red);
+                        character.SendDebugMessage(ChatType.System, $"[Quest] No such quest {questVal}", Color.Red);
                         break;
                     }
 
-                    character.SendMessage($"[Quest] {questVal} -- Template");
+                    character.SendDebugMessage($"[Quest] {questVal} -- Template");
                     foreach (var (componentId, componentTemplate) in questTemplate.Components)
                     {
-                        character.SendMessage($"-- Component({componentId}), Step {componentTemplate.KindId}");
+                        character.SendDebugMessage($"-- Component({componentId}), Step {componentTemplate.KindId}");
                         foreach (var actTemplate in componentTemplate.ActTemplates)
                         {
-                            character.SendMessage($"---- Act({actTemplate.ActId}) => {actTemplate.DetailType}({actTemplate.DetailId})");
+                            character.SendDebugMessage($"---- Act({actTemplate.ActId}) => {actTemplate.DetailType}({actTemplate.DetailId})");
                         }
                     }
-                    character.SendMessage($"[Quest] {questVal} -- End of Template");
+                    character.SendDebugMessage($"[Quest] {questVal} -- End of Template");
                     
                     if (character.Quests.ActiveQuests.TryGetValue(questVal, out var activeQuest))
                     {
-                        character.SendMessage($"[Quest] {questVal} -- Active");
+                        character.SendDebugMessage($"[Quest] {questVal} -- Active");
                         foreach (var (stepId, step) in activeQuest.QuestSteps)
                         {
-                            character.SendMessage($"Step {stepId}");
+                            character.SendDebugMessage($"Step {stepId}");
                             foreach (var (componentId, component) in step.Components)
                             {
-                                character.SendMessage($"-- Component({componentId})");
+                                character.SendDebugMessage($"-- Component({componentId})");
                                 foreach (var act in component.Acts)
                                 {
-                                    character.SendMessage($"---- Act({act.Id}) => {act.DetailType}({act.DetailId})");
+                                    character.SendDebugMessage($"---- Act({act.Id}) => {act.DetailType}({act.DetailId})");
                                 }
                             }
                         }
-                        character.SendMessage($"[Quest] {questVal} -- End of Active Quest");
+                        character.SendDebugMessage($"[Quest] {questVal} -- End of Active Quest");
                     }
                     else
                     {
-                        character.SendMessage($"[Quest] {questVal} is not active");
+                        character.SendDebugMessage($"[Quest] {questVal} is not active");
                     }
 
                 }
                 else
                 {
-                    character.SendMessage("[Quest] /quest template <questId>");
+                    character.SendDebugMessage("[Quest] /quest template <questId>");
                 }
                 break;
             default:

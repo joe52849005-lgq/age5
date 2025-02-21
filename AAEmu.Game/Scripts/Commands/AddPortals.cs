@@ -22,8 +22,7 @@ public class AddPortals : ICommand
 
     public string GetCommandHelpText()
     {
-        return "Adds a portal with <name> to your teleport book.\n" +
-               "If [<x> <y> <z> <zoneid>] is omitted or incomplete, your current position will be used.";
+        return "Adds a portal with <name> to your teleport book.\n" + "If [<x> <y> <z> <zoneid>] is omitted or incomplete, your current position will be used.";
     }
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)
@@ -74,9 +73,8 @@ public class AddPortals : ICommand
         targetPlayer.Portals.AddOrUpdatePrivatePortal(x, y, z, zRot, zoneId, portalName);
         if (character.Id != targetPlayer.Id)
         {
-            CommandManager.SendNormalText(this, messageOutput,
-                $"added {portalName} entry to {targetPlayer.Name}'s portal book");
-            targetPlayer.SendMessage($"[GM] {character.Name} has added the entry \"{portalName}\" to your portal book");
+            CommandManager.SendNormalText(this, messageOutput, $"added {portalName} entry to {targetPlayer.Name}'s portal book");
+            targetPlayer.SendDebugMessage($"[GM] {character.Name} has added the entry \"{portalName}\" to your portal book");
         }
         else
         {

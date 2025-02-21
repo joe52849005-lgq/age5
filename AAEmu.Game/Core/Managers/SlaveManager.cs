@@ -638,7 +638,7 @@ public class SlaveManager : Singleton<SlaveManager>
 
             // If no spawn position override has been provided, then handle normal spawning algorithm
 
-            // owner.SendMessage("SlaveSpawnOffset: x:{0} y:{1}", slaveTemplate.SpawnXOffset, slaveTemplate.SpawnYOffset);
+            // owner.SendDebugMessage("SlaveSpawnOffset: x:{0} y:{1}", slaveTemplate.SpawnXOffset, slaveTemplate.SpawnYOffset);
             if (owner != null)
             {
                 spawnPos.Local.AddDistanceToFront(Math.Clamp(slaveTemplate.SpawnYOffset, 5f, 50f));
@@ -677,7 +677,7 @@ public class SlaveManager : Singleton<SlaveManager>
                         var delta = surfaceHeight - floorHeight;
                         if (delta > minDepth)
                         {
-                            // owner.SendMessage("Extra inFront = {0}, required Depth = {1}", inFront, minDepth);
+                            // owner.SendDebugMessage("Extra inFront = {0}, required Depth = {1}", inFront, minDepth);
                             // spawnPos.Dispose();
 
                             spawnPos.ApplyWorldTransformToLocalPosition(depthCheckPos);
@@ -1091,7 +1091,7 @@ public class SlaveManager : Singleton<SlaveManager>
 
         //    // If no spawn position override has been provided, then handle normal spawning algorithm
 
-        //    // owner.SendMessage("SlaveSpawnOffset: x:{0} y:{1}", slaveTemplate.SpawnXOffset, slaveTemplate.SpawnYOffset);
+        //    // owner.SendDebugMessage("SlaveSpawnOffset: x:{0} y:{1}", slaveTemplate.SpawnXOffset, slaveTemplate.SpawnYOffset);
         //    if (owner != null)
         //    {
         //        spawnPos.Local.AddDistanceToFront(Math.Clamp(slaveTemplate.SpawnYOffset, 5f, 50f));
@@ -1130,7 +1130,7 @@ public class SlaveManager : Singleton<SlaveManager>
         //                var delta = surfaceHeight - floorHeight;
         //                if (delta > minDepth)
         //                {
-        //                    // owner.SendMessage("Extra inFront = {0}, required Depth = {1}", inFront, minDepth);
+        //                    // owner.SendDebugMessage("Extra inFront = {0}, required Depth = {1}", inFront, minDepth);
         //                    // spawnPos.Dispose();
 
         //                    spawnPos.ApplyWorldTransformToLocalPosition(depthCheckPos);
