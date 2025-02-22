@@ -59,6 +59,9 @@ public abstract class ItemTask : PacketMarshaler
             case ItemAction.SwapSlot when slotType == SlotType.Bag: // 8
                 tlogT = ItemTaskLogType.SwapItem;
                 break;
+            case ItemAction.SwapSlot when slotType == SlotType.Coffer: // 8
+                tlogT = ItemTaskLogType.SwapItem;
+                break;
             case ItemAction.UpdateDetail: // 9
                 tlogT = ItemTaskLogType.UpdateOnly;
                 break;

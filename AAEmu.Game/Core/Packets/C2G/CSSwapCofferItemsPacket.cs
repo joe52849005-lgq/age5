@@ -22,11 +22,12 @@ public class CSSwapCofferItemsPacket : GamePacket
         var toSlotType = (SlotType)stream.ReadByte(); // type
         var toSlot = stream.ReadByte();          // index
 
-        var dbId = stream.ReadUInt64();         // dbDoodadId
+        var ownerType = stream.ReadByte();     // ownerType
+        var dbId = stream.ReadUInt64();      // ownerId
 
-        Logger.Debug($"SwapCofferItems, Item: {fromItemId} -> {toItemId}, SlotType: {fromSlotType} -> {toSlotType}, Slot: {fromSlot} -> {toSlot}, ItemContainerDbId: {dbId}");
+        Logger.Debug($"SwapCofferItems, Item: {fromItemId} -> {toItemId}, SlotType: {fromSlotType} -> {toSlotType}, Slot: {fromSlot} -> {toSlot}, ownerType:ItemContainerDbId: {ownerType}:{dbId}");
 
-        if (!Connection.ActiveChar.Inventory.SwapCofferItems(fromItemId, toItemId, fromSlotType, fromSlot, toSlotType, toSlot, dbId))
+        if (!Connection.ActiveChar.Inventory.SwapCofferItems(fromItemId, toItemId, fromSlotType, fromSlot, toSlotType, toSlot, ownerType, dbId))
         {
             Connection.ActiveChar.SendErrorMessage(ErrorMessageType.CannotMoveSoulboundItemToCoffer); // Not sure what error to send here
         }
