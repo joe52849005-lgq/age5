@@ -1544,10 +1544,10 @@ public class DoodadManager : Singleton<DoodadManager>
                     }
                 }
             }
-            // doodad_func_item_changers
+            // doodad_func_item_changer_ui_opens
             using (var command = connection.CreateCommand())
             {
-                command.CommandText = "SELECT * FROM doodad_func_item_changers";
+                command.CommandText = "SELECT * FROM doodad_func_item_changer_ui_opens";
                 command.Prepare();
                 using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
                 {
