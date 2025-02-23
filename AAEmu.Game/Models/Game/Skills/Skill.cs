@@ -952,6 +952,7 @@ public class Skill
         var effectsToApply = new List<(BaseUnit target, SkillEffect effect)>(possibleTargets.Count * Template.Effects.Count);
         SkillEffect lastAppliedEffect = null;
 
+        var consumeItemId = 0u; // HOTFIX
         // Loop Skill Effects
         foreach (var effect in Template.Effects)
         {
@@ -961,11 +962,19 @@ public class Skill
             {
                 case SkillEffectApplicationMethod.Target:
                     effectedTargets = possibleTargets;//keep target
+                    if (effect.ConsumeItemId > 0)
+                    {
+                        consumeItemId = effect.ConsumeItemId; // HOTFIX
+                    }
                     break;
                 case SkillEffectApplicationMethod.Source:
                     effectedTargets.Add(caster);//Diff between Source and SourceOnce?
                     break;
                 case SkillEffectApplicationMethod.SourceOnce:
+                    if (effect.ConsumeItemId > 0)
+                    {
+                        consumeItemId = effect.ConsumeItemId; // HOTFIX
+                    }
                     // TODO: HACKFIX for owner's mark
                     if (casterCaster.Type == SkillCasterType.Mount && targetSelf is Units.Mate || targetSelf is Slave)
                         effectedTargets = possibleTargets;
@@ -1090,7 +1099,7 @@ public class Skill
                 }
             }
 
-            if (player != null && lastAppliedEffect.ConsumeItemId != 0 && lastAppliedEffect.ConsumeItemCount > 0)
+            if (player != null && (lastAppliedEffect.ConsumeItemId != 0 || consumeItemId != 0) && lastAppliedEffect.ConsumeItemCount > 0)
             {
                 if (lastAppliedEffect.ConsumeSourceItem)
                 {
@@ -1098,13 +1107,20 @@ public class Skill
                 }
                 else
                 {
-                    var inventory = player.Inventory.CheckItems(SlotType.Bag, lastAppliedEffect.ConsumeItemId,
-                        lastAppliedEffect.ConsumeItemCount);
-                    var equipment = player.Inventory.CheckItems(SlotType.Equipment, lastAppliedEffect.ConsumeItemId,
-                        lastAppliedEffect.ConsumeItemCount);
+                    var inventory = player.Inventory.CheckItems(SlotType.Bag, lastAppliedEffect.ConsumeItemId, lastAppliedEffect.ConsumeItemCount);
+                    var equipment = player.Inventory.CheckItems(SlotType.Equipment, lastAppliedEffect.ConsumeItemId, lastAppliedEffect.ConsumeItemCount);
                     if (inventory || equipment)
                     {
                         consumedItemTemplates.Add((lastAppliedEffect.ConsumeItemId, lastAppliedEffect.ConsumeItemCount));
+                    }
+                    else if(consumeItemId != 0) // HOTFIX
+                    {
+                        inventory = player.Inventory.CheckItems(SlotType.Bag, consumeItemId, lastAppliedEffect.ConsumeItemCount);
+                        equipment = player.Inventory.CheckItems(SlotType.Equipment, consumeItemId, lastAppliedEffect.ConsumeItemCount);
+                        if (inventory || equipment)
+                        {
+                            consumedItemTemplates.Add((consumeItemId, lastAppliedEffect.ConsumeItemCount));
+                        }
                     }
                 }
             }
@@ -1244,8 +1260,8 @@ public class Skill
         // If the probability of passing the effect is greater than the chance, then run the check on the use of the item for the quest
         if (casterCaster is SkillItem skillItem && unit.ConditionChance)
         {
-            if (player == null)
-                return;
+            if (player == null) { return; }
+
             player.ItemUse(skillItem.ItemId);
 
             // This fixes the issue where "dropping" a Portable Harpoon Cannon (item 23836) would not consume the cannon
@@ -1281,22 +1297,21 @@ public class Skill
 
         if (!Cancelled)
         {
-            if (player != null)
-            {
-                // Actually consume the to be consumed items
-                // Specific Items
-                foreach (var (item, amount) in consumedItems)
-                {
-                    item.HoldingContainer?.ConsumeItem(ItemTaskType.SkillEffectConsumption, item.TemplateId, amount, item);
-                    //item.HoldingContainer?.ConsumeItem(ItemTaskType.SkillReagents, item.TemplateId, amount, item);
-                }
+            if (player == null) { return; }
 
-                // Doesn't matter, but by Template
-                foreach (var (templateId, amount) in consumedItemTemplates)
-                {
-                    player.Inventory.ConsumeItem(null, ItemTaskType.SkillEffectGainItem, templateId, amount, null);
-                    //player.Inventory.ConsumeItem(null, ItemTaskType.SkillEffectConsumption, templateId, amount, null);
-                }
+            // Actually consume the to be consumed items
+            // Specific Items
+            foreach (var (item, amount) in consumedItems)
+            {
+                item.HoldingContainer?.ConsumeItem(ItemTaskType.SkillEffectConsumption, item.TemplateId, amount, item);
+                //item.HoldingContainer?.ConsumeItem(ItemTaskType.SkillReagents, item.TemplateId, amount, item);
+            }
+
+            // Doesn't matter, but by Template
+            foreach (var (templateId, amount) in consumedItemTemplates)
+            {
+                player.Inventory.ConsumeItem(null, ItemTaskType.SkillEffectGainItem, templateId, amount, null);
+               //player.Inventory.ConsumeItem(null, ItemTaskType.SkillEffectConsumption, templateId, amount, null);
             }
         }
     }
