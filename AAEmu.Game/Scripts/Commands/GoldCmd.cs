@@ -10,7 +10,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class GoldCmd : SubCommandBase, ICommand, ICommandV2
 {
-    public string[] CommandNames { get; set; } = new string[] { "gold" };
+    public string[] CommandNames { get; set; } = new[] { "gold" };
 
     public GoldCmd()
     {
@@ -40,7 +40,6 @@ public class GoldCmd : SubCommandBase, ICommand, ICommandV2
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)
     {
-        throw new InvalidOperationException(
-            $"A {nameof(ICommandV2)} implementation should not be used as ICommand interface");
+        throw new InvalidOperationException($"A {nameof(ICommandV2)} implementation should not be used as ICommand interface");
     }
 }

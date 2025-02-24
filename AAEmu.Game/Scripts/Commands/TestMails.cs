@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Drawing;
+
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
-using AAEmu.Game.Models.Game.Chat;
 using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Mails;
 using AAEmu.Game.Utils.Scripts;
@@ -12,7 +11,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class TestMails : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "testmail", "test_mail" };
+    public string[] CommandNames { get; set; } = new[] { "testmail", "test_mail" };
 
     public void OnLoad()
     {
@@ -102,7 +101,7 @@ public class TestMails : ICommand
             var mail = new BaseMail();
 
             mail.MailType = mType;
-            mail.Title = "TestMail " + mType.ToString();
+            mail.Title = "TestMail " + mType;
             mail.ReceiverName = character.Name;
 
             mail.Header.SenderId = character.Id;

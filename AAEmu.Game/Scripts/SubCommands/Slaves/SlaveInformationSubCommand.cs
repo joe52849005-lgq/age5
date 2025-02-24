@@ -53,6 +53,6 @@ public class SlaveInformationSubCommand : SubCommandBase
         var roll = slave.Transform.Local.Rotation.X.RadToDeg();
 
         //TODO: There is much more potential information to show on this command.
-        SendDebugMessage(messageOutput, $"Name:@NPC_NAME({slave.TemplateId}) ObjId:{slave.ObjId} TemplateId:{slave.TemplateId}, x:{x}, y:{y}, z:{z}, roll:{roll:0.#}°, pitch:{pitch:0.#}°, yaw:{yaw:0.#}°");
+        SendMessage(messageOutput, $"Name:@NPC_NAME({slave.TemplateId}) ObjId:{slave.ObjId} TemplateId:{slave.TemplateId}, x:{x}, y:{y}, z:{z}, roll:{roll:0.#}°, pitch:{pitch:0.#}°, yaw:{yaw:0.#}°");
     }
 }

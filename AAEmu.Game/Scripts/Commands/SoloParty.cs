@@ -7,7 +7,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class SoloParty : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "soloparty", "solo_party" };
+    public string[] CommandNames { get; set; } = new[] { "soloparty", "solo_party" };
 
     public void OnLoad()
     {
@@ -21,8 +21,7 @@ public class SoloParty : ICommand
 
     public string GetCommandHelpText()
     {
-        return "Creates a party with just yourself in it. This can be useful to use with \"" +
-               CommandManager.CommandPrefix + "teleport .\" command.";
+        return "Creates a party with just yourself in it. This can be useful to use with \"" + CommandManager.CommandPrefix + "teleport .\" command.";
     }
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)

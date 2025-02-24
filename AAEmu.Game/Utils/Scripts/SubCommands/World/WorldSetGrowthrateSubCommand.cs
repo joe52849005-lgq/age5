@@ -23,7 +23,7 @@ public class WorldSetGrowthrateSubCommand : SubCommandBase
             return;
         }
         character.SetGrowthRate(growthRate);
-        SendDebugMessage(messageOutput, $"Set GrowthRate {growthRate}");
+        SendMessage(messageOutput, $"Set GrowthRate {growthRate}");
         Logger.Warn($"{Title}: {growthRate}");
     }
 }

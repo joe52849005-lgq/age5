@@ -10,7 +10,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class Nudge : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "nudge" };
+    public string[] CommandNames { get; set; } = new[] { "nudge" };
 
     public void OnLoad()
     {
@@ -44,8 +44,6 @@ public class Nudge : ICommand
         character.Transform.Local.AddDistanceToFront(dist, false);
         character.Transform.FinalizeTransform();
         // CommandManager.SendNormalText(this, messageOutput,$"to {character.Transform}");
-        character.SendPacket(new SCTeleportUnitPacket(TeleportReason.Gm, 0, character.Transform.World.Position.X,
-            character.Transform.World.Position.Y, character.Transform.World.Position.Z,
-            character.Transform.World.Rotation.Z.DegToRad()));
+        character.SendPacket(new SCTeleportUnitPacket(TeleportReason.Gm, 0, character.Transform.World.Position.X, character.Transform.World.Position.Y, character.Transform.World.Position.Z, character.Transform.World.Rotation.Z.DegToRad()));
     }
 }

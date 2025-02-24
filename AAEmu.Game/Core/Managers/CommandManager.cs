@@ -127,12 +127,9 @@ public class CommandManager : Singleton<CommandManager>
         {
             // Only display extended error to admins
             if (characterAccessLevel >= 100)
-                messageOutput.SendDebugMessage(
-                    "|cFFFF0000[Error] No commands have been loaded, this is usually because of compile errors. Try using \"" +
-                    CommandManager.CommandPrefix + "scripts reload\" after the issues have been fixed.|r");
+                messageOutput.SendMessage("|cFFFF0000[Error] No commands have been loaded, this is usually because of compile errors. Try using \"" + CommandManager.CommandPrefix + "scripts reload\" after the issues have been fixed.|r");
             else
-                messageOutput.SendDebugMessage(
-                    "[Error] No commands available.");
+                messageOutput.SendMessage("[Error] No commands available.");
             return false;
         }
 
@@ -152,7 +149,7 @@ public class CommandManager : Singleton<CommandManager>
 
         if (AccessLevelManager.Instance.GetLevel(thisCommand) > characterAccessLevel)
         {
-            messageOutput.SendDebugMessage("|cFFFF0000Insufficient privileges.|r");
+            messageOutput.SendMessage("|cFFFF0000Insufficient privileges.|r");
             return true;
         }
 
@@ -188,21 +185,21 @@ public class CommandManager : Singleton<CommandManager>
 
     public static void SendDefaultHelpText(ICommand command, IMessageOutput messageOutput)
     {
-        messageOutput.SendDebugMessage(ChatType.System, command.CommandNames.Length > 0
+        messageOutput.SendMessage(ChatType.System, command.CommandNames.Length > 0
             ? $"Help for |cFFFFFFFF{CommandPrefix}{command.CommandNames[0]}|r |cFFEEEEAA{command.GetCommandLineHelp()}|r\n|cFF888888{command.GetCommandHelpText()}|r"
             : "Invalid Command");
     }
 
     public static void SendErrorText(ICommand command, IMessageOutput messageOutput, string errorDetails)
     {
-        messageOutput.SendDebugMessage(ChatType.System, command.CommandNames.Length > 0
+        messageOutput.SendMessage(ChatType.System, command.CommandNames.Length > 0
             ? $"|cFFFFFFFF[{command.CommandNames[0]}]|r |cFFFF0000{errorDetails}|r"
             : $"|cFFFF0000Invalid Command - {errorDetails}|r");
     }
 
     public static void SendNormalText(ICommand command, IMessageOutput messageOutput, string text)
     {
-        messageOutput.SendDebugMessage(ChatType.System, command.CommandNames.Length > 0
+        messageOutput.SendMessage(ChatType.System, command.CommandNames.Length > 0
             ? $"[{command.CommandNames[0]}] {text}"
             : $"[Invalid Command] {text}");
     }

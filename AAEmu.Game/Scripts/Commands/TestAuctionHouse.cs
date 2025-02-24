@@ -1,18 +1,14 @@
-﻿//using System;
-using AAEmu.Game.Core.Managers;
-//using AAEmu.Game.Core.Managers.World;
+﻿using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Auction;
-//using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Utils.Scripts;
-//using AAEmu.Game.Models.Game.Items.Actions;
 
 namespace AAEmu.Game.Scripts.Commands;
 
 internal class TestAuctionHouse : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "testauctionhouse", "testah" };
+    public string[] CommandNames { get; set; } = new[] { "testauctionhouse", "testah" };
 
     public void OnLoad()
     {

@@ -10,7 +10,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class HouseBindingMove : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "house_binding_move", "housebindingmove" };
+    public string[] CommandNames { get; set; } = new[] { "house_binding_move", "housebindingmove" };
 
     public void OnLoad()
     {
@@ -54,8 +54,7 @@ public class HouseBindingMove : ICommand
 
                     character.CurrentTarget = house;
 
-                    character.BroadcastPacket(new SCTargetChangedPacket(character.ObjId, character.CurrentTarget.ObjId),
-                        true);
+                    character.BroadcastPacket(new SCTargetChangedPacket(character.ObjId, character.CurrentTarget.ObjId), true);
                 }
                 else
                 {

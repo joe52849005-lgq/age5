@@ -46,27 +46,27 @@ public class FindObject : ICommand
 
         if (go is Gimmick gGimmick)
         {
-            messageOutput.SendDebugMessage($"#{indexStr} -> BcId: {gGimmick.ObjId}, GimmickId: {gGimmick.GimmickId}, TemplateId: {gGimmick.TemplateId} - Model: {gGimmick.Template?.ModelPath}");
+            messageOutput.SendMessage($"#{indexStr} -> BcId: {gGimmick.ObjId}, GimmickId: {gGimmick.GimmickId}, TemplateId: {gGimmick.TemplateId} - Model: {gGimmick.Template?.ModelPath}");
         }
         else
         if (go is Doodad gDoodad)
         {
-            messageOutput.SendDebugMessage($"#{indexStr} -> BcId: {gDoodad.ObjId} DoodadTemplateId: {gDoodad.TemplateId} - @DOODAD_NAME({gDoodad.TemplateId}) FuncGroupId {gDoodad.FuncGroupId}");
+            messageOutput.SendMessage($"#{indexStr} -> BcId: {gDoodad.ObjId} DoodadTemplateId: {gDoodad.TemplateId} - @DOODAD_NAME({gDoodad.TemplateId}) FuncGroupId {gDoodad.FuncGroupId}");
         }
         else if (go is Character gChar)
         {
-            messageOutput.SendDebugMessage($"#{indexStr} -> BcId: {gChar.ObjId} CharacterId: {gChar.Id} - {gChar.Name}");
+            messageOutput.SendMessage($"#{indexStr} -> BcId: {gChar.ObjId} CharacterId: {gChar.Id} - {gChar.Name}");
         }
         else if (go is BaseUnit gBase)
         {
-            messageOutput.SendDebugMessage($"#{indexStr} -> BcId: {gBase.ObjId} - {gBase.Name}");
+            messageOutput.SendMessage($"#{indexStr} -> BcId: {gBase.ObjId} - {gBase.Name}");
         }
         else
         {
-            messageOutput.SendDebugMessage($"#{indexStr} -> BcId: {go.ObjId}");
+            messageOutput.SendMessage($"#{indexStr} -> BcId: {go.ObjId}");
         }
 
-        messageOutput.SendDebugMessage($"#{indexStr} -> {go.Transform.ToFullString(true, true)}");
+        messageOutput.SendMessage($"#{indexStr} -> {go.Transform.ToFullString(true, true)}");
 
         // Cycle Children
         for (var i = 0; i < go.Transform.Children.Count; i++)
@@ -140,7 +140,7 @@ public class FindObject : ICommand
                 break;
 
             default:
-                messageOutput.SendDebugMessage($"[{CommandNames[0]}] unsupported type selected {args[0]}");
+                messageOutput.SendMessage($"[{CommandNames[0]}] unsupported type selected {args[0]}");
                 break;
         }
 
@@ -151,11 +151,11 @@ public class FindObject : ICommand
         {
             if (sortedResults.Count > maxCount)
             {
-                messageOutput.SendDebugMessage($"[{CommandNames[0]}] Showing {maxCount}/{sortedResults.Count} nearest object(s) of {args[0]}");
+                messageOutput.SendMessage($"[{CommandNames[0]}] Showing {maxCount}/{sortedResults.Count} nearest object(s) of {args[0]}");
             }
             else
             {
-                messageOutput.SendDebugMessage($"[{CommandNames[0]}] Showing {sortedResults.Count} nearest object(s) of {args[0]}");
+                messageOutput.SendMessage($"[{CommandNames[0]}] Showing {sortedResults.Count} nearest object(s) of {args[0]}");
             }
             
             foreach (var gameObject in sortedResults)
@@ -168,7 +168,7 @@ public class FindObject : ICommand
         }
         else
         {
-            messageOutput.SendDebugMessage($"[{CommandNames[0]}] No results.");
+            messageOutput.SendMessage($"[{CommandNames[0]}] No results.");
         }
     }
 }

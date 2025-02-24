@@ -13,7 +13,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class UseSkill : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "useskill", "use_skill", "testskill", "test_skill" };
+    public string[] CommandNames { get; set; } = new[] { "useskill", "use_skill", "testskill", "test_skill" };
 
     public void OnLoad()
     {
@@ -84,8 +84,7 @@ public class UseSkill : ICommand
         }
 
         var useSkill = new Skill(skillTemplate);
-        TaskManager.Instance.Schedule(new UseSkillTask(useSkill, source, casterObj, target, targetObj, skillObject),
-            TimeSpan.FromMilliseconds(0));
+        TaskManager.Instance.Schedule(new UseSkillTask(useSkill, source, casterObj, target, targetObj, skillObject), TimeSpan.FromMilliseconds(0));
     }
 
     private static void DoAoe(Character character, SkillTemplate skill)
@@ -98,9 +97,7 @@ public class UseSkill : ICommand
             var skillObject = new SkillObject();
 
             var useSkill = new Skill(skill);
-            TaskManager.Instance.Schedule(
-                new UseSkillTask(useSkill, target, casterObj, character, targetObj, skillObject),
-                TimeSpan.FromMilliseconds(0));
+            TaskManager.Instance.Schedule(new UseSkillTask(useSkill, target, casterObj, character, targetObj, skillObject), TimeSpan.FromMilliseconds(0));
         }
     }
 }

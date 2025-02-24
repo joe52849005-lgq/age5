@@ -23,7 +23,7 @@ public class WorldSetLootrateSubCommand : SubCommandBase
             return;
         }
         character.SetLootRate(lootRate);
-        SendDebugMessage(messageOutput, $"Set GrowthRate {lootRate}");
+        SendMessage(messageOutput, $"Set GrowthRate {lootRate}");
         Logger.Warn($"{Title}: {lootRate}");
     }
 }

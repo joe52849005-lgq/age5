@@ -1,12 +1,9 @@
 ﻿using System;
-using System.IO;
-using System.Net.Mime;
-using System.Reflection;
+
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.AI.Enums;
-using AAEmu.Game.Models.Game.AI.v2.AiCharacters;
 using AAEmu.Game.Models.Game.AI.v2.Framework;
 using AAEmu.Game.Models.Game.AI.v2.Params;
 using AAEmu.Game.Models.Game.Char;
@@ -18,7 +15,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class TestAI : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "testai", "ai" };
+    public string[] CommandNames { get; set; } = new[] { "testai", "ai" };
 
     public void OnLoad()
     {
@@ -32,8 +29,7 @@ public class TestAI : ICommand
 
     public string GetCommandHelpText()
     {
-        return
-            "Various AI related actions, allowed actions: list, info, set_behavior, load_path, queue_skill, follow_npc, clear_path_cache, set_stance, set_anim";
+        return "Various AI related actions, allowed actions: list, info, set_behavior, load_path, queue_skill, follow_npc, clear_path_cache, set_stance, set_anim";
     }
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)
@@ -107,8 +103,7 @@ public class TestAI : ICommand
                         npc.Ai.GoToFollowUnit();
                         break;
                     default:
-                        CommandManager.SendErrorText(this, messageOutput,
-                            $"Unsupported behavior {newBehavior} for /testai");
+                        CommandManager.SendErrorText(this, messageOutput, $"Unsupported behavior {newBehavior} for /testai");
                         return;
                 }
 
@@ -119,37 +114,29 @@ public class TestAI : ICommand
                 var aiBehaviorList = npc.Ai.GetAiBehaviorList();
                 foreach (var (behaviorKind, behavior) in aiBehaviorList)
                 {
-                    CommandManager.SendNormalText(this, messageOutput,
-                        $"{behaviorKind} -> {behavior.ToString()?.Replace("AAEmu.Game.Models.Game", "")}");
+                    CommandManager.SendNormalText(this, messageOutput, $"{behaviorKind} -> {behavior.ToString()?.Replace("AAEmu.Game.Models.Game", "")}");
                 }
 
                 break;
             case "info":
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"Using AI: {npc.Ai.GetType().Name.Replace("AiCharacter", "")}, CurrentBehavior: {npc.Ai.GetCurrentBehavior().ToString()?.Replace("AAEmu.Game.Models.Game.AI.", "")}");
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"AI Path has {npc.Ai.PathHandler.AiPathPoints.Count} points ({npc.Ai.PathHandler.AiPathPointsRemaining.Count} remaining in queue)");
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"AI Commands has {npc.Ai.AiCommandsQueue.Count} actions in queue");
+                CommandManager.SendNormalText(this, messageOutput, $"Using AI: {npc.Ai.GetType().Name.Replace("AiCharacter", "")}, CurrentBehavior: {npc.Ai.GetCurrentBehavior().ToString()?.Replace("AAEmu.Game.Models.Game.AI.", "")}");
+                CommandManager.SendNormalText(this, messageOutput, $"AI Path has {npc.Ai.PathHandler.AiPathPoints.Count} points ({npc.Ai.PathHandler.AiPathPointsRemaining.Count} remaining in queue)");
+                CommandManager.SendNormalText(this, messageOutput, $"AI Commands has {npc.Ai.AiCommandsQueue.Count} actions in queue");
                 if (npc.Spawner != null)
                 {
-                    CommandManager.SendNormalText(this, messageOutput,
-                        $"SpawnerId {npc.Spawner.Id}, SpawnerTemplateId {npc.Spawner.Template.Id} @ {npc.Spawner.Position}");
+                    CommandManager.SendNormalText(this, messageOutput, $"SpawnerId {npc.Spawner.Id}, SpawnerTemplateId {npc.Spawner.Template.Id} @ {npc.Spawner.Position}");
                     if (npc.Spawner.FollowNpc > 0)
                     {
-                        CommandManager.SendNormalText(this, messageOutput,
-                            $"Spawner set to follow @NPC_NAME({npc.Spawner.FollowNpc}) ({npc.Spawner.FollowNpc})");
+                        CommandManager.SendNormalText(this, messageOutput, $"Spawner set to follow @NPC_NAME({npc.Spawner.FollowNpc}) ({npc.Spawner.FollowNpc})");
                     }
                 }
 
                 if (npc.Ai.AiFollowUnitObj is Npc followingNpc)
                 {
-                    CommandManager.SendNormalText(this, messageOutput,
-                        $"Currently following ObjId {followingNpc.ObjId} @NPC_NAME({followingNpc.TemplateId}) ({followingNpc.TemplateId})");
+                    CommandManager.SendNormalText(this, messageOutput, $"Currently following ObjId {followingNpc.ObjId} @NPC_NAME({followingNpc.TemplateId}) ({followingNpc.TemplateId})");
                 }
 
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"AI Commands has {npc.Ai.AiCommandsQueue.Count} actions in queue");
+                CommandManager.SendNormalText(this, messageOutput, $"AI Commands has {npc.Ai.AiCommandsQueue.Count} actions in queue");
                 break;
             case "load_path":
                 if (args.Length <= 1)
@@ -166,8 +153,7 @@ public class TestAI : ICommand
 
                 npc.Ai.GoToFollowPath();
 
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"Loaded path file {args[1]}, containing {npc.Ai.PathHandler.AiPathPoints.Count} points");
+                CommandManager.SendNormalText(this, messageOutput, $"Loaded path file {args[1]}, containing {npc.Ai.PathHandler.AiPathPoints.Count} points");
                 break;
             case "qs":
             case "queue_skill":
@@ -191,13 +177,11 @@ public class TestAI : ICommand
 
                 if (!npc.Ai.DoFollowNearestNpc(npcId, 100f))
                 {
-                    CommandManager.SendNormalText(this, messageOutput,
-                        $"{npc.ObjId} is now following {npc.Ai.AiFollowUnitObj?.ToString() ?? "nothing"} @NPC_NAME({npcId}) ({npcId}) to follow.");
+                    CommandManager.SendNormalText(this, messageOutput, $"{npc.ObjId} is now following {npc.Ai.AiFollowUnitObj?.ToString() ?? "nothing"} @NPC_NAME({npcId}) ({npcId}) to follow.");
                 }
                 else
                 {
-                    CommandManager.SendErrorText(this, messageOutput,
-                        $"Could not find a @NPC_NAME({npcId}) ({npcId}) to follow.");
+                    CommandManager.SendErrorText(this, messageOutput, $"Could not find a @NPC_NAME({npcId}) ({npcId}) to follow.");
                 }
 
                 break;
@@ -221,8 +205,7 @@ public class TestAI : ICommand
                 }
 
                 npc.CurrentGameStance = newStance;
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"{npc.ObjId}: @NPC_NAME({npc.TemplateId}) ({npc.TemplateId}) is now using stance {newStance}");
+                CommandManager.SendNormalText(this, messageOutput, $"{npc.ObjId}: @NPC_NAME({npc.TemplateId}) ({npc.TemplateId}) is now using stance {newStance}");
                 break;
             case "set_anim":
             case "anim":
@@ -242,8 +225,7 @@ public class TestAI : ICommand
                 var enableAnim = newAnimVal > 0;
 
                 npc.BroadcastPacket(new SCUnitModelPostureChangedPacket(npc, newAnim, enableAnim), false);
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"{npc.ObjId}: @NPC_NAME({npc.TemplateId}) ({npc.TemplateId}) is {(enableAnim ? "now" : "no longer")} using AnimActionId {newAnim}");
+                CommandManager.SendNormalText(this, messageOutput, $"{npc.ObjId}: @NPC_NAME({npc.TemplateId}) ({npc.TemplateId}) is {(enableAnim ? "now" : "no longer")} using AnimActionId {newAnim}");
                 break;
             default:
                 CommandManager.SendErrorText(this, messageOutput, "No valid action provided");

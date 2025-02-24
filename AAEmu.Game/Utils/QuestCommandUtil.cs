@@ -60,7 +60,7 @@ public class QuestCommandUtil
                 foreach (var quest in character.Quests.ActiveQuests.Values)
                 {
                     var objectives = quest.GetObjectives(quest.Step).Select(t => t.ToString()).ToList();
-                    messageOutput.SendDebugMessage($"Quest {quest.Template.Id}: Step({quest.Step}), Status({quest.Status}), ComponentId({quest.ComponentId}), Objectives({string.Join(", ", objectives)}) - @QUEST_NAME({quest.Template.Id})");
+                    messageOutput.SendMessage($"Quest {quest.Template.Id}: Step({quest.Step}), Status({quest.Status}), ComponentId({quest.ComponentId}), Objectives({string.Join(", ", objectives)}) - @QUEST_NAME({quest.Template.Id})");
                 }
                 break;
             case "step":

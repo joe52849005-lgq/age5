@@ -44,29 +44,29 @@ public class Around : ICommand
 
         if (go is Gimmick gGimmick)
         {
-            messageOutput.SendDebugMessage($"#{indexStr} -> BcId: {gGimmick.ObjId}, GimmickId: {gGimmick.GimmickId}, TemplateId: {gGimmick.TemplateId} - Model: {gGimmick.Template?.ModelPath}");
+            messageOutput.SendMessage($"#{indexStr} -> BcId: {gGimmick.ObjId}, GimmickId: {gGimmick.GimmickId}, TemplateId: {gGimmick.TemplateId} - Model: {gGimmick.Template?.ModelPath}");
         }
         else
         if (go is Doodad gDoodad)
         {
-            messageOutput.SendDebugMessage($"#{indexStr} -> BcId: {gDoodad.ObjId} DoodadTemplateId: {gDoodad.TemplateId} - @DOODAD_NAME({gDoodad.TemplateId}) FuncGroupId {gDoodad.FuncGroupId}");
+            messageOutput.SendMessage($"#{indexStr} -> BcId: {gDoodad.ObjId} DoodadTemplateId: {gDoodad.TemplateId} - @DOODAD_NAME({gDoodad.TemplateId}) FuncGroupId {gDoodad.FuncGroupId}");
         }
         else if (go is Character gChar)
         {
-            messageOutput.SendDebugMessage($"#{indexStr} -> BcId: {gChar.ObjId} CharacterId: {gChar.Id} - {gChar.Name}");
+            messageOutput.SendMessage($"#{indexStr} -> BcId: {gChar.ObjId} CharacterId: {gChar.Id} - {gChar.Name}");
         }
         else if (go is BaseUnit gBase)
         {
-            messageOutput.SendDebugMessage($"#{indexStr} -> BcId: {gBase.ObjId} - {gBase.Name}");
+            messageOutput.SendMessage($"#{indexStr} -> BcId: {gBase.ObjId} - {gBase.Name}");
         }
         else
         {
-            messageOutput.SendDebugMessage($"#{indexStr} -> BcId: {go.ObjId}");
+            messageOutput.SendMessage($"#{indexStr} -> BcId: {go.ObjId}");
         }
 
         if (verbose)
         {
-            messageOutput.SendDebugMessage($"#{indexStr} -> {go.Transform.ToFullString(true, true)}");
+            messageOutput.SendMessage($"#{indexStr} -> {go.Transform.ToFullString(true, true)}");
         }
 
         // Cycle Children
@@ -101,44 +101,44 @@ public class Around : ICommand
             case "doodad":
                 var doodads = WorldManager.GetAround<Doodad>(character, radius);
 
-                messageOutput.SendDebugMessage($"[{CommandNames[0]}] Doodads:");
+                messageOutput.SendMessage($"[{CommandNames[0]}] Doodads:");
                 // sb.AppendLine("[Around] Doodads:");
                 for (var i = 0; i < doodads.Count; i++)
                 {
-                    messageOutput.SendDebugMessage($"#{i + 1} -> BcId: {doodads[i].ObjId} DoodadTemplateId: {doodads[i].TemplateId} - @DOODAD_NAME({doodads[i].TemplateId}), FuncGroupId: {doodads[i].FuncGroupId}");
+                    messageOutput.SendMessage($"#{i + 1} -> BcId: {doodads[i].ObjId} DoodadTemplateId: {doodads[i].TemplateId} - @DOODAD_NAME({doodads[i].TemplateId}), FuncGroupId: {doodads[i].FuncGroupId}");
 
-                    messageOutput.SendDebugMessage($"#{i + 1} -> SpawnerID = {doodads[i].Spawner?.Id.ToString() ?? "none"}, Respawns Template: {doodads[i].Spawner?.RespawnDoodadTemplateId.ToString() ?? "default"}\n");
+                    messageOutput.SendMessage($"#{i + 1} -> SpawnerID = {doodads[i].Spawner?.Id.ToString() ?? "none"}, Respawns Template: {doodads[i].Spawner?.RespawnDoodadTemplateId.ToString() ?? "default"}\n");
 
                     // sb.AppendLine("#" + (i + 1).ToString() + " -> BcId: " + doodads[i].ObjId.ToString() + " DoodadTemplateId: " + doodads[i].TemplateId.ToString());
                     if (verbose)
                     {
                         var shorts = doodads[i].Transform.World.ToRollPitchYawShorts();
                         var shortString = $"(short[3])[r:{shorts.Item1} p:{shorts.Item2} y:{shorts.Item3}]";
-                        messageOutput.SendDebugMessage($"#{i + 1} -> {doodads[i].Transform} = {shortString}\n");
+                        messageOutput.SendMessage($"#{i + 1} -> {doodads[i].Transform} = {shortString}\n");
                     }
                 }
 
-                messageOutput.SendDebugMessage(sb.ToString());
-                messageOutput.SendDebugMessage($"[{CommandNames[0]}] Doodad count: {doodads.Count}");
+                messageOutput.SendMessage(sb.ToString());
+                messageOutput.SendMessage($"[{CommandNames[0]}] Doodad count: {doodads.Count}");
                 break;
 
             case "mob":
             case "npc":
                 var npcs = WorldManager.GetAround<Npc>(character, radius);
 
-                messageOutput.SendDebugMessage($"[{CommandNames[0]}] NPCs");
+                messageOutput.SendMessage($"[{CommandNames[0]}] NPCs");
                 // sb.AppendLine("[Around] NPCs");
                 for (var i = 0; i < npcs.Count; i++)
                 {
-                    messageOutput.SendDebugMessage($"#{i + 1} -> BcId: {npcs[i].ObjId} NpcTemplateId: {npcs[i].TemplateId} - @NPC_NAME({npcs[i].TemplateId})");
+                    messageOutput.SendMessage($"#{i + 1} -> BcId: {npcs[i].ObjId} NpcTemplateId: {npcs[i].TemplateId} - @NPC_NAME({npcs[i].TemplateId})");
                     if (verbose)
                     {
-                        messageOutput.SendDebugMessage($"#{i + 1} -> {npcs[i].Transform}");
+                        messageOutput.SendMessage($"#{i + 1} -> {npcs[i].Transform}");
                     }
                 }
 
                 // character.SendDebugMessage(sb.ToString());
-                messageOutput.SendDebugMessage($"[{CommandNames[0]}] NPC count: {npcs.Count}");
+                messageOutput.SendMessage($"[{CommandNames[0]}] NPC count: {npcs.Count}");
                 break;
 
             case "character":
@@ -146,19 +146,19 @@ public class Around : ICommand
             case "player":
                 var characters = WorldManager.GetAround<Character>(character, radius);
 
-                messageOutput.SendDebugMessage($"[{CommandNames[0]}] Characters");
+                messageOutput.SendMessage($"[{CommandNames[0]}] Characters");
                 //sb.AppendLine("[Around] Characters");
                 for (var i = 0; i < characters.Count; i++)
                 {
-                    messageOutput.SendDebugMessage($"#{i + 1} -> BcId: {characters[i].ObjId} CharacterId: {characters[i].Id} - {characters[i].Name}");
+                    messageOutput.SendMessage($"#{i + 1} -> BcId: {characters[i].ObjId} CharacterId: {characters[i].Id} - {characters[i].Name}");
                     if (verbose)
                     {
-                        messageOutput.SendDebugMessage($"#{i + 1} -> {characters[i].Transform}");
+                        messageOutput.SendMessage($"#{i + 1} -> {characters[i].Transform}");
                     }
                 }
 
                 // character.SendDebugMessage(sb.ToString());
-                messageOutput.SendDebugMessage($"[{CommandNames[0]}] Character count: {characters.Count}");
+                messageOutput.SendMessage($"[{CommandNames[0]}] Character count: {characters.Count}");
                 break;
 
             case "all":
@@ -166,7 +166,7 @@ public class Around : ICommand
                 var go = WorldManager.GetAround<GameObject>(character, radius);
 
                 var c = 0;
-                messageOutput.SendDebugMessage($"[{CommandNames[0]}] GameObjects:");
+                messageOutput.SendMessage($"[{CommandNames[0]}] GameObjects:");
                 for (var i = 0; i < go.Count; i++)
                 {
                     if (go[i].Transform.Parent == null)
@@ -175,7 +175,7 @@ public class Around : ICommand
                     }
                 }
 
-                messageOutput.SendDebugMessage($"[{CommandNames[0]}] Object Count: {c}");
+                messageOutput.SendMessage($"[{CommandNames[0]}] Object Count: {c}");
                 break;
         }
     }

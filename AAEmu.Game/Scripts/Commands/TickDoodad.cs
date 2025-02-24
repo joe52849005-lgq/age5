@@ -9,7 +9,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class TickDoodad : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "tickdoodad", "tick_doodad" };
+    public string[] CommandNames { get; set; } = new[] { "tickdoodad", "tick_doodad" };
 
     public void OnLoad()
     {
@@ -57,7 +57,6 @@ public class TickDoodad : ICommand
             }
         }
 
-        CommandManager.SendNormalText(this, messageOutput,
-            $"Phased {tickedCount} Doodad(s) with TemplateID {unitId} - @DOODAD_NAME({unitId})");
+        CommandManager.SendNormalText(this, messageOutput, $"Phased {tickedCount} Doodad(s) with TemplateID {unitId} - @DOODAD_NAME({unitId})");
     }
 }

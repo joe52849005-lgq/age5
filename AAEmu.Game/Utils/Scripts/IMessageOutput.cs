@@ -10,7 +10,7 @@ public interface IMessageOutput
     IEnumerable<string> Messages { get; }
     IEnumerable<string> ErrorMessages { get; }
 
-    void SendDebugMessage(string message);
-    void SendDebugMessage(ChatType chatType, string message, Color? color = null);
-    void SendDebugMessage(ICharacter target, string message);
+    void SendMessage(string message);
+    void SendMessage(ChatType chatType, string message, Color? color = null);
+    void SendMessage(ICharacter target, string message);
 }

@@ -11,7 +11,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class Online : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "online", "list_online" };
+    public string[] CommandNames { get; set; } = new[] { "online", "list_online" };
 
     public void OnLoad()
     {
@@ -69,7 +69,7 @@ public class Online : ICommand
                 }
             }
 
-            messageOutput.SendDebugMessage(finalMessage);
+            messageOutput.SendMessage(finalMessage);
             CommandManager.SendNormalText(this, messageOutput, showCount != characters.Count
                     ? $"Showing {showCount}/{characters.Count} online players."
                     : $"{characters.Count} players online."

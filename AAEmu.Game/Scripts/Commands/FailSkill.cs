@@ -1,14 +1,10 @@
-﻿using System;
-using AAEmu.Game.Core.Managers;
-using AAEmu.Game.Core.Managers.World;
+﻿using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
-using AAEmu.Game.Models.Game.Units;
-using AAEmu.Game.Models.Tasks.Skills;
 using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.Skills.Static;
-using AAEmu.Game.Models.Game.Skills.Templates;
+using AAEmu.Game.Models.Game.Units;
 using AAEmu.Game.Utils.Scripts;
 
 namespace AAEmu.Game.Scripts.Commands;
@@ -46,8 +42,7 @@ public class FailSkill : ICommand
 
         if (!byte.TryParse(args[argsIdx], out var failId) || failId == 0)
         {
-            CommandManager.SendErrorText(this, messageOutput,
-                $"<skill result> parse error (byte), must be larger than 0, your value: {args[argsIdx]}");
+            CommandManager.SendErrorText(this, messageOutput, $"<skill result> parse error (byte), must be larger than 0, your value: {args[argsIdx]}");
             return;
         }
 

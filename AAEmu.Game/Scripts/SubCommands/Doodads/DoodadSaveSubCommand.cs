@@ -62,7 +62,7 @@ public class DoodadSaveSubCommand : SubCommandBase
         // Проверка на выполнение записи
         if (_isSavingInProgress)
         {
-            SendDebugMessage(messageOutput, "Save operation is already in progress.");
+            SendMessage(messageOutput, "Save operation is already in progress.");
             return;
         }
 
@@ -70,7 +70,7 @@ public class DoodadSaveSubCommand : SubCommandBase
         {
             if (_isSavingInProgress)
             {
-                SendDebugMessage(messageOutput, "Save operation is already in progress.");
+                SendMessage(messageOutput, "Save operation is already in progress.");
                 return;
             }
 
@@ -179,7 +179,7 @@ public class DoodadSaveSubCommand : SubCommandBase
             var addedCount = addDoodads.Count;
             var finalCount = doodadSpawnersToFile.Count;
 
-            SendDebugMessage(messageOutput, $"All doodads have been saved! Time taken: {stopwatch.ElapsedMilliseconds} ms\n" +
+            SendMessage(messageOutput, $"All doodads have been saved! Time taken: {stopwatch.ElapsedMilliseconds} ms\n" +
                                        $"Initial count: {initialCount}\n" +
                                        $"Removed count: {removedCount}\n" +
                                        $"Added count: {addedCount}\n" +
@@ -248,8 +248,8 @@ public class DoodadSaveSubCommand : SubCommandBase
         var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name, $"doodad_spawns_add_{DateTime.Now:yyyyMMdd_HHmmss}.json");
         var json = JsonConvert.SerializeObject(spawnersFromFile.Values.ToArray(), Formatting.Indented, new JsonModelsConverter());
         File.WriteAllText(jsonPathOut, json);
-        //SendDebugMessage(messageOutput, $"Doodad ObjId: {doodad.ObjId} has been saved!");
-        SendDebugMessage(messageOutput, $"All doodads have been saved with added doodad ObjId:{doodad.ObjId}, TemplateId:{doodad.TemplateId}");
+        //SendMessage(messageOutput, $"Doodad ObjId: {doodad.ObjId} has been saved!");
+        SendMessage(messageOutput, $"All doodads have been saved with added doodad ObjId:{doodad.ObjId}, TemplateId:{doodad.TemplateId}");
         Logger.Warn($"All doodads have been saved with added doodad ObjId:{doodad.ObjId}, TemplateId:{doodad.TemplateId}");
     }
 

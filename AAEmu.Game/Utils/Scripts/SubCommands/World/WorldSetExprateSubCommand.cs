@@ -23,7 +23,7 @@ public class WorldSetExprateSubCommand : SubCommandBase
             return;
         }
         character.SetExpRate(expRate);
-        SendDebugMessage(messageOutput, $"Set ExpRate {expRate}");
+        SendMessage(messageOutput, $"Set ExpRate {expRate}");
         Logger.Warn($"{Title}: {expRate}");
     }
 }

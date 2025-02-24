@@ -9,7 +9,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 internal class ReloadConfigs : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "reloadconfig", "reload_configs", "reload_configurations" };
+    public string[] CommandNames { get; set; } = new[] { "reloadconfig", "reload_configs", "reload_configurations" };
     private static Logger Logger { get; } = LogManager.GetCurrentClassLogger();
 
     public void OnLoad()
@@ -38,8 +38,7 @@ internal class ReloadConfigs : ICommand
             }
             else
             {
-                CommandManager.SendErrorText(this, messageOutput,
-                    "Configurations failed reloading - check error output");
+                CommandManager.SendErrorText(this, messageOutput, "Configurations failed reloading - check error output");
             }
         }
         catch (Exception e)

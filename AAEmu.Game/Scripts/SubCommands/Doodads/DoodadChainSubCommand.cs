@@ -29,7 +29,7 @@ public class DoodadChainSubCommand : SubCommandBase
             return;
         }
 
-        SendDebugMessage(messageOutput, "Phase chain, see the log");
+        SendMessage(messageOutput, "Phase chain, see the log");
         Logger.Warn($"{Title} Chain: TemplateId {templateId}");
 
         var doodadFuncGroups = DoodadManager.Instance.GetDoodadFuncGroups(templateId);

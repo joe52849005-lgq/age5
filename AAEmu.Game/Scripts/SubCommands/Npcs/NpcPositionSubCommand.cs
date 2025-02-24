@@ -64,7 +64,7 @@ public class NpcPositionSubCommand : SubCommandBase
             .DegToRad();
         var roll = GetOptionalParameterValue(parameters, "roll", npc.Transform.Local.Rotation.X.RadToDeg()).DegToRad();
 
-        SendDebugMessage(messageOutput, $"Npc ObjId:{npc.ObjId} TemplateId:{npc.TemplateId}, x:{x}, y:{y}, z:{z}, roll:{roll.RadToDeg():0.#}°, pitch:{pitch.RadToDeg():0.#}°, yaw:{yaw.RadToDeg():0.#}°");
+        SendMessage(messageOutput, $"Npc ObjId:{npc.ObjId} TemplateId:{npc.TemplateId}, x:{x}, y:{y}, z:{z}, roll:{roll.RadToDeg():0.#}°, pitch:{pitch.RadToDeg():0.#}°, yaw:{yaw.RadToDeg():0.#}°");
 
         npc.Transform.Local.SetPosition(x, y, z, roll, pitch, yaw);
         var moveType = (UnitMoveType)MoveType.GetType(MoveTypeEnum.Unit);

@@ -9,7 +9,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class TestCombat : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "testcombat", "test_combat" };
+    public string[] CommandNames { get; set; } = new[] { "testcombat", "test_combat" };
 
     public void OnLoad()
     {
@@ -23,8 +23,7 @@ public class TestCombat : ICommand
 
     public string GetCommandHelpText()
     {
-        return
-            "Command to test combat related packets. You can try to use cleared if you are stuck in combat for example.";
+        return "Command to test combat related packets. You can try to use cleared if you are stuck in combat for example.";
     }
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)
@@ -64,8 +63,7 @@ public class TestCombat : ICommand
             case "first_hit":
                 if (character.CurrentTarget != null)
                 {
-                    character.SendPacket(new SCCombatFirstHitPacket(character.ObjId, character.CurrentTarget.ObjId,
-                        0));
+                    character.SendPacket(new SCCombatFirstHitPacket(character.ObjId, character.CurrentTarget.ObjId, 0));
                 }
                 else
                 {

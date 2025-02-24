@@ -13,7 +13,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class TestHeight : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "testheightvisualizer", "test_height_visualizer" };
+    public string[] CommandNames { get; set; } = new[] { "testheightvisualizer", "test_height_visualizer" };
     private const float TargetX = 22500f;
     private const float TargetY = 18500f;
     private const float TargetZ = 10f;
@@ -141,9 +141,7 @@ public class TestHeight : ICommand
 
             var borderLeft = (int)Math.Floor(targetPlayer.Transform.World.Position.X);
             borderLeft = borderLeft - borderLeft % 2;
-            var borderRight =
-                borderLeft +
-                2; // we're using a divider of 2 of the heightmaps in memory, so we need to compensate with that in mind (instead of 1)
+            var borderRight = borderLeft + 2; // we're using a divider of 2 of the heightmaps in memory, so we need to compensate with that in mind (instead of 1)
             var borderBottom = (int)Math.Floor(targetPlayer.Transform.World.Position.Y);
             borderBottom = borderBottom - borderBottom % 2;
             var borderTop = borderBottom + 2;

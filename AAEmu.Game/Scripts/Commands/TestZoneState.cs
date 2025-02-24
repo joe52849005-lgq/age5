@@ -10,7 +10,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class TestZoneState : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "zonestate", "zone_state" };
+    public string[] CommandNames { get; set; } = new[] { "zonestate", "zone_state" };
 
     public void OnLoad()
     {
@@ -24,8 +24,7 @@ public class TestZoneState : ICommand
 
     public string GetCommandHelpText()
     {
-        return
-            "Changes a zone's state (0=Tension, 1=Danger, 2=Dispute, 3=Unrest, 4=Crisis, 5=Conflict, 6=War, 7=Peace). If ZoneId is ommited, your current zone is used.";
+        return "Changes a zone's state (0=Tension, 1=Danger, 2=Dispute, 3=Unrest, 4=Crisis, 5=Conflict, 6=War, 7=Peace). If ZoneId is ommited, your current zone is used.";
     }
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)
@@ -36,8 +35,7 @@ public class TestZoneState : ICommand
             foreach (var conflict in ZoneManager.Instance.GetConflicts())
             {
                 var zonegroup = ZoneManager.Instance.GetZoneGroupById(conflict.ZoneGroupId);
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"ZoneGroup: {zonegroup.Name} ({conflict.ZoneGroupId}) State: {conflict.CurrentZoneState}");
+                CommandManager.SendNormalText(this, messageOutput, $"ZoneGroup: {zonegroup.Name} ({conflict.ZoneGroupId}) State: {conflict.CurrentZoneState}");
             }
 
             return;
@@ -70,14 +68,12 @@ public class TestZoneState : ICommand
 
             if (zonegroup.Conflict == null)
             {
-                CommandManager.SendErrorText(this, messageOutput,
-                    $"ZoneGroup: {zonegroup.Name} ({zonegroup.Id}) does not have a conflict state defined in the game database and thus cannot be changed");
+                CommandManager.SendErrorText(this, messageOutput, $"ZoneGroup: {zonegroup.Name} ({zonegroup.Id}) does not have a conflict state defined in the game database and thus cannot be changed");
                 return;
             }
 
             zonegroup.Conflict.SetState(zonestate);
-            CommandManager.SendNormalText(this, messageOutput,
-                $"Changed ZoneGroup: {zonegroupid} to State: {zonestate}");
+            CommandManager.SendNormalText(this, messageOutput, $"Changed ZoneGroup: {zonegroupid} to State: {zonestate}");
         }
         else
         {

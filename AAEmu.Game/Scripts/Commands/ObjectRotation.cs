@@ -4,13 +4,12 @@ using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Utils;
 using AAEmu.Game.Utils.Scripts;
-using NLog;
 
 namespace AAEmu.Game.Scripts.Commands;
 
 public class ObjectRotation : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "setrot", "npcrot", "doodadrot" };
+    public string[] CommandNames { get; set; } = new[] { "setrot", "npcrot", "doodadrot" };
 
     public void OnLoad()
     {
@@ -66,8 +65,7 @@ public class ObjectRotation : ICommand
 
                 gameObject.Hide();
                 gameObject.Show();
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"ObjId: r{oldX}, p{oldY}, y{oldZ} => r{roll}, p{pitch}, y{yaw}");
+                CommandManager.SendNormalText(this, messageOutput, $"ObjId: r{oldX}, p{oldY}, y{oldZ} => r{roll}, p{pitch}, y{yaw}");
             }
             else
             {

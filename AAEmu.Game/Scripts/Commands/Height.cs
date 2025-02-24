@@ -8,7 +8,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class Height : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "height" };
+    public string[] CommandNames { get; set; } = new[] { "height" };
 
     public void OnLoad()
     {

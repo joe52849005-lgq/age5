@@ -8,7 +8,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class QuestCmd : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "quest" };
+    public string[] CommandNames { get; set; } = new[] { "quest" };
 
     public void OnLoad()
     {

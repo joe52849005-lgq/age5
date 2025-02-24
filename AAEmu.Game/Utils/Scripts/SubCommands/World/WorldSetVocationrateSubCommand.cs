@@ -23,7 +23,7 @@ public class WorldSetVocationrateSubCommand : SubCommandBase
             return;
         }
         character.SetVocationRate(vocationRate);
-        SendDebugMessage(messageOutput, $"Set VocationRate {vocationRate}");
+        SendMessage(messageOutput, $"Set VocationRate {vocationRate}");
         Logger.Warn($"{Title}: {vocationRate}");
     }
 }

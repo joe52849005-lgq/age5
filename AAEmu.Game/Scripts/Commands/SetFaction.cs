@@ -11,7 +11,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class SetFaction : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "setfaction", "set_faction" };
+    public string[] CommandNames { get; set; } = new[] { "setfaction", "set_faction" };
 
     public void OnLoad()
     {

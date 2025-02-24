@@ -47,11 +47,11 @@ public class NpcSpawnSubCommand : SubCommandBase
 
         if (!parameters.ContainsKey("yaw"))
         {
-            SendDebugMessage(messageOutput, $"NPC {npcTemplateId} facing you using angle {angle.RadToDeg():0.#}°");
+            SendMessage(messageOutput, $"NPC {npcTemplateId} facing you using angle {angle.RadToDeg():0.#}°");
         }
         else
         {
-            SendDebugMessage(messageOutput, $"NPC {npcTemplateId} using angle {angle.RadToDeg():0.#}°");
+            SendMessage(messageOutput, $"NPC {npcTemplateId} using angle {angle.RadToDeg():0.#}°");
         }
 
         npcSpawner.Position.Yaw = angle;

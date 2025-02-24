@@ -91,8 +91,8 @@ public class ItemAddSubCommand : SubCommandBase
 
         if (selfCharacter.Id != addTarget.Id)
         {
-            SendDebugMessage(messageOutput, $"Added item {ChatConverter.ConvertAsChatMessageReference(templateId, itemGrade)} to {addTarget.Name}'s inventory");
-            SendDebugMessage(addTarget, messageOutput, $"[GM] {selfCharacter.Name} added {ChatConverter.ConvertAsChatMessageReference(templateId, itemGrade)} to your inventory");
+            SendMessage(messageOutput, $"Added item {ChatConverter.ConvertAsChatMessageReference(templateId, itemGrade)} to {addTarget.Name}'s inventory");
+            SendMessage(addTarget, messageOutput, $"[GM] {selfCharacter.Name} added {ChatConverter.ConvertAsChatMessageReference(templateId, itemGrade)} to your inventory");
         }
     }
 }

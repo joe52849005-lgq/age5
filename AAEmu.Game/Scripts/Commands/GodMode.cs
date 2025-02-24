@@ -7,7 +7,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class GodMode : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "godmode" };
+    public string[] CommandNames { get; set; } = new[] { "godmode" };
 
     public void OnLoad()
     {
@@ -35,6 +35,7 @@ public class GodMode : ICommand
         if (bool.TryParse(args[0], out var value))
         {
             character.SetGodMode(value);
+            character.SendDebugMessage($"State changed to |cFFFFFFFF{value}|r.");
         }
     }
 }

@@ -23,7 +23,7 @@ public class WorldSetHonorrateSubCommand : SubCommandBase
             return;
         }
         character.SetHonorRate(honorRate);
-        SendDebugMessage(messageOutput, $"Set HonorRate {honorRate}");
+        SendMessage(messageOutput, $"Set HonorRate {honorRate}");
         Logger.Warn($"{Title}: {honorRate}");
     }
 }

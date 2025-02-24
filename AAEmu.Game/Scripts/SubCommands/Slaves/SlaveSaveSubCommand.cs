@@ -111,7 +111,7 @@ public class SlaveSaveSubCommand : SubCommandBase
         var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", currentWorld.Name, "slave_spawns_new.json");
         var json = JsonConvert.SerializeObject(slaveSpawnersToFile.ToArray(), Formatting.Indented, new JsonModelsConverter());
         File.WriteAllText(jsonPathOut, json);
-        SendDebugMessage(messageOutput, "All slaves have been saved!");
+        SendMessage(messageOutput, "All slaves have been saved!");
     }
 
     private void SaveById(ICharacter character, uint objId, IMessageOutput messageOutput)
@@ -164,7 +164,7 @@ public class SlaveSaveSubCommand : SubCommandBase
         var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name, "slave_spawns_new.json");
         var json = JsonConvert.SerializeObject(spawnersFromFile.Values.ToArray(), Formatting.Indented, new JsonModelsConverter());
         File.WriteAllText(jsonPathOut, json);
-        SendDebugMessage(messageOutput, $"All slaves have been saved with added slave ObjId:{slave.ObjId}, TemplateId:{slave.TemplateId}");
+        SendMessage(messageOutput, $"All slaves have been saved with added slave ObjId:{slave.ObjId}, TemplateId:{slave.TemplateId}");
     }
 
     private List<JsonSlaveSpawns> LoadSlavesFromFileByWorld(World world)

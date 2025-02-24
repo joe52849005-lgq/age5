@@ -1,4 +1,4 @@
-using AAEmu.Game.Core.Managers;
+﻿using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
@@ -53,15 +53,11 @@ public class Dist : ICommand
             }
         }
 
-        var rawDistance =
-            MathUtil.CalculateDistance(character.Transform.World.Position, target.Transform.World.Position);
-        var rawDistanceZ =
-            MathUtil.CalculateDistance(character.Transform.World.Position, target.Transform.World.Position, true);
+        var rawDistance = MathUtil.CalculateDistance(character.Transform.World.Position, target.Transform.World.Position);
+        var rawDistanceZ = MathUtil.CalculateDistance(character.Transform.World.Position, target.Transform.World.Position, true);
         var modelDistance = character.GetDistanceTo(target);
         var modelDistanceZ = character.GetDistanceTo(target, true);
-        var angleWorld =
-            MathUtil.ClampDegAngle(MathUtil.CalculateAngleFrom(character.Transform.World.Position,
-                target.Transform.World.Position) - 90.0);
+        var angleWorld = MathUtil.ClampDegAngle(MathUtil.CalculateAngleFrom(character.Transform.World.Position, target.Transform.World.Position) - 90.0);
         var angle = MathUtil.ClampDegAngle(MathUtil.CalculateAngleFrom(character, target));
 
         CommandManager.SendNormalText(this, messageOutput, $"\n" +

@@ -9,7 +9,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class Snow : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "snow" };
+    public string[] CommandNames { get; set; } = new[] { "snow" };
 
     public void OnLoad()
     {

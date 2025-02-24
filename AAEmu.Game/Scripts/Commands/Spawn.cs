@@ -1,22 +1,21 @@
-﻿using System.Drawing;
+﻿using System.Globalization;
+
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.Id;
-using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Managers.UnitManagers;
+using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.DoodadObj;
 using AAEmu.Game.Models.Game.NPChar;
 using AAEmu.Game.Utils;
-using System.Globalization;
-using AAEmu.Game.Models.Game.Chat;
 using AAEmu.Game.Utils.Scripts;
 
 namespace AAEmu.Game.Scripts.Commands;
 
 public class Spawn : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "spawn" };
+    public string[] CommandNames { get; set; } = new[] { "spawn" };
     private const uint DUMMY_NPC_TEMPLATE_ID = 7512;
 
     // Unused protected static readonly Logger Logger = LogManager.GetCurrentClassLogger();
@@ -94,14 +93,12 @@ public class Spawn : ICommand
                             out var newRotZ))
                     {
                         angle = newRotZ.DegToRad();
-                        CommandManager.SendNormalText(this, messageOutput,
-                            $"Spawn NPC {unitId} using angle {newRotZ}° = {angle} rad");
+                        CommandManager.SendNormalText(this, messageOutput, $"Spawn NPC {unitId} using angle {newRotZ}° = {angle} rad");
                     }
                     else
                     {
                         angle = angle.DegToRad();
-                        CommandManager.SendNormalText(this, messageOutput,
-                            $"Spawn NPC {unitId} facing you using angle {angle} rad");
+                        CommandManager.SendNormalText(this, messageOutput, $"Spawn NPC {unitId} facing you using angle {angle} rad");
                     }
 
                     npcSpawner.Position.Yaw = angle;
@@ -134,14 +131,12 @@ public class Spawn : ICommand
                             out var degrees))
                     {
                         angle = degrees.DegToRad();
-                        CommandManager.SendNormalText(this, messageOutput,
-                            $"Spawn Doodad {unitId} using user provided angle {degrees}° = {angle} rad");
+                        CommandManager.SendNormalText(this, messageOutput, $"Spawn Doodad {unitId} using user provided angle {degrees}° = {angle} rad");
                     }
                     else
                     {
                         angle = angle.DegToRad();
-                        CommandManager.SendNormalText(this, messageOutput,
-                            $"Spawn Doodad {unitId} facing you, using characters angle {angle}");
+                        CommandManager.SendNormalText(this, messageOutput, $"Spawn Doodad {unitId} facing you, using characters angle {angle}");
                     }
 
                     doodadSpawner.Position.Yaw = angle;

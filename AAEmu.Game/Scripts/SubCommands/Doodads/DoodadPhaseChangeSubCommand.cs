@@ -40,8 +40,8 @@ public class DoodadPhaseChangeSubCommand : SubCommandBase
 
         var availablePhases = string.Join(", ", DoodadManager.Instance.GetDoodadFuncGroupsId(doodad.TemplateId));
 
-        SendDebugMessage(messageOutput, $"SetPhase {phaseId}");
-        SendDebugMessage(messageOutput, $"TemplateId {doodad.TemplateId}: ObjId:{doodad.ObjId}, ChangedPhase:{phaseId}, Available phase ids (func groups): {availablePhases}");
+        SendMessage(messageOutput, $"SetPhase {phaseId}");
+        SendMessage(messageOutput, $"TemplateId {doodad.TemplateId}: ObjId:{doodad.ObjId}, ChangedPhase:{phaseId}, Available phase ids (func groups): {availablePhases}");
         Logger.Warn($"{Title} Chain: TemplateId {doodad.TemplateId}, doodadObjId {doodad.ObjId}, SetPhase {phaseId}, Available phase ids (func groups): {availablePhases}");
         doodad.DoChangePhase((Unit)character, phaseId);
     }

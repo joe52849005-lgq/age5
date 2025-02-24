@@ -29,6 +29,6 @@ public class TimeSetSubCommand : SubCommandBase
         var newTime = hour * 1f + (minute / 60f);
         TimeManager.Instance.Set(newTime);
 
-        SendDebugMessage(messageOutput, $"Changed game time {oldTime:F2} -> {newTime:F2} ({hour}h{minute}m)");
+        SendMessage(messageOutput, $"Changed game time {oldTime:F2} -> {newTime:F2} ({hour}h{minute}m)");
     }
 }

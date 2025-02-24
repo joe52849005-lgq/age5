@@ -24,7 +24,7 @@ public class WorldSetGeodatamodeSubCommand : SubCommandBase
         }
 
         character.SetGeoDataMode(geoDataMode == "true");
-        SendDebugMessage(messageOutput, $"Set GeoDataMode: {geoDataMode}");
+        SendMessage(messageOutput, $"Set GeoDataMode: {geoDataMode}");
         Logger.Warn($"{Title}: {geoDataMode}");
     }
 }

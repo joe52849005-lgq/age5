@@ -7,7 +7,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 internal class WipeAuctionHouse : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "wipeauctionhouse", "wipeah" };
+    public string[] CommandNames { get; set; } = new[] { "wipeauctionhouse", "wipeah" };
 
     public void OnLoad()
     {
@@ -21,8 +21,7 @@ internal class WipeAuctionHouse : ICommand
 
     public string GetCommandHelpText()
     {
-        return
-            "Deletes ALL Items from the AH. No going back from this. Use WIPE as a argument to actual wipe the items";
+        return "Deletes ALL Items from the AH. No going back from this. Use WIPE as a argument to actual wipe the items";
     }
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)

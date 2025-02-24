@@ -8,7 +8,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class Help : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "help", "?" };
+    public string[] CommandNames { get; set; } = new[] { "help", "?" };
 
     public void OnLoad()
     {
@@ -22,8 +22,7 @@ public class Help : ICommand
 
     public string GetCommandHelpText()
     {
-        return
-            "Displays help about a command <topic>. If no <topic> is provided, a list of all GM commands will be displayed";
+        return "Displays help about a command <topic>. If no <topic> is provided, a list of all GM commands will be displayed";
     }
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)

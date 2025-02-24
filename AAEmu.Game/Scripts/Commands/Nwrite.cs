@@ -20,7 +20,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class Nwrite : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "nwrite", "nw" };
+    public string[] CommandNames { get; set; } = new[] { "nwrite", "nw" };
 
     public void OnLoad()
     {

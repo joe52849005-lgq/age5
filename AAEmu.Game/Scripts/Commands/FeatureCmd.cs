@@ -10,7 +10,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class FeatureCmd : SubCommandBase, ICommand, ICommandV2
 {
-    public string[] CommandNames { get; set; } = new string[] { "feature" };
+    public string[] CommandNames { get; set; } = new[] { "feature" };
 
     public FeatureCmd()
     {
@@ -40,7 +40,6 @@ public class FeatureCmd : SubCommandBase, ICommand, ICommandV2
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)
     {
-        throw new InvalidOperationException(
-            $"A {nameof(ICommandV2)} implementation should not be used as ICommand interface");
+        throw new InvalidOperationException($"A {nameof(ICommandV2)} implementation should not be used as ICommand interface");
     }
 }

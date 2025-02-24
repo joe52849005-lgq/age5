@@ -75,12 +75,11 @@ public class GoldSetSubCommand : SubCommandBase
         if (totalAmount != 0)
         {
             targetCharacter.Money += totalAmount;
-            targetCharacter.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.AutoLootDoodadItem,
-                new List<ItemTask> { new MoneyChange(totalAmount) }, new List<ulong>()));
-            SendDebugMessage(messageOutput, $"Changed {targetCharacter.Name}'s money by {goldAmount}g {silverAmount}s {copperAmount}c");
+            targetCharacter.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.AutoLootDoodadItem, new List<ItemTask> { new MoneyChange(totalAmount) }, new List<ulong>()));
+            SendMessage(messageOutput, $"Changed {targetCharacter.Name}'s money by {goldAmount}g {silverAmount}s {copperAmount}c");
             if (selfCharacter.Id != targetCharacter.Id)
             {
-                SendDebugMessage(targetCharacter, messageOutput, $"[GM] {selfCharacter.Name} has changed your gold");
+                SendMessage(targetCharacter, messageOutput, $"[GM] {selfCharacter.Name} has changed your gold");
             }
         }
         else

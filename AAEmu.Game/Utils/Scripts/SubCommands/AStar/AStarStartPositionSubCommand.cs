@@ -51,6 +51,6 @@ public class AStarStartPositionSubCommand : SubCommandBase
 
         npc.Ai.PathNode.pos1 = new Point(x, y, z);
 
-        messageOutput.SendDebugMessage($"AStar: the starting point is set X:{npc.Ai.PathNode.pos1.X}, Y:{npc.Ai.PathNode.pos1.Y}, Z:{npc.Ai.PathNode.pos1.Z}");
+        messageOutput.SendMessage($"AStar: the starting point is set X:{npc.Ai.PathNode.pos1.X}, Y:{npc.Ai.PathNode.pos1.Y}, Z:{npc.Ai.PathNode.pos1.Z}");
     }
 }

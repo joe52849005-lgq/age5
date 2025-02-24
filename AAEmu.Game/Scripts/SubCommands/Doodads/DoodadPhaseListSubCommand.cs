@@ -37,7 +37,7 @@ public class DoodadPhaseListSubCommand : SubCommandBase
 
         var availablePhases = string.Join(", ", DoodadManager.Instance.GetDoodadFuncGroupsId(doodad.TemplateId));
 
-        SendDebugMessage(messageOutput, $"TemplateId {doodad.TemplateId}: ObjId{doodad.ObjId}, Available phase ids (func groups): {availablePhases}");
+        SendMessage(messageOutput, $"TemplateId {doodad.TemplateId}: ObjId{doodad.ObjId}, Available phase ids (func groups): {availablePhases}");
         Logger.Warn($"{Title} Chain: TemplateId {doodad.TemplateId}, doodadObjId {doodad.ObjId},  Available phase ids (func groups): {availablePhases}");
     }
 }

@@ -1,16 +1,14 @@
-﻿using System.Numerics;
-using AAEmu.Game.Core.Managers;
+﻿using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Utils.Scripts;
-using NLog;
 
 namespace AAEmu.Game.Scripts.Commands;
 
 public class ObjectPosition : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "setpos", "npcloc", "npcpos", "doodadloc", "doodadpos" };
+    public string[] CommandNames { get; set; } = new[] { "setpos", "npcloc", "npcpos", "doodadloc", "doodadpos" };
 
     public void OnLoad()
     {
@@ -66,8 +64,7 @@ public class ObjectPosition : ICommand
 
                 gameObject.Hide();
                 gameObject.Show();
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"ObjId: Position {oldX}, {oldY}, {oldZ} => {x}, {y}, {z}");
+                CommandManager.SendNormalText(this, messageOutput, $"ObjId: Position {oldX}, {oldY}, {oldZ} => {x}, {y}, {z}");
             }
             else
             {

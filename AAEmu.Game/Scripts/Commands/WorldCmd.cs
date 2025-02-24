@@ -10,7 +10,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class WorldCmd : SubCommandBase, ICommand, ICommandV2
 {
-    public string[] CommandNames { get; set; } = new string[] { "world" };
+    public string[] CommandNames { get; set; } = new[] { "world" };
 
     public WorldCmd()
     {
@@ -38,7 +38,6 @@ public class WorldCmd : SubCommandBase, ICommand, ICommandV2
 
     public void Execute(Character character, string[] args, IMessageOutput messageOutput)
     {
-        throw new InvalidOperationException(
-            $"A {nameof(ICommandV2)} implementation should not be used as ICommand interface");
+        throw new InvalidOperationException($"A {nameof(ICommandV2)} implementation should not be used as ICommand interface");
     }
 }

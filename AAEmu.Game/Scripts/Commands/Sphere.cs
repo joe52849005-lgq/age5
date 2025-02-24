@@ -9,7 +9,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class Sphere : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "sphere" };
+    public string[] CommandNames { get; set; } = new[] { "sphere" };
 
     public void OnLoad()
     {

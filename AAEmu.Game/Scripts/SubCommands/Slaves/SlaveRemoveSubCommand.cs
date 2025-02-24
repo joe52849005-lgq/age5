@@ -53,6 +53,6 @@ public class SlaveRemoveSubCommand : SubCommandBase
         }
 
         slave.Hide();
-        SendDebugMessage(messageOutput, $"Slave ({slave.Name}), ObjId: {slave.ObjId}, TemplateId:{slave.TemplateId} removed successfully");
+        SendMessage(messageOutput, $"Slave ({slave.Name}), ObjId: {slave.ObjId}, TemplateId:{slave.TemplateId} removed successfully");
     }
 }

@@ -44,7 +44,7 @@ public class DoodadPositionSubCommand : SubCommandBase
         var pitch = GetOptionalParameterValue(parameters, "pitch", doodad.Transform.Local.Rotation.Y.RadToDeg()).DegToRad();
         var yaw = GetOptionalParameterValue(parameters, "yaw", doodad.Transform.Local.Rotation.Z.RadToDeg()).DegToRad();
 
-        SendDebugMessage(messageOutput, $"Doodad ObjId: {doodad.ObjId} TemplateId:{doodad.TemplateId}, x:{x}, y:{y}, z:{z}, roll:{roll.RadToDeg():0.#}°, pitch:{pitch.RadToDeg():0.#}°, yaw:{yaw.RadToDeg():0.#}°");
+        SendMessage(messageOutput, $"Doodad ObjId: {doodad.ObjId} TemplateId:{doodad.TemplateId}, x:{x}, y:{y}, z:{z}, roll:{roll.RadToDeg():0.#}°, pitch:{pitch.RadToDeg():0.#}°, yaw:{yaw.RadToDeg():0.#}°");
 
         doodad.Transform.Local.SetPosition(x, y, z, roll, pitch, yaw);
 

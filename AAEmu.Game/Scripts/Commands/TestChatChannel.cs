@@ -11,7 +11,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class TestChatChannel : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "testchatchannel", "test_chat_channel", "testchat" };
+    public string[] CommandNames { get; set; } = new[] { "testchatchannel", "test_chat_channel", "testchat" };
 
     public void OnLoad()
     {
@@ -37,8 +37,7 @@ public class TestChatChannel : ICommand
             var channels = ChatManager.Instance.ListAllChannels();
             foreach (var c in channels)
             {
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"T:{c.ChatType} ST:{c.SubType} F:{c.Faction} => {c.InternalId} - {c.InternalName} ({c.Members.Count})");
+                CommandManager.SendNormalText(this, messageOutput, $"T:{c.ChatType} ST:{c.SubType} F:{c.Faction} => {c.InternalId} - {c.InternalName} ({c.Members.Count})");
             }
 
             CommandManager.SendNormalText(this, messageOutput, $"End of list");

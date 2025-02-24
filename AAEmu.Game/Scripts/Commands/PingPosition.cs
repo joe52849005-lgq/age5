@@ -8,7 +8,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class PingPosition : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "pingpos", "ping_pos", "pingposition" };
+    public string[] CommandNames { get; set; } = new[] { "pingpos", "ping_pos", "pingposition" };
 
     public void OnLoad()
     {
@@ -35,17 +35,14 @@ public class PingPosition : ICommand
         }
         else
         {
-            var height = WorldManager.Instance.GetHeight(character.Transform.ZoneId, character.LocalPingPosition.Positions[1].X,
-                character.LocalPingPosition.Positions[1].Y);
+            var height = WorldManager.Instance.GetHeight(character.Transform.ZoneId, character.LocalPingPosition.Positions[1].X, character.LocalPingPosition.Positions[1].Y);
             if (height == 0f)
             {
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"|cFFFFFFFFX:{character.LocalPingPosition.Positions[1].X:0.0} Y:{character.LocalPingPosition.Positions[1].Y:0.0} Z: ???|r");
+                CommandManager.SendNormalText(this, messageOutput, $"|cFFFFFFFFX:{character.LocalPingPosition.Positions[1].X:0.0} Y:{character.LocalPingPosition.Positions[1].Y:0.0} Z: ???|r");
             }
             else
             {
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"|cFFFFFFFFX:{character.LocalPingPosition.Positions[1].X:0.0} Y:{character.LocalPingPosition.Positions[1].Y:0.0} Z:{height:0.0}|r");
+                CommandManager.SendNormalText(this, messageOutput, $"|cFFFFFFFFX:{character.LocalPingPosition.Positions[1].X:0.0} Y:{character.LocalPingPosition.Positions[1].Y:0.0} Z:{height:0.0}|r");
             }
         }
     }

@@ -15,7 +15,7 @@ namespace AAEmu.Game.Scripts.Commands;
 
 public class ShowInventory : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "inventory", "showinv", "show_inv", "showinventory", "show_inventory" };
+    public string[] CommandNames { get; set; } = new[] { "inventory", "showinv", "show_inv", "showinventory", "show_inventory" };
 
     public void OnLoad()
     {
@@ -46,17 +46,16 @@ public class ShowInventory : ICommand
                 }
 
                 var slotName = ((EquipmentItemSlot)item.Slot).ToString();
-                var countName = "|ng;" + item.Count.ToString() + "|r x ";
+                var countName = "|ng;" + item.Count + "|r x ";
                 if (item.Count == 1)
                 {
                     countName = string.Empty;
                 }
 
-                messageOutput.SendDebugMessage($"[{templateName}][{slotName}] {countName}|nn;{item.TemplateId}|r = @ITEM_NAME({item.TemplateId})");
+                messageOutput.SendMessage($"[{templateName}][{slotName}] {countName}|nn;{item.TemplateId}|r = @ITEM_NAME({item.TemplateId})");
             }
 
-            CommandManager.SendNormalText(this, messageOutput,
-                $"[{templateName}][{targetContainer.ContainerType}] {targetContainer.Items.Count} entries");
+            CommandManager.SendNormalText(this, messageOutput, $"[{templateName}][{targetContainer.ContainerType}] {targetContainer.Items.Count} entries");
             return;
         }
         else
@@ -96,7 +95,7 @@ public class ShowInventory : ICommand
                 foreach (var item in targetContainer.Items.OrderBy(x => x.Slot).ThenBy(x => x.CreateTime).ToList())
                 {
                     var additionalErrors = string.Empty;
-                    var slotName = targetContainer.ContainerType.ToString() + "-" + item.Slot.ToString();
+                    var slotName = targetContainer.ContainerType + "-" + item.Slot;
                     if (item.SlotType == SlotType.Equipment)
                     {
                         slotName = ((EquipmentItemSlot)item.Slot).ToString();
@@ -121,18 +120,16 @@ public class ShowInventory : ICommand
                         countName = string.Empty;
                     }
 
-                    messageOutput.SendDebugMessage($"[|nd;{targetPlayer.Name}|r][{slotName}] |nb;{item.Id}|r {countName}|nn;{item.TemplateId}|r = @ITEM_NAME({item.TemplateId})");
+                    messageOutput.SendMessage($"[|nd;{targetPlayer.Name}|r][{slotName}] |nb;{item.Id}|r {countName}|nn;{item.TemplateId}|r = @ITEM_NAME({item.TemplateId})");
                     lastSlotNumber = item.Slot;
                 }
 
                 if (hasSlotErrors > 0)
                 {
-                    CommandManager.SendNormalText(this, messageOutput,
-                        $"[|nd;{targetPlayer.Name}|r] |cFFFF0000{targetContainer.ContainerType} contains {hasSlotErrors} slot number related errors, please manually fix these!|r");
+                    CommandManager.SendNormalText(this, messageOutput, $"[|nd;{targetPlayer.Name}|r] |cFFFF0000{targetContainer.ContainerType} contains {hasSlotErrors} slot number related errors, please manually fix these!|r");
                 }
 
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"[|nd;{targetPlayer.Name}|r][{targetContainer.ContainerType}] {targetContainer.Items.Count} entries");
+                CommandManager.SendNormalText(this, messageOutput, $"[|nd;{targetPlayer.Name}|r][{targetContainer.ContainerType}] {targetContainer.Items.Count} entries");
             }
             else
             {

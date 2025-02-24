@@ -1,14 +1,13 @@
 ﻿using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
-using AAEmu.Game.Models.Game.Chat;
 using AAEmu.Game.Utils.Scripts;
 
 namespace AAEmu.Game.Scripts.Commands;
 
 public class InGameCashShop : ICommand
 {
-    public string[] CommandNames { get; set; } = new string[] { "ingamecashshop", "ics" };
+    public string[] CommandNames { get; set; } = new[] { "ingamecashshop", "ics" };
 
     public void OnLoad()
     {
@@ -36,8 +35,7 @@ public class InGameCashShop : ICommand
         switch (doCommand)
         {
             case "list":
-                CommandManager.SendNormalText(this, messageOutput,
-                    $"Currently loaded {CashShopManager.Instance.ShopItems.Count} shop items listed as {CashShopManager.Instance.MenuItems.Count} entries across all tabs in the cash shop.");
+                CommandManager.SendNormalText(this, messageOutput, $"Currently loaded {CashShopManager.Instance.ShopItems.Count} shop items listed as {CashShopManager.Instance.MenuItems.Count} entries across all tabs in the cash shop.");
                 break;
             case "on":
                 CashShopManager.Instance.EnabledShop();
