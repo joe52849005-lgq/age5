@@ -122,7 +122,7 @@ public class RadarManager : Singleton<RadarManager>
             foreach (var (_, entry) in Registrations)
             {
                 // TODO: Make a proper GM flag
-                var gmRangeCheck = CharacterManager.Instance.GetEffectiveAccessLevel(entry.Player) >= 100 ? 100000f : 0f;
+                var gmRangeCheck = CharacterManager.GetEffectiveAccessLevel(entry.Player) >= 100 ? 100000f : 0f;
                 if (entry.Player == null)
                     continue;
 

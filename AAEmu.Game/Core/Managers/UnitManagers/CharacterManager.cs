@@ -437,7 +437,7 @@ public class CharacterManager : Singleton<CharacterManager>
         player.BroadcastPacket(new SCChatMessagePacket(ChatType.System, $"{player.Name} rolled {roll}."), true);
     }
 
-    public int GetEffectiveAccessLevel(Character character)
+    public static int GetEffectiveAccessLevel(Character character)
     {
         var accountDetails = AccountManager.Instance.GetAccountDetails(character.AccountId);
         return Math.Max(character.AccessLevel, accountDetails.AccessLevel);

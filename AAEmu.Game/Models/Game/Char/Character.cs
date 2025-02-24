@@ -1547,7 +1547,7 @@ public partial class Character : Unit, ICharacter
         if (newZone != null)
             SendDebugMessage(ChatType.System, $"You have entered a closed zone ({newZone.ZoneKey} - {newZone.Name})!\nPlease leave immediately!", Color.Red);
 
-        var characterAccessLevel = CharacterManager.Instance.GetEffectiveAccessLevel(this);
+        var characterAccessLevel = CharacterManager.GetEffectiveAccessLevel(this);
         if (characterAccessLevel < 100)
         {
             // Do forbidden zone code handling
@@ -1588,7 +1588,7 @@ public partial class Character : Unit, ICharacter
 
     public override int DoFallDamage(ushort fallVel)
     {
-        if (CharacterManager.Instance.GetEffectiveAccessLevel(this) >= AppConfiguration.Instance.World.IgnoreFallDamageAccessLevel)
+        if (CharacterManager.GetEffectiveAccessLevel(this) >= AppConfiguration.Instance.World.IgnoreFallDamageAccessLevel)
         {
             Logger.Debug($"{Name} negated FallDamage because of IgnoreFallDamageAccessLevel settings");
             return 0; // GM & Admin take 0 damage from falling
@@ -1692,10 +1692,16 @@ public partial class Character : Unit, ICharacter
     {
         if (color != null)
             message = $"|c{color.Value.A:X2}{color.Value.R:X2}{color.Value.G:X2}{color.Value.B:X2}{message}|r";
-        SendPacket(new SCChatMessagePacket(type, message));
+
+        if (AppConfiguration.Instance.DebugInfo && CharacterManager.GetEffectiveAccessLevel(this) >= AppConfiguration.Instance.DebugInfoLevel)
+            SendPacket(new SCChatMessagePacket(type, message));
     }
     
-    public void SendMessage(string message) => SendMessage(ChatType.System, message, null);
+    public void SendMessage(string message)
+    {
+        if (AppConfiguration.Instance.DebugInfo && CharacterManager.GetEffectiveAccessLevel(this) >= AppConfiguration.Instance.DebugInfoLevel)
+            SendMessage(ChatType.System, message, null);
+    }
 
     /// <summary>
     /// Sends a debug message to player chat, but only if DebugInfo is enabled in the configuration
@@ -1703,7 +1709,7 @@ public partial class Character : Unit, ICharacter
     /// <param name="message"></param>
     public void SendDebugMessage(string message)
     {
-        if (AppConfiguration.Instance.DebugInfo && CharacterManager.Instance.GetEffectiveAccessLevel(this) >= AppConfiguration.Instance.DebugInfoLevel)
+        if (AppConfiguration.Instance.DebugInfo && CharacterManager.GetEffectiveAccessLevel(this) >= AppConfiguration.Instance.DebugInfoLevel)
             SendMessage(ChatType.System, message, null);
     }
     
@@ -1732,14 +1738,14 @@ public partial class Character : Unit, ICharacter
 
     public static Character Load(uint characterId, uint accountId)
     {
-        using (var connection = MySQL.CreateConnection())
-            return Load(connection, characterId, accountId);
+        using var connection = MySQL.CreateConnection();
+        return Load(connection, characterId, accountId);
     }
 
     public static Character Load(uint characterId)
     {
-        using (var connection = MySQL.CreateConnection())
-            return Load(connection, characterId);
+        using var connection = MySQL.CreateConnection();
+        return Load(connection, characterId);
     }
 
     public uint Breath { get; set; }
@@ -2251,20 +2257,16 @@ public partial class Character : Unit, ICharacter
     {
         try
         {
-            using (var command = connection.CreateCommand())
+            using var command = connection.CreateCommand();
+            command.Connection = connection;
+            command.CommandText = "SELECT slots FROM `characters` WHERE `id` = @id AND `account_id` = @account_id";
+            command.Parameters.AddWithValue("@id", Id);
+            command.Parameters.AddWithValue("@account_id", AccountId);
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
             {
-                command.Connection = connection;
-                command.CommandText = "SELECT slots FROM `characters` WHERE `id` = @id AND `account_id` = @account_id";
-                command.Parameters.AddWithValue("@id", Id);
-                command.Parameters.AddWithValue("@account_id", AccountId);
-                using (var reader = command.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        var slotsBlob = (PacketStream)((byte[])reader.GetValue("slots"));
-                        LoadActionSlots(slotsBlob);
-                    }
-                }
+                var slotsBlob = (PacketStream)((byte[])reader.GetValue("slots"));
+                LoadActionSlots(slotsBlob);
             }
         }
         catch (Exception ex)
@@ -2360,31 +2362,28 @@ public partial class Character : Unit, ICharacter
     {
         // Try to save New Character
         var saved = false;
-        using (var sqlConnection = MySQL.CreateConnection())
+        using var sqlConnection = MySQL.CreateConnection();
+        using var transaction = sqlConnection.BeginTransaction();
+        try
         {
-            using (var transaction = sqlConnection.BeginTransaction())
+            saved = Save(sqlConnection, transaction);
+            transaction.Commit();
+        }
+        catch (Exception e)
+        {
+            saved = false;
+            Logger.Error(e, "Character save failed for {0} - {1}\n", Id, Name);
+            try
             {
-                try
-                {
-                    saved = Save(sqlConnection, transaction);
-                    transaction.Commit();
-                }
-                catch (Exception e)
-                {
-                    saved = false;
-                    Logger.Error(e, "Character save failed for {0} - {1}\n", Id, Name);
-                    try
-                    {
-                        transaction.Rollback();
-                    }
-                    catch (Exception eRollback)
-                    {
-                        // Really failed here
-                        Logger.Fatal(eRollback, "Character save rollback failed for {0} - {1}\n", Id, Name);
-                    }
-                }
+                transaction.Rollback();
+            }
+            catch (Exception eRollback)
+            {
+                // Really failed here
+                Logger.Fatal(eRollback, "Character save rollback failed for {0} - {1}\n", Id, Name);
             }
         }
+
         return saved;
     }
 

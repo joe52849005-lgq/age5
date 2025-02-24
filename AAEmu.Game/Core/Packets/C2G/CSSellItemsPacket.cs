@@ -4,7 +4,6 @@ using AAEmu.Commons.Network;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Network.Game;
-using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Items.Actions;
 
@@ -20,12 +19,13 @@ public class CSSellItemsPacket : GamePacket
     {
         var npcObjId = stream.ReadBc();
         var npc = WorldManager.Instance.GetNpc(npcObjId);
-        if (npc?.Template.Merchant != true)
+        var doodadObjId = stream.ReadBc();
+        var doodad = WorldManager.Instance.GetDoodad(doodadObjId);
+        // it can support doodad in the house to sell items
+        if (npc?.Template.Merchant != true && doodad == null)
         {
             return;
         }
-
-        var doodadObjId = stream.ReadBc();
 
         var num = stream.ReadByte();
         var items = new List<Item>();

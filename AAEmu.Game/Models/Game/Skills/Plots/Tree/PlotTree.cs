@@ -74,8 +74,7 @@ public class PlotTree
                         state.Tickets.TryAdd(node.Event.Id, 1);
 
                     //Check if we hit max tickets
-                    if (state.Tickets[node.Event.Id] > node.Event.Tickets
-                        && node.Event.Tickets > 1)
+                    if (state.Tickets[node.Event.Id] > node.Event.Tickets && node.Event.Tickets > 1)
                     {
                         continue;
                     }
@@ -101,25 +100,13 @@ public class PlotTree
                                 foreach (var target in item.targetInfo.EffectedTargets)
                                 {
                                     var targetInfo = new PlotTargetInfo(item.targetInfo.Source, target);
-                                    queue.Enqueue(
-                                        (
-                                        child,
-                                        now.AddMilliseconds(child.ComputeDelayMs(state, targetInfo)),
-                                        targetInfo
-                                        )
-                                    );
+                                    queue.Enqueue((child, now.AddMilliseconds(child.ComputeDelayMs(state, targetInfo)), targetInfo));
                                 }
                             }
                             else
                             {
                                 var targetInfo = new PlotTargetInfo(item.targetInfo.Source, item.targetInfo.Target);
-                                queue.Enqueue(
-                                    (
-                                    child,
-                                    now.AddMilliseconds(child.ComputeDelayMs(state, targetInfo)),
-                                    targetInfo
-                                    )
-                                );
+                                queue.Enqueue((child, now.AddMilliseconds(child.ComputeDelayMs(state, targetInfo)), targetInfo));
                             }
                         }
                     }
@@ -135,7 +122,7 @@ public class PlotTree
                     var delay = (int)queue.Min(o => (o.timestamp - DateTime.UtcNow).TotalMilliseconds);
                     delay = Math.Max(delay, 0);
 
-                    //await Task.Delay(delay).ConfigureAwait(false);
+                    // await Task.Delay(delay).ConfigureAwait(false);
                     if (delay > 0)
                         await Task.Delay(15).ConfigureAwait(false);
 

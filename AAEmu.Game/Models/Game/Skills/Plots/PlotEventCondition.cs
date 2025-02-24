@@ -87,8 +87,7 @@ public class PlotEventCondition
                     throw new InvalidOperationException("This can't happen");
             }
 
-            if (condition.Condition.Check(source, state.CasterCaster, target,
-                state.TargetCaster, state.SkillObject, condition, state.ActiveSkill))
+            if (condition.Condition.Check(source, state.CasterCaster, target, state.TargetCaster, state.SkillObject, state.ActiveSkill))
             {
                 continue;
             }

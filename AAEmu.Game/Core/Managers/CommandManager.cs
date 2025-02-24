@@ -112,7 +112,7 @@ public class CommandManager : Singleton<CommandManager>
         // var words = text.Split(' ');
         var thisCommand = words.Length > 0 ? words[0].ToLower() : "";
 
-        var characterAccessLevel = CharacterManager.Instance.GetEffectiveAccessLevel(character);
+        var characterAccessLevel = CharacterManager.GetEffectiveAccessLevel(character);
 
         // Only enable the force_scripts_reload when we don't have anything loaded, this is simply a failsafe function in case
         // things aren't working out when live-editing scripts
