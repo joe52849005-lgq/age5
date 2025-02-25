@@ -87,6 +87,13 @@ public class DoodadSaveSubCommand : SubCommandBase
             var doodadsInWorld = WorldManager.Instance.GetAllDoodadsFromWorld(currentWorld.Id);
             var doodadSpawnersFromFile = LoadDoodadsFromFileByWorld(currentWorld);
             var doodadSpawnersToFile = new List<JsonDoodadSpawns>(doodadSpawnersFromFile);
+            
+            for (var i = 0; i < doodadSpawnersToFile.Count; i++)
+            {
+                doodadSpawnersToFile[i].Title = GetSpawnName(doodadSpawnersToFile[i].UnitId); // обновим Title
+                if (doodadSpawnersToFile[i].Scale == 0f)
+                    doodadSpawnersToFile[i].Scale = 1f;
+            }
 
             var addDoodads = doodadsInWorld.Where(n => n.Spawner?.Id == 0).ToList();
             var removeDoodads = doodadsInWorld.Where(n => n.Spawner?.Id == 0xffffffff).ToList();
@@ -122,6 +129,8 @@ public class DoodadSaveSubCommand : SubCommandBase
                 // Если ключ уникален - добавляем в словарь
                 doodadSpawnersDict.Add(key, spawns);
             }
+
+            doodadSpawnersToFile = doodadSpawnersDict.Values.ToList(); // Перезаписываем список уникальными значениями
 
             // Удаляем элементы из doodadSpawnersToFile, которые соответствуют removeDoodads
             Parallel.For(0, removeDoodads.Count, i =>
@@ -245,7 +254,7 @@ public class DoodadSaveSubCommand : SubCommandBase
 
         spawnersFromFile[spawn.Id] = spawn;
 
-        var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name, $"doodad_spawns_add_{DateTime.Now:yyyyMMdd_HHmmss}.json");
+        var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name, $"doodad_spawns_add_{DateTime.Now:yyyyMMdd_HHmmss}.json.add");
         var json = JsonConvert.SerializeObject(spawnersFromFile.Values.ToArray(), Formatting.Indented, new JsonModelsConverter());
         File.WriteAllText(jsonPathOut, json);
         //SendMessage(messageOutput, $"Doodad ObjId: {doodad.ObjId} has been saved!");

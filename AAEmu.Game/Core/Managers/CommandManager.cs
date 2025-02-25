@@ -170,7 +170,7 @@ public class CommandManager : Singleton<CommandManager>
         }
         catch (Exception e)
         {
-            character.SendDebugMessage(ChatType.System, e.Message, Color.Red);
+            character.SendMessage(ChatType.System, e.Message, Color.Red);
             Logger.Error(e.Message);
             Logger.Error(e.StackTrace);
         }

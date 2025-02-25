@@ -16,6 +16,7 @@ namespace AAEmu.Game.Models.Game.Char;
 
 public partial class Character
 {
+    private ICharacter _iCharacterImplementation;
     public uint ResurrectHpPercent { get; set; } = 1;
     public uint ResurrectMpPercent { get; set; } = 1;
     public uint HostileFactionKills { get; set; }
@@ -91,10 +92,6 @@ public partial class Character
     }
 
     public void OnEnterCombat(object sender, OnCombatStartedArgs args)
-    {
-    }
-
-    public void SendDebugMessage(ChatType type, string message, Color? color = null)
     {
     }
 }

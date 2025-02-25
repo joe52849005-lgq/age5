@@ -111,7 +111,7 @@ public enum ItemTaskType : byte
     GradeEnchant = 102,             // grade-enchant
     ShipGradeEnchant,               // ship-grade-enchant
     RechargeRndAttrUnitModifier,    // recharge-rnd-attr-unit-modifier
-    RechargeBuff,                   // recharge-buff
+    RechargeBuff = 105,             // recharge-buff
     Socketing = 106,                // socketing
     Evolving = 107,                 // evolving
     Smelting,                       // smelting

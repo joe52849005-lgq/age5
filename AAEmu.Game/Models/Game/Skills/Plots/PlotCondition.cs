@@ -64,7 +64,7 @@ public class PlotCondition
             _ => true
         };
 
-        Logger.Debug($"PlotCondition : {Kind} | Params : {Param1}, {Param2}, {Param3}, {Param4} | Result : {(NotCondition ? "NOT" : "")} {res}");
+        Logger.Trace($"PlotCondition : {Kind} | Params : {Param1}, {Param2}, {Param3}, {Param4} | Result : {(NotCondition ? "NOT" : "")} {res}");
 
         return NotCondition ? !res : res;
     }

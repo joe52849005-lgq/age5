@@ -84,7 +84,7 @@ public class AddKit : ICommand
     {
         if (args.Length == 0)
         {
-            character.SendDebugMessage("[Items] " + CommandManager.CommandPrefix + "kit (target) <kitname>");
+            character.SendMessage("[Items] " + CommandManager.CommandPrefix + "kit (target) <kitname>");
             CommandManager.SendNormalText(this, messageOutput, $"{kitconfig.itemkitnames.Count} kits have been loaded, use {CommandManager.CommandPrefix}{CommandNames[0]} ? to get a list of kits");
             return;
         }
@@ -101,14 +101,14 @@ public class AddKit : ICommand
 
         if (kitname == "?")
         {
-            character.SendDebugMessage("[Items] " + CommandManager.CommandPrefix + "kit has the following kits registered:");
+            character.SendMessage("[Items] " + CommandManager.CommandPrefix + "kit has the following kits registered:");
             var s = string.Empty;
             foreach (var n in kitconfig.itemkitnames)
             {
                 s += n + "  ";
             }
 
-            character.SendDebugMessage("|cFFFFFFFF" + s + "|r");
+            character.SendMessage("|cFFFFFFFF" + s + "|r");
             return;
         }
 
@@ -126,7 +126,7 @@ public class AddKit : ICommand
             var itemTemplate = ItemManager.Instance.GetTemplate(kit.itemId);
             if (itemTemplate == null)
             {
-                character.SendDebugMessage(ChatType.System, $"Item could not be created, ID: {kit.itemId} !");
+                character.SendMessage(ChatType.System, $"Item could not be created, ID: {kit.itemId} !");
                 Logger.Error($"itemId not found: {kit.itemId}");
                 continue;
             }
@@ -135,14 +135,14 @@ public class AddKit : ICommand
                 if (!targetPlayer.Inventory.Bag.AcquireDefaultItem(ItemTaskType.Gm, kit.itemId, kit.itemCount,
                         kit.itemGrade))
                 {
-                    character.SendDebugMessage(ChatType.System, "Item could not be created!", Color.Red);
+                    character.SendMessage(ChatType.System, "Item could not be created!", Color.Red);
                     continue;
                 }
 
                 if (character.Id != targetPlayer.Id)
                 {
-                    character.SendDebugMessage($"[Items] added item {kit.itemId} to {targetPlayer.Name}'s inventory");
-                    targetPlayer.SendDebugMessage($"[GM] {character.Name} has added a item to your inventory");
+                    character.SendMessage($"[Items] added item {kit.itemId} to {targetPlayer.Name}'s inventory");
+                    targetPlayer.SendMessage($"[GM] {character.Name} has added a item to your inventory");
                 }
 
                 itemsAdded++;
@@ -154,13 +154,13 @@ public class AddKit : ICommand
         {
             if (character.Id != targetPlayer.Id)
             {
-                character.SendDebugMessage($"[Items] added {itemsAdded} items to {targetPlayer.Name}'s inventory");
-                targetPlayer.SendDebugMessage($"[GM] {character.Name} has added a {itemsAdded} item to your inventory");
+                character.SendMessage($"[Items] added {itemsAdded} items to {targetPlayer.Name}'s inventory");
+                targetPlayer.SendMessage($"[GM] {character.Name} has added a {itemsAdded} item to your inventory");
             }
         }
         else
         {
-            character.SendDebugMessage($"[Items] No items in kit \"{kitname}\"");
+            character.SendMessage($"[Items] No items in kit \"{kitname}\"");
         }
     }
 

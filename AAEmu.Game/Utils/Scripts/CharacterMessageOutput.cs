@@ -28,13 +28,13 @@ public class CharacterMessageOutput : IMessageOutput
         if (color != null)
             message = $"|c{color.Value.A:X2}{color.Value.R:X2}{color.Value.G:X2}{color.Value.B:X2}{message}|r";
         _messages.Add(message);
-        _character.SendDebugMessage(chatType, message);
+        _character.SendMessage(chatType, message);
     }
 
     public void SendMessage(ICharacter target, string message)
     {
         _messages.Add($"Target: {target.Name} - {message}");
-        target.SendDebugMessage(message);
+        target.SendMessage(message);
     }
 
     public void SendErrorMessage(ErrorMessageType messageType, uint type, bool isNotify)

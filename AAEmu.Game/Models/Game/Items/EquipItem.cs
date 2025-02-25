@@ -51,6 +51,9 @@ public class EquipItem : Item
         Durability = stream.ReadByte();       // durability
         ChargeCount = stream.ReadInt16();     // chargeCount
         ChargeTime = stream.ReadDateTime();   // chargeTime
+
+        ChargeTime = DateTime.MinValue; // сбросим дату
+
         TemperPhysical = stream.ReadUInt16(); // scaledA - Renovation level
         TemperMagical = stream.ReadUInt16();  // scaledB
         ChargeProcTime = stream.ReadDateTime(); // chargeProcTime
@@ -121,9 +124,10 @@ public class EquipItem : Item
         RuneId = (ushort)GemIds[1];
 
         GemIds[2] = stream.ReadUInt32();  // unk
+        GemIds[2] = stream.ReadUInt32();  // unk
 
         // Чтение времени
-        ChargeStartTime = stream.ReadDateTime();
+        //ChargeStartTime = stream.ReadDateTime();
         //GemIds[19] = stream.ReadUInt32(); // unk
         //GemIds[20] = stream.ReadUInt32(); // unk
 
@@ -160,17 +164,18 @@ public class EquipItem : Item
         stream.Write(GemIds[1]);  // Luna Gem, TemplateId EnchantingGem - Позволяет зачаровать предмет снаряжения.
         RuneId = (ushort)GemIds[1];
 
+        stream.Write(ChargeTime);  //  ChargeStartTime
+
         stream.Write(GemIds[2]);  // 
 
-        stream.Write(ChargeStartTime);  // ChargeStartTime
         //// Преобразуем DateTime в long (Ticks)
-        //var ticks = ChargeStartTime.Ticks;
+        //var ticks = ChargeTime.Ticks;
         //// Разделяем на младшие и старшие 32 бита
         //var low = (uint)(ticks & 0xFFFFFFFF);       // Младшие 32 бита
         //var hi = (uint)(ticks >> 32);               // Старшие 32 бита
-        //// Записываем в массив GemIds
-        //GemIds[19] = low;
-        //GemIds[20] = hi;
+        ////// Записываем в массив GemIds
+        ////GemIds[19] = low;
+        ////GemIds[20] = hi;
         //// Записываем в поток
         //stream.Write(low);  // ChargeStartTime, low
         //stream.Write(hi);   // ChargeStartTime, hi

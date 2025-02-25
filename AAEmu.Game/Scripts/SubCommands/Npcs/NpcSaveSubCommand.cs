@@ -92,6 +92,15 @@ public class NpcSaveSubCommand : SubCommandBase
             var npcsInWorld = WorldManager.Instance.GetAllNpcsFromWorld(currentWorld.Id);
             var npcSpawnersFromFile = LoadNpcsFromFileByWorld(currentWorld);
             var npcSpawnersToFile = npcSpawnersFromFile.ToList();
+                        
+            for (var i = 0; i < npcSpawnersToFile.Count; i++)
+            {
+                npcSpawnersToFile[i].Title = GetSpawnName(npcSpawnersToFile[i].UnitId); // обновим Title
+                if (npcSpawnersToFile[i].Scale == 0f)
+                    npcSpawnersToFile[i].Scale = 1f; // обновим Scale
+
+                npcSpawnersToFile[i].FollowPath ??= "";
+            }
 
             var addNpcs = npcsInWorld.Where(n => n.Spawner?.Id == 0).ToList();
             var removeNpcs = npcsInWorld.Where(n => n.Spawner?.Id == 0xffffffff).ToList();
@@ -126,6 +135,8 @@ public class NpcSaveSubCommand : SubCommandBase
                 // Если ключ уникален - добавляем в словарь
                 npcSpawnersDict.Add(key, spawns);
             }
+
+            npcSpawnersToFile = npcSpawnersDict.Values.ToList(); // Перезаписываем список уникальными значениями
 
             // Удаляем элементы из npcSpawnersToFile, которые соответствуют removeNpcs
             Parallel.For(0, removeNpcs.Count, i =>
@@ -248,7 +259,7 @@ public class NpcSaveSubCommand : SubCommandBase
 
         spawnersFromFile[spawn.Id] = spawn;
 
-        var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name, "npc_spawns_new.json");
+        var jsonPathOut = Path.Combine(FileManager.AppPath, "Data", "Worlds", world.Name, $"npc_spawns_add_{DateTime.Now:yyyyMMdd_HHmmss}.json.add");
         var json = JsonConvert.SerializeObject(spawnersFromFile.Values.ToArray(), Formatting.Indented, new JsonModelsConverter());
         File.WriteAllText(jsonPathOut, json);
         SendMessage(messageOutput, $"All npcs have been saved with added npc ObjId:{npc.ObjId}, TemplateId:{npc.TemplateId}");

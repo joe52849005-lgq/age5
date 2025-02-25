@@ -1545,7 +1545,7 @@ public partial class Character : Unit, ICharacter
 
         // Send extra info to player if we are still in a real but unreleased zone (not null), this is not retail behaviour!
         if (newZone != null)
-            SendDebugMessage(ChatType.System, $"You have entered a closed zone ({newZone.ZoneKey} - {newZone.Name})!\nPlease leave immediately!", Color.Red);
+            SendMessage(ChatType.System, $"You have entered a closed zone ({newZone.ZoneKey} - {newZone.Name})!\nPlease leave immediately!", Color.Red);
 
         var characterAccessLevel = CharacterManager.GetEffectiveAccessLevel(this);
         if (characterAccessLevel < 100)
@@ -1693,15 +1693,10 @@ public partial class Character : Unit, ICharacter
         if (color != null)
             message = $"|c{color.Value.A:X2}{color.Value.R:X2}{color.Value.G:X2}{color.Value.B:X2}{message}|r";
 
-        if (AppConfiguration.Instance.DebugInfo && CharacterManager.GetEffectiveAccessLevel(this) >= AppConfiguration.Instance.DebugInfoLevel)
-            SendPacket(new SCChatMessagePacket(type, message));
+        SendPacket(new SCChatMessagePacket(type, message));
     }
     
-    public void SendMessage(string message)
-    {
-        if (AppConfiguration.Instance.DebugInfo && CharacterManager.GetEffectiveAccessLevel(this) >= AppConfiguration.Instance.DebugInfoLevel)
-            SendMessage(ChatType.System, message, null);
-    }
+    public void SendMessage(string message) => SendMessage(ChatType.System, message, null);
 
     /// <summary>
     /// Sends a debug message to player chat, but only if DebugInfo is enabled in the configuration

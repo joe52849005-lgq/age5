@@ -29,7 +29,7 @@ public class ItemUpdateBits : ItemTask
         stream.Write((byte)_item.Slot);      // index
         stream.Write(_item.Id);              // id
         stream.Write((byte)_item.ItemFlags); // bits
-        stream.Write(DateTime.MinValue);     // soulBindChargeTime
+        stream.Write(_item.ChargeTime);     // soulBindChargeTime
         return stream;
     }
 }
