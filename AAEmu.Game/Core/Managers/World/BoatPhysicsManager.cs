@@ -347,12 +347,19 @@ namespace AAEmu.Game.Core.Managers.World
             slave.RotSpeed = Math.Min(slave.RotSpeed, shipModel.SteerVel);
             slave.RotSpeed = Math.Max(slave.RotSpeed, -shipModel.SteerVel);
 
-            // Slow down turning if no steering active
+            //// Slow down turning if no steering active
+            //if (slave.Steering == 0)
+            //{
+            //    slave.RotSpeed -= slave.RotSpeed / (TargetPhysicsTps * 5);
+            //    if (Math.Abs(slave.RotSpeed) <= 0.01)
+            //        slave.RotSpeed = 0;
+            //}
+            // Плавное нарастание и затухание угловой скорости при повороте
+            const float AngularDamping = 0.9f; // Затухание угловой скорости
+            // Применение затухания, если управление отсутствует
             if (slave.Steering == 0)
             {
-                slave.RotSpeed -= slave.RotSpeed / (TargetPhysicsTps * 5);
-                if (Math.Abs(slave.RotSpeed) <= 0.01)
-                    slave.RotSpeed = 0;
+                slave.RotSpeed *= AngularDamping;
             }
             slave.RotSpeed = Math.Clamp(slave.RotSpeed, -1f, 1f);
 
