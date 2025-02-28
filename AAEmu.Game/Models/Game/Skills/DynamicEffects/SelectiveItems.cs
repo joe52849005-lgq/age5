@@ -1,11 +1,22 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using AAEmu.Game.Utils;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace AAEmu.Game.Models.Game.Skills
 {
     public class ItemSelections
     {
+        [Newtonsoft.Json.JsonConverter(typeof(JSonHexConverterULong))]
+        [JsonProperty("item")]
+        public ulong EncryptedItem { get; set; }
+
+        // TODO: Add item decryption code
+        [Newtonsoft.Json.JsonIgnore]
         public uint Item { get; set; }
+        
+        [JsonProperty("count")]
         public int Count { get; set; }
     }
 
