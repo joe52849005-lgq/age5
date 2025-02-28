@@ -1320,7 +1320,7 @@ public partial class Character : Unit, ICharacter
 
         var step = ExperienceManager.Instance.GetStepForHeirLevel(HeirLevel);
         HeirLevel++;
-        //HeirExp = 0;
+        Inventory.Bag.ConsumeItem(ItemTaskType.FamilyJoin, (uint)reqItemId, reqItemCount, null);
         BroadcastPacket(new SCHeirLevelUpPacket(ObjId), true);
         ResidentManager.Instance.AddResidenMemberInfo(this);
     }
