@@ -1249,8 +1249,8 @@ public partial class Character : Unit, ICharacter
             var totalExp = exp * AppConfiguration.Instance.World.ExpRate;
             exp = (int)totalExp;
         }
-        var totalExp55 = Math.Min(Experience + exp, ExperienceManager.Instance.GetExpForLevel(55));
-        if (totalExp55 == Experience)
+        var totalExp55 = Math.Min(Experience + exp, ExperienceManager.Instance.GetExpForLevel(ExperienceManager.MaxPlayerLevel));
+        if (totalExp55 <= Experience)
         {
             var reqTotalExp = Math.Min(HeirExp + exp, ExperienceManager.Instance.GetExpForHeirLevel(HeirLevel));
             if (reqTotalExp <= HeirExp + exp)
@@ -1294,6 +1294,12 @@ public partial class Character : Unit, ICharacter
             Expedition?.OnCharacterRefresh(this);
         }
 
+        if (Level >= ExperienceManager.MaxPlayerLevel)
+        {
+            // устанавливаем количество Experience равное максимальному уровню
+            // set the amount of Experience equal to the maximum level
+            Experience = ExperienceManager.Instance.GetExpForLevel(ExperienceManager.MaxPlayerLevel);
+        }
         if (change)
         {
             BroadcastPacket(new SCLevelChangedPacket(ObjId, Level), true);
