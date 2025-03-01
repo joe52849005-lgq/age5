@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+
 using AAEmu.Commons.Utils;
+
 using Xunit;
 
 namespace AAEmu.UnitTests.Commons.Utils;
