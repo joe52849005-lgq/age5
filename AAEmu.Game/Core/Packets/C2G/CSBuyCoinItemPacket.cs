@@ -13,10 +13,14 @@ public class CSBuyCoinItemPacket : GamePacket
 
     public override void Read(PacketStream stream)
     {
+        Logger.Debug("Entering in CSBuyCoinItem...");
+
         var objId = stream.ReadBc();
         var id = stream.ReadUInt32();
+        var useAAPoint = stream.ReadBoolean();
 
-        Logger.Trace("BuyCoinItem, objId: {0}, id: {1}", objId, id);
+        Logger.Debug($"BuyCoinItem, objId: {objId}, id: {id}, useAAPoint: {useAAPoint}");
+
         var doodad = WorldManager.Instance.GetDoodad(objId);
         if (doodad == null)
         {

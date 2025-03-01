@@ -316,7 +316,7 @@
         public const ushort CSCleanupLogicLinkPacket = 0x1E3;
         public const ushort CSSelectInteractionExPacket = 0x0A6;
         public const ushort CSChangeDoodadDataPacket = 0x143;
-        public const ushort CSRequestExchangingStarsForItems = 0x180; // off_39EC35CC
+        public const ushort CSBuyCoinItemPacket = 0x180; // off_39EC35CC
         public const ushort off_39EC35DC = 0x1CB;
         public const ushort CSRequestPlantingPacket = 0x0D7; // off_39EC35EC
         public const ushort CSUnitAttachedPacket = 0x1AC; //off_39EC3600
@@ -440,7 +440,7 @@
         // these packages are missing in x2game.dll
         public const ushort CSAcceptCheatQuestContextPacket = 0xFFF;
         public const ushort CSBidAuctionPacket = 0xFFF;
-        public const ushort CSBuyCoinItemPacket = 0xFFF;
+        //public const ushort CSBuyCoinItemPacket = 0xFFF;
         public const ushort CSBuyPriestBuffPacket = 0xFFF;
         public const ushort CSBuySpecialtyItemPacket = 0xFFF;
         public const ushort CSCancelAuctionPacket = 0xFFF;
