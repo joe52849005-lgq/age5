@@ -147,8 +147,22 @@ public class ResidentManager : Singleton<ResidentManager>
             m.IsInParty = member.InParty;
         }
 
-        member.SendPacket(new SCResidentMemberInfoPacket(resident));
         member.SendPacket(new SCResidentBalanceInfoPacket(resident));
+    }
+
+    public void UpdateResidenMemberInfo2(ushort zoneGroupId, Character member)
+    {
+        var resident = GetResidentByZoneGroupId(zoneGroupId);
+        if (resident == null) { return; }
+
+        if (resident.IsMember(member.Id))
+        {
+            var m = resident.GetMember(member.Id);
+            m.IsOnline = member.IsOnline;
+            m.IsInParty = member.InParty;
+        }
+
+        member.SendPacket(new SCResidentMemberInfoPacket(resident));
     }
 
     public void UpdateDevelopmentStage(Character character)

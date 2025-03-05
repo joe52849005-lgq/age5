@@ -1672,7 +1672,20 @@ public class SlaveManager : Singleton<SlaveManager>
         foreach (var set in attachPoints)
         {
             foreach (var modelId in set.ModelId)
-                _attachPoints[modelId] = set.AttachPoints;
+            {
+                if (!_attachPoints.ContainsKey(modelId))
+                {
+                    _attachPoints[modelId] = new Dictionary<AttachPointKind, WorldSpawnPosition>();
+                }
+
+                foreach (var attachPoint in set.AttachPoints)
+                {
+                    if (!_attachPoints[modelId].ContainsKey(attachPoint.Key))
+                    {
+                        _attachPoints[modelId][attachPoint.Key] = attachPoint.Value;
+                    }
+                }
+            }
         }
     }
 

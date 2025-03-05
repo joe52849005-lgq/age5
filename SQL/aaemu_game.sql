@@ -289,6 +289,7 @@ CREATE TABLE `doodads`  (
   `plant_time` datetime NOT NULL,
   `growth_time` datetime NOT NULL,
   `phase_time` datetime NOT NULL,
+  `freshness_time` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
   `x` float NOT NULL,
   `y` float NOT NULL,
   `z` float NOT NULL,
@@ -555,6 +556,10 @@ CREATE TABLE `items`  (
   `expire_online_minutes` double NOT NULL DEFAULT 0 COMMENT 'Time left when player online',
   `charge_time` datetime NULL DEFAULT NULL COMMENT 'Time charged items got activated',
   `charge_count` int NOT NULL DEFAULT 0 COMMENT 'Number of charges left',
+  `freshness_time` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+  `charge_use_skill_time` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+  `charge_start_time` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+  `charge_proc_time` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `owner`(`owner`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = 'All items' ROW_FORMAT = Dynamic;

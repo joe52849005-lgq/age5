@@ -80,6 +80,7 @@ public class GameNetwork : Singleton<GameNetwork>
         RegisterPacket(CSOffsets.CSHeroRequestRankDataPacket, 5, typeof(CSHeroRequestRankDataPacket));
         //RegisterPacket(CSOffsets.CSGetRankerInformationPacket, 5, typeof(CSGetRankerInformationPacket));
         //RegisterPacket(CSOffsets.CSRequestRankerAppearancePacket, 5, typeof(CSRequestRankerAppearancePacket));
+        RegisterPacket(CSOffsets.CSRequestHousingTradeListPacket, 5, typeof(CSRequestHousingTradeListPacket));
         //RegisterPacket(CSOffsets.CSRequestSecondPassKeyTablesPacket, 5, typeof(CSRequestSecondPassKeyTablesPacket));
         //RegisterPacket(CSOffsets.CSCreateSecondPassPacket, 5, typeof(CSCreateSecondPassPacket));
         //RegisterPacket(CSOffsets.CSChangeSecondPassPacket, 5, typeof(CSChangeSecondPassPacket));

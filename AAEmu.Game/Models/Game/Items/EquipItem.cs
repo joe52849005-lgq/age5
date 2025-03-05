@@ -52,7 +52,7 @@ public class EquipItem : Item
         ChargeCount = stream.ReadInt16();     // chargeCount
         ChargeTime = stream.ReadDateTime();   // chargeTime
 
-        ChargeTime = DateTime.MinValue; // сбросим дату
+        //ChargeTime = DateTime.UtcNow; // сбросим дату
 
         TemperPhysical = stream.ReadUInt16(); // scaledA - Renovation level
         TemperMagical = stream.ReadUInt16();  // scaledB

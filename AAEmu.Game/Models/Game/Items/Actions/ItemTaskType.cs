@@ -29,7 +29,7 @@ public enum ItemTaskType : byte
     // BuyPriestBuff = 22
     // Teleport = 23
     CapturePet,                     // capture-pet
-    RecoverDoodadItem,              // 508-recover-doodad-item
+    RecoverDoodadItem = 23,         // 508-recover-doodad-item
     MateCreate,                     // mate-create
     CraftActSaved,                  // craft-act-saved
     CraftPaySaved,                  // craft-pay-saved

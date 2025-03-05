@@ -457,7 +457,7 @@
         public const ushort SCResidentInfoPacket = 0x24C;
         public const ushort SCResidentBalanceInfoPacket = 0x27E;
         public const ushort SCResidentInfoListPacket = 0x28A;
-        public const ushort SCResidentMemberInfoPacket = 0x063;
+        public const ushort SCResidentMemberInfoPacket = 0x14A; // 
         public const ushort SCFactionIndependencePacket = 0x1B4;
         public const ushort SCFactionImmigrateInvitePacket = 0x276;
         public const ushort SCFactionImmigrateInviteResultPacket = 0x050;

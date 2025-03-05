@@ -626,6 +626,14 @@ public class SpawnManager : Singleton<SpawnManager>
                         continue;
                     }
 
+                    // TODO спавнить груз из файла спавна не нужно
+                    var doodadTemplate = DoodadManager.Instance.GetTemplate(spawner.UnitId);
+                    if (doodadTemplate.GroupId is 38)
+                    {
+                        Logger.Warn($"Doodad Template {spawner.UnitId} (file entry {entry}) is backpack - {jsonFileName}, Position={spawner.Position}");
+                        continue;
+                    }
+
                     spawner.Id = _nextId;
                     spawner.Position.WorldId = world.Id;
                     spawner.Position.ZoneId = WorldManager.Instance.GetZoneId(world.Id, spawner.Position.X, spawner.Position.Y);
@@ -870,6 +878,7 @@ public class SpawnManager : Singleton<SpawnManager>
                     var plantTime = reader.GetDateTime("plant_time");
                     var growthTime = reader.GetDateTime("growth_time");
                     var phaseTime = reader.GetDateTime("phase_time");
+                    var freshnessTime = reader.GetDateTime("freshness_time");
                     var ownerId = reader.GetUInt32("owner_id");
                     var ownerType = (DoodadOwnerType)reader.GetByte("owner_type");
                     var attachPoint = (AttachPointKind)reader.GetUInt32("attach_point");
@@ -892,6 +901,7 @@ public class SpawnManager : Singleton<SpawnManager>
                     doodad.GrowthTime = growthTime;
                     doodad.OverridePhaseTime = phaseTime;
                     doodad.PhaseTime = phaseTime;
+                    doodad.FreshnessTime = freshnessTime;
                     doodad.ItemId = itemId;
                     doodad.OwnerDbId = houseId;
                     doodad.SetScale(scale != 0f ? scale : 1f);

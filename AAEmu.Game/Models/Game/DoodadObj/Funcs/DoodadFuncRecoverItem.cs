@@ -19,6 +19,7 @@ public class DoodadFuncRecoverItem : DoodadFuncTemplate
         var character = (Character)caster;
         var addedItem = false;
         var item = ItemManager.Instance.GetItemByItemId(owner?.ItemId ?? 0);
+        item.FreshnessTime = owner.FreshnessTime;
         if (owner?.ItemId > 0)
         {
             if (item != null)

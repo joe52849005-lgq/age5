@@ -12,11 +12,13 @@ namespace AAEmu.Game.Core.Packets.C2G
 
         public override void Read(PacketStream stream)
         {
+            Logger.Debug("Entering in CSRefreshResidentMembers...");
+
             var zoneGroupId = stream.ReadUInt16();
 
-            Logger.Debug("CSRefreshResidentMembersPacket");
+            ResidentManager.Instance.UpdateResidenMemberInfo2(zoneGroupId, Connection.ActiveChar);
 
-            ResidentManager.Instance.UpdateResidenMemberInfo(zoneGroupId, Connection.ActiveChar);
+            Logger.Debug("CSRefreshResidentMembersPacket");
         }
     }
 }

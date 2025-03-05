@@ -1652,20 +1652,17 @@ public class ItemManager : Singleton<ItemManager>
                     if (!item.IsDirty)
                         continue;
 
-                    //var additionalDetails = new Commons.Network.PacketStream();
-                    //item.WriteAdditionalDetails(additionalDetails);
                     var details = new Commons.Network.PacketStream();
                     item.WriteDetails(details);
-                    //item.WriteDetails(details, true);
 
                     command.CommandText = "REPLACE INTO items (" +
                         "`id`,`type`,`template_id`,`container_id`,`slot_type`,`slot`,`count`,`details`,`lifespan_mins`,`made_unit_id`," +
                         "`unsecure_time`,`unpack_time`,`owner`,`created_at`,`grade`,`flags`,`ucc`," +
-                        "`expire_time`,`expire_online_minutes`,`charge_time`,`charge_count`" +
+                        "`expire_time`,`expire_online_minutes`,`charge_time`,`charge_count`,`freshness_time`,`charge_use_skill_time`,`charge_start_time`,`charge_proc_time`" +
                         ") VALUES ( " +
                         "@id, @type, @template_id, @container_id, @slot_type, @slot, @count, @details, @lifespan_mins, @made_unit_id, " +
                         "@unsecure_time,@unpack_time,@owner,@created_at,@grade,@flags,@ucc," +
-                        "@expire_time,@expire_online_minutes,@charge_time,@charge_count" +
+                        "@expire_time,@expire_online_minutes,@charge_time,@charge_count,@freshness_time,@charge_use_skill_time,@charge_start_time,@charge_proc_time" +
                         ")";
 
                     command.Parameters.AddWithValue("@id", item.Id);
@@ -1688,8 +1685,12 @@ public class ItemManager : Singleton<ItemManager>
                     command.Parameters.AddWithValue("@ucc", item.UccId);
                     command.Parameters.AddWithValue("@expire_time", item.ExpirationTime);
                     command.Parameters.AddWithValue("@expire_online_minutes", item.ExpirationOnlineMinutesLeft);
-                    command.Parameters.AddWithValue("@charge_time", item.ChargeStartTime);
+                    command.Parameters.AddWithValue("@charge_time", item.ChargeTime);
                     command.Parameters.AddWithValue("@charge_count", item.ChargeCount);
+                    command.Parameters.AddWithValue("@freshness_time", item.FreshnessTime);
+                    command.Parameters.AddWithValue("@charge_use_skill_time", item.ChargeUseSkillTime);
+                    command.Parameters.AddWithValue("@charge_start_time", item.ChargeStartTime);
+                    command.Parameters.AddWithValue("@charge_proc_time", item.ChargeProcTime);
 
                     try
                     {
@@ -1706,7 +1707,8 @@ public class ItemManager : Singleton<ItemManager>
                     catch (Exception ex)
                     {
                         // Create a manual SQL string with the data provided
-                        var sqlString = $"REPLACE INTO items (id, type, template_id, container_id, slot_type, slot, count, details, lifespan_mins, made_unit_id, unsecure_time, unpack_time, owner, created_at, grade, flags, ucc, expire_time, expire_online_minutes, charge_time, charge_count) VALUES ({item.Id}, {item.GetType()}, {item.TemplateId}, {item.HoldingContainer?.ContainerId ?? 0}, {item.SlotType}, {item.Slot}, {item.Count}, {details.GetBytes()}, {item.LifespanMins}, {item.MadeUnitId}, {item.UnsecureTime}, {item.UnpackTime}, {item.CreateTime}, {item.OwnerId}, {item.Grade}, {(byte)item.ItemFlags}, {item.UccId}, {item.ExpirationTime}, {item.ExpirationOnlineMinutesLeft}, {item.ChargeStartTime}, {item.ChargeCount})";
+                        var sqlString = $"REPLACE INTO items (id, type, template_id, container_id, slot_type, slot, count, details, lifespan_mins, made_unit_id, unsecure_time, unpack_time, owner, created_at, grade, flags, ucc, expire_time, expire_online_minutes, charge_time, charge_count, freshness_time, charge_use_skill_time, charge_start_time, charge_proc_time)" +
+                                        $" VALUES ({item.Id}, {item.GetType()}, {item.TemplateId}, {item.HoldingContainer?.ContainerId ?? 0}, {item.SlotType}, {item.Slot}, {item.Count}, {details.GetBytes()}, {item.LifespanMins}, {item.MadeUnitId}, {item.UnsecureTime}, {item.UnpackTime}, {item.CreateTime}, {item.OwnerId}, {item.Grade}, {(byte)item.ItemFlags}, {item.UccId}, {item.ExpirationTime}, {item.ExpirationOnlineMinutesLeft}, {item.ChargeTime}, {item.ChargeCount}, {item.FreshnessTime}, {item.ChargeUseSkillTime}, {item.ChargeStartTime}, {item.ChargeProcTime})";
 
                         Logger.Error($"Error: {ex.Message}\nSQL Query: {sqlString}\n");
                     }
@@ -1943,8 +1945,12 @@ public class ItemManager : Singleton<ItemManager>
 
                     item.ExpirationTime = reader.IsDBNull("expire_time") ? DateTime.MinValue : reader.GetDateTime("expire_time");
                     item.ExpirationOnlineMinutesLeft = reader.GetDouble("expire_online_minutes");
-                    item.ChargeStartTime = reader.IsDBNull("charge_time") ? DateTime.MinValue : reader.GetDateTime("charge_time");
+                    item.ChargeTime = reader.IsDBNull("charge_time") ? DateTime.MinValue : reader.GetDateTime("charge_time");
                     item.ChargeCount = reader.GetInt16("charge_count");
+                    item.FreshnessTime = reader.IsDBNull("freshness_time") ? DateTime.MinValue : reader.GetDateTime("freshness_time");
+                    item.ChargeUseSkillTime = reader.IsDBNull("charge_use_skill_time") ? DateTime.MinValue : reader.GetDateTime("charge_use_skill_time");
+                    item.ChargeStartTime = reader.IsDBNull("charge_start_time") ? DateTime.MinValue : reader.GetDateTime("charge_start_time");
+                    item.ChargeProcTime = reader.IsDBNull("charge_proc_time") ? DateTime.MinValue : reader.GetDateTime("charge_proc_time");
 
                     // Add it to the global pool
                     if (!_allItems.TryAdd(item.Id, item))
@@ -2338,5 +2344,71 @@ public class ItemManager : Singleton<ItemManager>
 
         // Log the action
         Logger.Debug($"ConvertItemLook executed by {character.Name} on item {baseId} with image item {lookId} and required item {template.ItemLookConvert.RequiredItemId} (count: {template.ItemLookConvert.RequiredItemCount})");
+    }
+
+    public class BackpackEffectData
+    {
+        public uint BackpackDoodad { get; set; }
+        public uint UsedItemId { get; set; }
+        public uint UseSkillId { get; set; }
+        public string ActualType { get; set; }
+        public uint EffectId { get; set; }
+        public string Name { get; set; }
+        public bool UseSkillAsReagent { get; set; }
+        public uint ActualId { get; set; }
+    }
+
+    public static List<BackpackEffectData> GetPutDownBackpackEffectData(uint backPackDoodadTemplateId)
+    {
+        var result = new List<BackpackEffectData>();
+        // Используем SQLite, как во многих других методах загрузки данных
+        var connection = SQLite.CreateConnection("Data", "compact.sqlite3");
+        using (connection)
+        {
+            using (var command = connection.CreateCommand())
+            {
+                // Используем имена таблиц без префикса [main]. Так как в SQLite не используются квадратные скобки
+                command.CommandText =
+                    @"SELECT 
+                      put_down_backpack_effects.backpack_doodad_id AS backpackDoodad, 
+                      items.id AS usedItemId, 
+                      items.use_skill_id, 
+                      effects.actual_type, 
+                      skill_effects.effect_id, 
+                      items.name, 
+                      items.use_skill_as_reagent, 
+                      effects.actual_id
+                  FROM put_down_backpack_effects
+                  LEFT JOIN effects ON put_down_backpack_effects.id = effects.actual_id
+                  INNER JOIN skill_effects ON effects.id = skill_effects.effect_id
+                  INNER JOIN items ON items.use_skill_id = skill_effects.skill_id
+                  WHERE effects.actual_type = 'PutDownBackpackEffect' AND backPackDoodad = @backPackDoodadTemplateId;";
+
+                command.Parameters.AddWithValue("@backPackDoodadTemplateId", backPackDoodadTemplateId);
+                command.Prepare();
+
+                using (var reader = new SQLiteWrapperReader(command.ExecuteReader()))
+                {
+                    while (reader.Read())
+                    {
+                        var data = new BackpackEffectData
+                        {
+                            BackpackDoodad = reader.GetUInt32("backpackDoodad"),
+                            UsedItemId = reader.GetUInt32("usedItemId"),
+                            UseSkillId = reader.GetUInt32("use_skill_id"),
+                            ActualType = reader.GetString("actual_type"),
+                            EffectId = reader.GetUInt32("effect_id"),
+                            Name = reader.GetString("name"),
+                            UseSkillAsReagent = reader.GetBoolean("use_skill_as_reagent"),
+                            ActualId = reader.GetUInt32("actual_id")
+                        };
+
+                        result.Add(data);
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 }

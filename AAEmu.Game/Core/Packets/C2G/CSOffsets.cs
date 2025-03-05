@@ -439,11 +439,11 @@
 
         // these packages are missing in x2game.dll
         public const ushort CSAcceptCheatQuestContextPacket = 0xFFF;
-        public const ushort CSBidAuctionPacket = 0xFFF;
+        //public const ushort CSBidAuctionPacket = 0xFFF;
         //public const ushort CSBuyCoinItemPacket = 0xFFF;
         public const ushort CSBuyPriestBuffPacket = 0xFFF;
         public const ushort CSBuySpecialtyItemPacket = 0xFFF;
-        public const ushort CSCancelAuctionPacket = 0xFFF;
+        //public const ushort CSCancelAuctionPacket = 0xFFF;
         public const ushort CSChangeDoodadPhasePacket = 0xFFF;
         public const ushort CSChangeExpeditionMemberRolePacket = 0xFFF;
         public const ushort CSChangeExpeditionOwnerPacket = 0xFFF;
@@ -458,9 +458,9 @@
         public const ushort CSDismissExpeditionPacket = 0xFFF;
         public const ushort CSFactionDeclareHostilePacket = 0xFFF;
         public const ushort CSHangPacket = 0xFFF;
-        public const ushort CSICSBuyGoodPacket = 0xFFF;
-        public const ushort CSICSGoodsListPacket = 0xFFF;
-        public const ushort CSICSMenuListPacket = 0xFFF;
+        //public const ushort CSICSBuyGoodPacket = 0xFFF;
+        //public const ushort CSICSGoodsListPacket = 0xFFF;
+        //public const ushort CSICSMenuListPacket = 0xFFF;
         public const ushort CSInviteToExpeditionPacket = 0xFFF;
         public const ushort CSJuryVerdictPacket = 0xFFF;
         public const ushort CSKickFromExpeditionPacket = 0xFFF;
@@ -480,21 +480,21 @@
         public const ushort CSSpecialtyRecordLoadPacket = 0xFFF;
         public const ushort CSTakedownTradeItemPacket = 0xFFF;
         public const ushort CSTeleportEndedPacket = 0xFFF;
-        public const ushort CSThisTimeUnpackItemPacket = 0xFFF;
-        public const ushort CSUnbondDoodadPacket = 0xFFF;
+        //public const ushort CSThisTimeUnpackItemPacket = 0xFFF;
+        //public const ushort CSUnbondDoodadPacket = 0xFFF;
         public const ushort CSUpdateDominionTaxRatePacket = 0xFFF;
         public const ushort CSUpdateNationalTaxRatePacket = 0xFFF;
         public const ushort CSEnteredInstantGameWorldPacket = 0xFFF;
-        public const ushort CSRequestTencentFatigueInfoPacket = 0xFFF;
+        //public const ushort CSRequestTencentFatigueInfoPacket = 0xFFF;
         public const ushort CSRollDicePacket = 0xFFF;
-        public const ushort CSSelectHighAbilityPacket = 0xFFF;
-        public const ushort CSIcsMoneyRequestPacket = 0xFFF;
+        //public const ushort CSSelectHighAbilityPacket = 0xFFF;
+        //public const ushort CSICSMoneyRequestPacket = 0xFFF;
         //public const ushort CSBagHandleSelectiveItemsPacket = 0xFFF;
-        public const ushort CSGetSiegeAuctionBidCurrencyPacket = 0xFFF;
+        //public const ushort CSGetSiegeAuctionBidCurrencyPacket = 0xFFF;
         public const ushort CSDominionUpdateTaxRatePacket = 0xFFF;
         public const ushort CSDominionUpdateNationalTaxRatePacket = 0xFFF;
         public const ushort CSSpecialtyCurrentLoadPacket = 0xFFF; // CSRequestSpecialtyCurrentPacket
-        public const ushort CSPacketUnknown0x166Packet = 0xFFF;
+        //public const ushort CSPacketUnknown0x166Packet = 0xFFF;
         public const ushort CSSellHouseCancelPacket = 0xFFF;
     }
 }

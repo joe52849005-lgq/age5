@@ -42,7 +42,7 @@ public class PutDownBackpackEffect : EffectTemplate
 
         var previousGlider = character.Inventory.Bag.GetItemByItemId(character.Inventory.PreviousBackPackItemId);
         // If no longer valid, reset the value here
-        if ((previousGlider == null) || (previousGlider.SlotType != SlotType.Bag))
+        if (previousGlider == null || previousGlider.SlotType != SlotType.Bag)
             character.Inventory.PreviousBackPackItemId = 0;
 
         using var pos = character.Transform.CloneDetached();
@@ -80,6 +80,9 @@ public class PutDownBackpackEffect : EffectTemplate
             doodad.UccId = item.UccId; // Not sure if it's needed, but let's copy the Ucc for completeness' sake
             doodad.SetScale(1f);
             doodad.PlantTime = DateTime.UtcNow;
+            doodad.FreshnessTime = item.FreshnessTime == DateTime.MinValue ? DateTime.UtcNow : item.FreshnessTime;
+            //doodad.IsGoods = true; // укажем, что пак региональных товаров
+
             if (targetHouse != null)
             {
                 doodad.OwnerDbId = targetHouse.Id;
@@ -94,9 +97,14 @@ public class PutDownBackpackEffect : EffectTemplate
             doodad.Save();
 
             character.BroadcastPacket(new SCUnitEquipmentsChangedPacket(character.ObjId, (byte)EquipmentItemSlot.Backpack, null), false);
-            if ((previousGlider != null) && character.Equipment.GetItemBySlot((int)EquipmentItemSlot.Backpack) == null)
-                character.Inventory.SplitOrMoveItem(Items.Actions.ItemTaskType.SwapItems, previousGlider.Id,
-                    previousGlider.SlotType, (byte)previousGlider.Slot, 0, SlotType.Equipment,
+            if (previousGlider != null && character.Equipment.GetItemBySlot((int)EquipmentItemSlot.Backpack) == null)
+                character.Inventory.SplitOrMoveItem(
+                    Items.Actions.ItemTaskType.SwapItems,
+                    previousGlider.Id,
+                    previousGlider.SlotType,
+                    (byte)previousGlider.Slot,
+                    0,
+                    SlotType.Equipment,
                     (int)EquipmentItemSlot.Backpack);
         }
     }

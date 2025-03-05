@@ -170,7 +170,7 @@ public class Doodad : BaseUnit
     public DoodadSpawner Spawner { get; set; }
     public DoodadFuncTask FuncTask { get; set; }
     public DateTime FreshnessTime { get; set; }
-
+    //public bool IsGoods { get; set; } // указываем, что это бэкпак региональных товаров
     public List<DoodadFunc> CurrentFuncs { get; set; }
     public List<DoodadPhaseFunc> CurrentPhaseFuncs { get; set; }
     /// <summary>
@@ -227,7 +227,7 @@ public class Doodad : BaseUnit
     public VehicleSeat Seat { get; set; }
     private List<uint> ListGroupId { get; set; }
     public List<AreaTrigger> AttachAreaTriggers { get; set; } = [];
-    
+
     public Doodad()
     {
         _scale = 1f;
@@ -565,7 +565,7 @@ public class Doodad : BaseUnit
         // Skip if moving to self.
         //if (nextPhase == FuncGroupId)
         //    return true;
-            
+
 
         if (caster is Character)
         {
@@ -668,16 +668,23 @@ public class Doodad : BaseUnit
         base.RemoveVisibleObject(character);
         character.SendPacket(new SCDoodadRemovedPacket(ObjId));
     }
-    
+
     /// <summary>
     /// GetItemTemplateIdByDoodadTemplateId - если doodad это backpack, то вернуть TemplateId предмета, который заменит этот doodad у персонажа.
     /// </summary>
     /// <param name="doodadTemplateId"></param>
     /// <returns></returns>
-    private uint GetItemTemplateIdByDoodadTemplateId(uint doodadTemplateId)
+    public static uint GetItemTemplateIdByDoodadTemplateId(uint doodadTemplateId)
     {
+        var res = ItemManager.GetPutDownBackpackEffectData(doodadTemplateId);
+        return res.Count > 0 ? res[0].UsedItemId : 0u;
 
-       return 0;
+        //return doodadTemplateId switch
+        //{
+        //    7809 => 31872, // груз мятных леденцов -> мятные леденцы
+        //    7861 => 31912, // груз настойки алоэ -> настойка алоэ
+        //    _ => 0
+        //};
     }
 
     public PacketStream Write(PacketStream stream)
@@ -691,13 +698,13 @@ public class Doodad : BaseUnit
         // Doodad ID=7794 Solzreed Dried Food [Interaction - Backpack] -> ID=31857 Solzreed Dried Food -> Skill ID=24870 Drop Specialty
         // PutdownBackPackEffect : backpack_doodad_id->effect_id, 
         // QuestGlow - When this is higher than 0 it shows a blue orb over the doodad
-        var backpack = GetItemTemplateIdByDoodadTemplateId(TemplateId);
+        var usedItemId = GetItemTemplateIdByDoodadTemplateId(TemplateId);
 
-        stream.WritePisc(TemplateId, FuncGroupId, backpack, QuestGlow);
+        stream.WritePisc(TemplateId, FuncGroupId, usedItemId, QuestGlow);
 
         stream.Write(Flag);
-        stream.WriteBc(OwnerObjId); //The creator of the object
-        stream.WriteBc(ParentObjId); //Things like boats or cars,
+        stream.WriteBc(OwnerObjId);      //The creator of the object
+        stream.WriteBc(ParentObjId);     //Things like boats or cars,
         stream.Write((byte)AttachPoint); // attachPoint, relative to the parentObj (Door or window on a house, seats on carriage, etc.)
         if (AttachPoint > 0 || ParentObjId > 0)
         {
@@ -716,7 +723,7 @@ public class Doodad : BaseUnit
             stream.Write(yaw);
         }
 
-        stream.Write(Scale); //The size of the object
+        stream.Write(Scale);           //The size of the object
         stream.Write(OwnerId);         // characterId
         stream.Write(UccId);           // type(id)
         stream.Write(ItemTemplateId);  // type(id)
@@ -725,15 +732,15 @@ public class Doodad : BaseUnit
         stream.Write(0);               // family
         stream.Write(PuzzleGroup);     // puzzleGroup
         stream.Write((byte)OwnerType); // ownerType
-        stream.Write(OwnerDbId); // dbHouseId
-        stream.Write(Data); // data - attachPointId для хранения в базе данных
-        if (backpack != 0)
+        stream.Write(OwnerDbId);       // dbHouseId
+        stream.Write(Data);            // data - attachPointId для хранения в базе данных
+        if (usedItemId != 0)
         {
             stream.Write(FreshnessTime); // freshnessTime
-            stream.Write((uint)0);       // type crafter?
-            stream.Write((short)0);      // type
+            stream.Write(OwnerId);       // type crafter?
+            stream.Write((short)14);     // type
         }
-        stream.Write(0u);              // type
+        stream.Write(0u);                // type
 
         return stream;
     }
@@ -787,48 +794,45 @@ public class Doodad : BaseUnit
         }
 
         DbId = DbId > 0 ? DbId : DoodadIdManager.Instance.GetNextId();
-        using (var connection = MySQL.CreateConnection())
+        using var connection = MySQL.CreateConnection();
+        using var command = connection.CreateCommand();
+        // Lookup Parent
+        var parentDoodadId = 0u;
+        if (Transform?.Parent?.GameObject is Doodad pDoodad && pDoodad.DbId > 0)
         {
-            using (var command = connection.CreateCommand())
-            {
-                // Lookup Parent
-                var parentDoodadId = 0u;
-                if (Transform?.Parent?.GameObject is Doodad pDoodad && pDoodad.DbId > 0)
-                {
-                    parentDoodadId = pDoodad.DbId;
-                }
-
-                command.CommandText =
-                    "REPLACE INTO doodads (`id`, `owner_id`, `owner_type`, `attach_point`, `template_id`, `current_phase_id`, `plant_time`, `growth_time`, `phase_time`, `x`, `y`, `z`, `roll`, `pitch`, `yaw`, `scale`, `item_id`, `house_id`, `parent_doodad`, `item_template_id`, `item_container_id`, `data`, `farm_type`) " +
-                    "VALUES(@id, @owner_id, @owner_type, @attach_point, @template_id, @current_phase_id, @plant_time, @growth_time, @phase_time, @x, @y, @z, @roll, @pitch, @yaw, @scale, @item_id, @house_id, @parent_doodad, @item_template_id, @item_container_id, @data, @farm_type)";
-                command.Parameters.AddWithValue("@id", DbId);
-                command.Parameters.AddWithValue("@owner_id", OwnerId);
-                command.Parameters.AddWithValue("@owner_type", OwnerType);
-                command.Parameters.AddWithValue("@attach_point", AttachPoint);
-                command.Parameters.AddWithValue("@template_id", TemplateId);
-                command.Parameters.AddWithValue("@current_phase_id", FuncGroupId);
-                command.Parameters.AddWithValue("@plant_time", PlantTime);
-                command.Parameters.AddWithValue("@growth_time", GrowthTime);
-                command.Parameters.AddWithValue("@phase_time", PhaseTime);
-                // We save it's world position, and upon loading, we re-parent things depending on the data
-                command.Parameters.AddWithValue("@x", Transform?.Local.Position.X ?? 0f);
-                command.Parameters.AddWithValue("@y", Transform?.Local.Position.Y ?? 0f);
-                command.Parameters.AddWithValue("@z", Transform?.Local.Position.Z ?? 0f);
-                command.Parameters.AddWithValue("@roll", Transform?.Local.Rotation.X ?? 0f);
-                command.Parameters.AddWithValue("@pitch", Transform?.Local.Rotation.Y ?? 0f);
-                command.Parameters.AddWithValue("@yaw", Transform?.Local.Rotation.Z ?? 0f);
-                command.Parameters.AddWithValue("@scale", Scale);
-                command.Parameters.AddWithValue("@item_id", ItemId);
-                command.Parameters.AddWithValue("@house_id", OwnerDbId);
-                command.Parameters.AddWithValue("@parent_doodad", parentDoodadId);
-                command.Parameters.AddWithValue("@item_template_id", ItemTemplateId);
-                command.Parameters.AddWithValue("@item_container_id", GetItemContainerId());
-                command.Parameters.AddWithValue("@data", Data);
-                command.Parameters.AddWithValue("@farm_type", FarmType);
-                command.Prepare();
-                command.ExecuteNonQuery();
-            }
+            parentDoodadId = pDoodad.DbId;
         }
+
+        command.CommandText =
+            "REPLACE INTO doodads (`id`, `owner_id`, `owner_type`, `attach_point`, `template_id`, `current_phase_id`, `plant_time`, `growth_time`, `phase_time`, `freshness_time`, `x`, `y`, `z`, `roll`, `pitch`, `yaw`, `scale`, `item_id`, `house_id`, `parent_doodad`, `item_template_id`, `item_container_id`, `data`, `farm_type`) " +
+            "VALUES(@id, @owner_id, @owner_type, @attach_point, @template_id, @current_phase_id, @plant_time, @growth_time, @phase_time, @freshness_time, @x, @y, @z, @roll, @pitch, @yaw, @scale, @item_id, @house_id, @parent_doodad, @item_template_id, @item_container_id, @data, @farm_type)";
+        command.Parameters.AddWithValue("@id", DbId);
+        command.Parameters.AddWithValue("@owner_id", OwnerId);
+        command.Parameters.AddWithValue("@owner_type", OwnerType);
+        command.Parameters.AddWithValue("@attach_point", AttachPoint);
+        command.Parameters.AddWithValue("@template_id", TemplateId);
+        command.Parameters.AddWithValue("@current_phase_id", FuncGroupId);
+        command.Parameters.AddWithValue("@plant_time", PlantTime);
+        command.Parameters.AddWithValue("@growth_time", GrowthTime);
+        command.Parameters.AddWithValue("@phase_time", PhaseTime);
+        command.Parameters.AddWithValue("@freshness_time", FreshnessTime);
+        // We save it's world position, and upon loading, we re-parent things depending on the data
+        command.Parameters.AddWithValue("@x", Transform?.Local.Position.X ?? 0f);
+        command.Parameters.AddWithValue("@y", Transform?.Local.Position.Y ?? 0f);
+        command.Parameters.AddWithValue("@z", Transform?.Local.Position.Z ?? 0f);
+        command.Parameters.AddWithValue("@roll", Transform?.Local.Rotation.X ?? 0f);
+        command.Parameters.AddWithValue("@pitch", Transform?.Local.Rotation.Y ?? 0f);
+        command.Parameters.AddWithValue("@yaw", Transform?.Local.Rotation.Z ?? 0f);
+        command.Parameters.AddWithValue("@scale", Scale);
+        command.Parameters.AddWithValue("@item_id", ItemId);
+        command.Parameters.AddWithValue("@house_id", OwnerDbId);
+        command.Parameters.AddWithValue("@parent_doodad", parentDoodadId);
+        command.Parameters.AddWithValue("@item_template_id", ItemTemplateId);
+        command.Parameters.AddWithValue("@item_container_id", GetItemContainerId());
+        command.Parameters.AddWithValue("@data", Data);
+        command.Parameters.AddWithValue("@farm_type", FarmType);
+        command.Prepare();
+        command.ExecuteNonQuery();
     }
 
     public void DoDespawn(Doodad doodad)
