@@ -17,6 +17,7 @@ public class FamilyManager : Singleton<FamilyManager>
 {
     private static Logger Logger { get; } = LogManager.GetCurrentClassLogger();
 
+    private const uint FamilyCertificate = 41419; //ID=41419 Family Certificate
     private Dictionary<uint, Family> _families;
     private Dictionary<uint, FamilyMember> _familyMembers;
 
@@ -100,13 +101,7 @@ public class FamilyManager : Singleton<FamilyManager>
         var invited = WorldManager.Instance.GetCharacter(invitedCharacterName);
         if (invited is { Family: 0 })
         {
-            inviter.Inventory.Bag.ConsumeItem(ItemTaskType.FamilyJoin, 41419u, 1, null);
-            // TODO проверить, забирается ли предмет?
-            //inviter.SendPacket(new SCItemTaskSuccessPacket(ItemTaskType.FamilyJoin,
-            //    [new ItemCountUpdate(item)], // ID=41419, Регистрационный бланк
-            //    [],
-            //    40));
-
+            inviter.Inventory.Bag.ConsumeItem(ItemTaskType.FamilyJoin, FamilyCertificate, 1, null);
             invited.SendPacket(new SCFamilyInvitationPacket(inviter.Id, inviter.Name, 0, title));
         }
     }
