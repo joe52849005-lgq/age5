@@ -35,6 +35,7 @@ public partial class Npc : Unit
     public NpcTemplate Template { get; set; }
     //public Item[] Equip { get; set; }
     public NpcSpawner Spawner { get; set; }
+    public bool IsDespawnScheduled  { get; set; } = false;
 
     public override UnitCustomModelParams ModelParams => Template.ModelParams;
 
@@ -1367,7 +1368,7 @@ public partial class Npc : Unit
 
     public void DoDespawn(Npc npc)
     {
-        Spawner.DoDespawn([npc]);
+        Spawner.DoDespawn(npc);
     }
 
     /// <summary>

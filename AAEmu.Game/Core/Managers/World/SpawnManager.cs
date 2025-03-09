@@ -225,8 +225,8 @@ public class SpawnManager : Singleton<SpawnManager>
         {
             entry++;
 
-            if (IsDuplicateNpcSpawner(world, npcSpawnerFromFile))
-                continue;
+            //if (IsDuplicateNpcSpawner(world, npcSpawnerFromFile))
+            //    continue;
 
             if (!NpcManager.Instance.Exist(npcSpawnerFromFile.UnitId))
             {
@@ -425,7 +425,7 @@ public class SpawnManager : Singleton<SpawnManager>
             if (npc.Spawner != null)
             {
                 npc.Spawner.RespawnTime = 9999999;
-                npc.Spawner.Despawn(npc);
+                npc.Spawner.DecreaseCount(npc);
             }
             else
             {
@@ -497,10 +497,9 @@ public class SpawnManager : Singleton<SpawnManager>
                     else if (obj is Doodad doodad2)
                         doodad2.Delete();
                     else
-                    {
-                        ObjectIdManager.Instance.ReleaseId(obj.ObjId);
                         obj.Delete();
-                    }
+
+                    ObjectIdManager.Instance.ReleaseId(obj.ObjId);
                     RemoveDespawn(obj);
                 }
             }
@@ -617,9 +616,6 @@ public class SpawnManager : Singleton<SpawnManager>
                 {
                     entry++;
 
-                    //if (IsDuplicateDoodadSpawner(spawner, world.Id))
-                    //    continue;
-
                     if (!DoodadManager.Instance.Exist(spawner.UnitId))
                     {
                         Logger.Trace($"Doodad Template {spawner.UnitId} (file entry {entry}) doesn't exist - {jsonFileName}");
@@ -633,6 +629,9 @@ public class SpawnManager : Singleton<SpawnManager>
                         Logger.Warn($"Doodad Template {spawner.UnitId} (file entry {entry}) is backpack - {jsonFileName}, Position={spawner.Position}");
                         continue;
                     }
+
+                    //if (IsDuplicateDoodadSpawner(spawner, world.Id))
+                    //    continue;
 
                     spawner.Id = _nextId;
                     spawner.Position.WorldId = world.Id;
@@ -1105,7 +1104,6 @@ public class SpawnManager : Singleton<SpawnManager>
             }
         });
     }
-
 
     /// <summary>
     /// Spawns all objects in the world.
