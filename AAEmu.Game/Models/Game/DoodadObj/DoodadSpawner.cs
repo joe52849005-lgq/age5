@@ -20,6 +20,7 @@ public class DoodadSpawner : Spawner<Doodad>
 {
     private static Logger Logger { get; } = LogManager.GetCurrentClassLogger();
     public float Scale { get; set; }
+    public uint FuncGroupId { get; set; }
     public Doodad Last { get; set; }
 
     private List<Doodad> _spawned;
@@ -114,7 +115,7 @@ public class DoodadSpawner : Spawner<Doodad>
         var newUnitId = RespawnDoodadTemplateId > 0 ? RespawnDoodadTemplateId : UnitId;
         RespawnDoodadTemplateId = 0; // reset it after 1 spawn
 
-        var doodad = DoodadManager.Instance.Create(objId, newUnitId);
+        var doodad = DoodadManager.Instance.Create(objId, newUnitId, null, false, FuncGroupId);
         if (doodad == null)
         {
             Logger.Warn("Doodad Temaplte {0}, used in Spawn() does not exist in db", newUnitId);

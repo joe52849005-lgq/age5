@@ -695,7 +695,7 @@ public class NpcSpawner : Spawner<Npc>
                 {
                     IsDespawnScheduled = false;
                     npc.IsDespawnScheduled = false;
-                    
+
                     npcList.Remove(npc);
 
                     // If the NPC list is empty, removes the entry from the dictionary
@@ -1188,6 +1188,9 @@ public class NpcSpawner : Spawner<Npc>
                 {
                     AddNpcToSpawned(spawnedNpc.Spawner.SpawnerId, spawnedNpc);
                 }
+
+                spawnedNpc.Spawn();
+
                 return spawnedNpc;
             }
             Logger.Warn($"Failed to retrieve spawned NPC from template {npcTemplate.SpawnerId}:{npcTemplate.MemberId}");

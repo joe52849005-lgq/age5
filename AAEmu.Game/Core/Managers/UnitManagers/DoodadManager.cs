@@ -2938,7 +2938,7 @@ public class DoodadManager : Singleton<DoodadManager>
         return -1;
     }
 
-    public Doodad Create(uint bcId, uint templateId, GameObject ownerObject = null, bool skipPhaseInitialization = false)
+    public Doodad Create(uint bcId, uint templateId, GameObject ownerObject = null, bool skipPhaseInitialization = false, uint funcGroupId = 0)
     {
         if (!_templates.TryGetValue(templateId, out var template))
         {
@@ -2961,7 +2961,16 @@ public class DoodadManager : Singleton<DoodadManager>
         doodad.OwnerObjId = ownerObject?.ObjId ?? 0;
         doodad.PlantTime = DateTime.UtcNow;
         doodad.OwnerType = DoodadOwnerType.System;
-        doodad.FuncGroupId = doodad.GetFuncGroupId();
+
+        if (funcGroupId == 0) // If funcGroupId is not provided, get the first one
+        {
+            doodad.FuncGroupId = doodad.GetFuncGroupId();
+        }
+        else
+        {
+            doodad.FuncGroupId = funcGroupId;
+        }
+
         // doodad.GrowthTime = doodad.PlantTime.AddMilliseconds(doodad.Template.TotalDoodadGrowthTime);
 
         switch (ownerObject)
