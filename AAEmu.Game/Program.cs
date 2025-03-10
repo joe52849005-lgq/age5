@@ -116,7 +116,6 @@ public static class Program
                 services.AddOptions();
                 services.AddSingleton<IHostedService, GameService>();
                 services.AddSingleton<IHostedService, WebApiService>();
-                services.AddSingleton<IHostedService, DiscordBotService>();
             });
 
         try

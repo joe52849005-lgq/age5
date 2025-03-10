@@ -6,7 +6,6 @@ using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.Models;
 using AAEmu.Game.Models.Game.Char;
-using AAEmu.Game.Models.Game.Faction;
 using AAEmu.Game.Models.Game.Items;
 using AAEmu.Game.Models.Game.Items.Actions;
 using AAEmu.Game.Models.Game.Mails;
@@ -16,11 +15,7 @@ using AAEmu.Game.Models.Tasks.Specialty;
 using AAEmu.Game.Utils;
 using AAEmu.Game.Utils.DB;
 
-using Discord;
-
 using NLog;
-
-using Org.BouncyCastle.Utilities.Collections;
 
 namespace AAEmu.Game.Core.Managers.World;
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 
 using AAEmu.Game.Core.Managers;
@@ -9,7 +10,6 @@ using AAEmu.Game.Models.Game.Chat;
 using AAEmu.Game.Models.Game.NPChar;
 using AAEmu.Game.Models.Game.Quests.Static;
 using AAEmu.Game.Utils.Scripts;
-using Discord;
 
 namespace AAEmu.Game.Utils;
 
