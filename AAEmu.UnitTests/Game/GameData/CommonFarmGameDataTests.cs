@@ -87,24 +87,24 @@ public class CommonFarmGameDataTests
         connection.Close();
     }
 
-    //[Fact]
-    //public void GetDoodadGuardTime_ReturnsCorrectGuardTime()
-    //{
-    //    // Arrange
-    //    var commonFarmGameData = CommonFarmGameData.Instance;
-    //    var connection = new SqliteConnection("DataSource=:memory:");
-    //    connection.Open();
-    //    SetupDatabase(connection);
+    [Fact]
+    public void GetDoodadGuardTime_ReturnsCorrectGuardTime()
+    {
+        // Arrange
+        var commonFarmGameData = CommonFarmGameData.Instance;
+        var connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
+        SetupDatabase(connection);
 
-    //    // Act
-    //    commonFarmGameData.Load(connection, null);
-    //    var guardTime = commonFarmGameData.GetDoodadGuardTime(1);
+        // Act
+        commonFarmGameData.Load(connection, null);
+        var guardTime = commonFarmGameData.GetDoodadGuardTime(1);
 
-    //    // Assert
-    //    Assert.Equal(100, guardTime);
+        // Assert
+        Assert.Equal(100, guardTime);
 
-    //    connection.Close();
-    //}
+        connection.Close();
+    }
 
     [Fact]
     public void GetAllowedDoodads_ReturnsCorrectDoodads()
@@ -117,7 +117,7 @@ public class CommonFarmGameDataTests
 
         // Act
         commonFarmGameData.Load(connection, null);
-        var doodads = commonFarmGameData.GetAllowedDoodads(FarmType.Farm);
+        var doodads = commonFarmGameData.GetAllowedDoodads0(FarmType.Farm);
 
         // Assert
         Assert.Single(doodads);

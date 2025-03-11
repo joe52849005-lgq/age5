@@ -72,20 +72,40 @@ namespace AAEmu.Game.Core.Managers
             return subZoneList.Count > 0 ? subZoneList.FirstOrDefault(subZoneId => _farmZones.ContainsKey(subZoneId)) : 0;
         }
 
-        public static FarmType GetFarmType(uint worldId, Vector3 pos)
+        public List<FarmType> GetFarmType(uint worldId, Vector3 pos)
         {
+            
+            var sz = GetFarmTypeBySubzoneId(worldId, pos);
+            Logger.Warn($"GetFarmType, by SubZone FarmType: {sz}");
 
             var zoneId = SubZoneManager.Instance.GetZoneByPosition(worldId, pos.X, pos.Y);
-            var farmGroupId = CommonFarmGameData.Instance.GetFarmGroupIdByZoneId(zoneId);
-            if (farmGroupId != null)
+            var farmGroupIds = CommonFarmGameData.Instance.GetFarmGroupIdByZoneId(zoneId);
+
+            if (farmGroupIds is { Count: > 0 })
             {
-                return (FarmType)farmGroupId;
+                switch (farmGroupIds.Count)
+                {
+                    case 1:
+                        Logger.Warn($"GetFarmType, by Zone FarmType: {(FarmType)farmGroupIds[0]}");
+                        break;
+                    case 2:
+                        Logger.Warn($"GetFarmType, by Zone FarmType: {(FarmType)farmGroupIds[0]}");
+                        Logger.Warn($"GetFarmType, by Zone FarmType: {(FarmType)farmGroupIds[1]}");
+                        break;
+                    case 3:
+                        Logger.Warn($"GetFarmType, by Zone FarmType: {(FarmType)farmGroupIds[0]}");
+                        Logger.Warn($"GetFarmType, by Zone FarmType: {(FarmType)farmGroupIds[1]}");
+                        Logger.Warn($"GetFarmType, by Zone FarmType: {(FarmType)farmGroupIds[2]}");
+                        break;
+                }
+
+                return farmGroupIds.Select(farmGroupId => (FarmType)farmGroupId).ToList();
             }
 
-            return FarmType.Invalid;
+            return [FarmType.Invalid];
         }
 
-        public FarmType GetFarmType0(uint worldId, Vector3 pos)
+        public FarmType GetFarmTypeBySubzoneId(uint worldId, Vector3 pos)
         {
             var subZoneId = GetFarmId(worldId, pos);
             return _farmZones.GetValueOrDefault(subZoneId, FarmType.Invalid);
@@ -93,7 +113,7 @@ namespace AAEmu.Game.Core.Managers
 
         public bool CanPlace(Character character, FarmType farmType, uint doodadId)
         {
-            var allPlanted = GetCommonFarmDoodads(character);
+            var allPlanted = GetCommonFarmDoodads(character, farmType);
             if (allPlanted.TryGetValue(farmType, out var doodadList))
             {
                 if (doodadList.Count >= CommonFarmGameData.Instance.GetFarmGroupMaxCount(farmType))
@@ -103,7 +123,32 @@ namespace AAEmu.Game.Core.Managers
                 }
             }
 
-            var allowedDoodads = CommonFarmGameData.Instance.GetAllowedDoodads(farmType);
+            var allowedDoodads = CommonFarmGameData.Instance.GetAllowedDoodads0(farmType);
+            if (allowedDoodads.Any(id => doodadId == id))
+            {
+                return true;
+            }
+
+            character.SendErrorMessage(ErrorMessageType.CommonFarmNotAllowedType);
+            return false;
+        }
+
+        public bool CanPlace(Character character, List<FarmType> farmTypes, uint doodadId)
+        {
+            foreach (var farmType in farmTypes)
+            {
+                var allPlanted = GetCommonFarmDoodads(character, farmType);
+                if (allPlanted.TryGetValue(farmType, out var doodadList))
+                {
+                    if (doodadList.Count >= CommonFarmGameData.Instance.GetFarmGroupMaxCount(farmType))
+                    {
+                        character.SendErrorMessage(ErrorMessageType.CommonFarmCountOver);
+                        return false;
+                    }
+                }
+            }
+
+            var allowedDoodads = CommonFarmGameData.Instance.GetAllowedDoodads(farmTypes);
             if (allowedDoodads.Any(id => doodadId == id))
             {
                 return true;
@@ -123,12 +168,40 @@ namespace AAEmu.Game.Core.Managers
             {
                 if (InPublicFarm(character.Transform.WorldId, doodad.Transform.World.Position))
                 {
-                    var farmType = GetFarmType(character.Transform.WorldId, doodad.Transform.World.Position);
+                    var farmTypes = GetFarmType(character.Transform.WorldId, doodad.Transform.World.Position);
 
+                    foreach (var farmType in farmTypes.Where(farmType => doodad.FarmType == farmType))
+                    {
+                        if (!list.ContainsKey(farmType))
+                        {
+                            list.Add(farmType, []);
+                        }
+
+                        list[farmType].Add(doodad);
+                    }
+                }
+            }
+
+            return list;
+        }
+        
+        public Dictionary<FarmType, List<Doodad>> GetCommonFarmDoodads(Character character, FarmType farmType)
+        {
+            var list = new Dictionary<FarmType, List<Doodad>>();
+
+            var playerDoodads = SpawnManager.Instance.GetPlayerDoodads(character.Id);
+
+            foreach (var doodad in playerDoodads)
+            {
+                if (InPublicFarm(character.Transform.WorldId, doodad.Transform.World.Position))
+                {
                     if (doodad.FarmType == farmType)
                     {
                         if (!list.ContainsKey(farmType))
+                        {
                             list.Add(farmType, []);
+                        }
+
                         list[farmType].Add(doodad);
                     }
                 }

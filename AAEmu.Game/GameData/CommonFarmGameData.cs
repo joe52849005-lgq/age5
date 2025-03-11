@@ -113,30 +113,50 @@ public class CommonFarmGameData : Singleton<CommonFarmGameData>, IGameDataLoader
     {
         return _commonFarms.TryGetValue(groupId, out var farm) ? farm.GuardTime : 0;
     }
+
     public uint GetDoodadGuardTime0(uint groupId)
     {
         return _doodadGroups.TryGetValue(groupId, out var farm) ? farm.GuardOnFieldTime : 0;
     }
 
-    public List<uint> GetAllowedDoodads(FarmType farmType)
+    public List<uint> GetAllowedDoodads0(FarmType farmType)
     {
         return (from item in _farmGroupDoodads
                 where item.Value.FarmGroupId == farmType
                 select item.Value.DoodadId).ToList();
     }
 
-    public int? GetFarmGroupIdByZoneId(uint zoneId)
+    public List<uint> GetAllowedDoodads(List<FarmType> farmTypes)
     {
-        var regex = new Regex(@"\((\d+)\)");
+        var allowedDoodads = new List<uint>();
+
+        foreach (var farmType in farmTypes)
+        {
+            var doodads = (from item in _farmGroupDoodads
+                where item.Value.FarmGroupId == farmType
+                select item.Value.DoodadId).ToList();
+            allowedDoodads.AddRange(doodads);
+        }
+
+        return allowedDoodads.Distinct().ToList();
+    }
+
+
+    public List<int> GetFarmGroupIdByZoneId(uint zoneId)
+    {
+        var regex = new Regex(@"\b\d{3}\b");
+        var farmGroupIds = new List<int>();
+
         foreach (var farm in _commonFarms.Values)
         {
             var match = regex.Match(farm.Comments);
-            if (match.Success && int.TryParse(match.Groups[1].Value, out var parsedNumber) && parsedNumber == zoneId)
+            if (match.Success && int.TryParse(match.Value, out var parsedNumber) && parsedNumber == zoneId)
             {
-                return (int)farm.FarmGroupId;
+                farmGroupIds.Add((int)farm.FarmGroupId);
             }
         }
-        return null;
+
+        return farmGroupIds;
     }
 
     public void PostLoad()

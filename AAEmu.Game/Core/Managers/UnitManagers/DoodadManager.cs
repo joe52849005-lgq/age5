@@ -3147,14 +3147,14 @@ public class DoodadManager : Singleton<DoodadManager>
     /// <summary>
     /// Saves and creates a doodad
     /// </summary>
-    public static Doodad CreatePlayerDoodad(Character character, uint id, float x, float y, float z, float zRot, float scale, ulong itemId, FarmType farmType = FarmType.Invalid)
+    public static Doodad CreatePlayerDoodad(Character character, uint templateId, float x, float y, float z, float zRot, float scale, ulong itemId, FarmType farmType = FarmType.Invalid)
     {
-        Logger.Warn($"{character.Name} is placing a doodad {id} at position {x} {y} {z}");
+        Logger.Warn($"{character.Name} is placing a doodad templateId={templateId} at position {x} {y} {z}");
 
         var targetHouse = HousingManager.Instance.GetHouseAtLocation(x, y);
 
         // Create doodad
-        var doodad = Instance.Create(0, id, character, true);
+        var doodad = Instance.Create(0, templateId, character, true);
         doodad.IsPersistent = true;
         doodad.Transform = character.Transform.CloneDetached(doodad);
         doodad.Transform.Local.SetPosition(x, y, z);
@@ -3182,7 +3182,7 @@ public class DoodadManager : Singleton<DoodadManager>
         }
 
         // Consume item
-        var items = ItemManager.Instance.GetItemIdsFromDoodad(id);
+        var items = ItemManager.Instance.GetItemIdsFromDoodad(templateId);
         var preferredItem = character.Inventory.Bag.GetItemByItemId(itemId);
 
         if (preferredItem == null)
