@@ -72,7 +72,20 @@ namespace AAEmu.Game.Core.Managers
             return subZoneList.Count > 0 ? subZoneList.FirstOrDefault(subZoneId => _farmZones.ContainsKey(subZoneId)) : 0;
         }
 
-        public FarmType GetFarmType(uint worldId, Vector3 pos)
+        public static FarmType GetFarmType(uint worldId, Vector3 pos)
+        {
+
+            var zoneId = SubZoneManager.Instance.GetZoneByPosition(worldId, pos.X, pos.Y);
+            var farmGroupId = CommonFarmGameData.Instance.GetFarmGroupIdByZoneId(zoneId);
+            if (farmGroupId != null)
+            {
+                return (FarmType)farmGroupId;
+            }
+
+            return FarmType.Invalid;
+        }
+
+        public FarmType GetFarmType0(uint worldId, Vector3 pos)
         {
             var subZoneId = GetFarmId(worldId, pos);
             return _farmZones.GetValueOrDefault(subZoneId, FarmType.Invalid);
@@ -115,7 +128,7 @@ namespace AAEmu.Game.Core.Managers
                     if (doodad.FarmType == farmType)
                     {
                         if (!list.ContainsKey(farmType))
-                            list.Add(farmType, new List<Doodad>());
+                            list.Add(farmType, []);
                         list[farmType].Add(doodad);
                     }
                 }

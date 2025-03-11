@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+
 using AAEmu.Commons.Network;
 using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers;
@@ -35,7 +36,7 @@ public class CSCreateDoodadPacket : GamePacket
         }
         else
         {
-            var farmType = PublicFarmManager.Instance.GetFarmType(Connection.ActiveChar.Transform.WorldId, pos);
+            var farmType = PublicFarmManager.GetFarmType(Connection.ActiveChar.Transform.WorldId, pos);
             if (PublicFarmManager.Instance.CanPlace(Connection.ActiveChar, farmType, id))
             {
                 Logger.Warn("CreateFarmDoodad, Id: {0}, X: {1}, Y: {2}, Z: {3}, zRot: {4}  ItemId: {5}", id, x, y, z, zRot, itemId);

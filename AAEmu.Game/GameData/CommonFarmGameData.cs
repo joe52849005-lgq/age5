@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using AAEmu.Commons.Utils;
 using AAEmu.Game.GameData.Framework;
@@ -14,12 +15,14 @@ namespace AAEmu.Game.GameData;
 [GameData]
 public class CommonFarmGameData : Singleton<CommonFarmGameData>, IGameDataLoader
 {
+    private Dictionary<uint, CommonFarm> _commonFarms;
     private Dictionary<uint, FarmGroup> _farmGroup;
     private Dictionary<uint, FarmGroupDoodads> _farmGroupDoodads;
     private Dictionary<uint, DoodadGroups> _doodadGroups;
 
     public void Load(SqliteConnection connection, SqliteConnection connection2)
     {
+        _commonFarms = new Dictionary<uint, CommonFarm>();
         _farmGroup = new Dictionary<uint, FarmGroup>();
         _farmGroupDoodads = new Dictionary<uint, FarmGroupDoodads>();
         _doodadGroups = new Dictionary<uint, DoodadGroups>();
@@ -75,6 +78,30 @@ public class CommonFarmGameData : Singleton<CommonFarmGameData>, IGameDataLoader
                 _doodadGroups.TryAdd(template.Id, template);
             }
         }
+
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText = "SELECT * FROM common_farms";
+            command.Prepare();
+            using var sqliteReader = command.ExecuteReader();
+            using var reader = new SQLiteWrapperReader(sqliteReader);
+            while (reader.Read())
+            {
+                var farm = new CommonFarm();
+                farm.Id = reader.GetUInt32("id");
+                farm.Comments = reader.GetString("comments");
+                farm.FarmGroupId = reader.GetUInt32("farm_group_id");
+                farm.GuardTime = reader.GetInt32("guard_time");
+                farm.Name = reader.GetString("name");
+
+                _commonFarms.TryAdd(farm.Id, farm);
+            }
+        }
+    }
+
+    public CommonFarm GetCommonFarmById(uint id)
+    {
+        return _commonFarms.TryGetValue(id, out var farm) ? farm : null;
     }
 
     public uint GetFarmGroupMaxCount(FarmType farmType)
@@ -82,7 +109,11 @@ public class CommonFarmGameData : Singleton<CommonFarmGameData>, IGameDataLoader
         return _farmGroup.TryGetValue((uint)farmType, out var farm) ? farm.Count : 0;
     }
 
-    public uint GetDoodadGuardTime(uint groupId)
+    public int GetDoodadGuardTime(uint groupId)
+    {
+        return _commonFarms.TryGetValue(groupId, out var farm) ? farm.GuardTime : 0;
+    }
+    public uint GetDoodadGuardTime0(uint groupId)
     {
         return _doodadGroups.TryGetValue(groupId, out var farm) ? farm.GuardOnFieldTime : 0;
     }
@@ -90,8 +121,22 @@ public class CommonFarmGameData : Singleton<CommonFarmGameData>, IGameDataLoader
     public List<uint> GetAllowedDoodads(FarmType farmType)
     {
         return (from item in _farmGroupDoodads
-            where item.Value.FarmGroupId == farmType
-            select item.Value.DoodadId).ToList();
+                where item.Value.FarmGroupId == farmType
+                select item.Value.DoodadId).ToList();
+    }
+
+    public int? GetFarmGroupIdByZoneId(uint zoneId)
+    {
+        var regex = new Regex(@"\((\d+)\)");
+        foreach (var farm in _commonFarms.Values)
+        {
+            var match = regex.Match(farm.Comments);
+            if (match.Success && int.TryParse(match.Groups[1].Value, out var parsedNumber) && parsedNumber == zoneId)
+            {
+                return (int)farm.FarmGroupId;
+            }
+        }
+        return null;
     }
 
     public void PostLoad()

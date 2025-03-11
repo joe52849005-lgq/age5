@@ -349,4 +349,12 @@ public class SubZoneManager : Singleton<SubZoneManager>
         return foundSubzones;
     }
 
+    public uint GetZoneByPosition(uint worldId, float x, float y)
+    {
+        var zoneId = WorldManager.Instance.GetZoneId(worldId, x, y);
+
+        Logger.Debug($"zone={zoneId} found at this position WorldId: {worldId}, Pos: {x} , {y}");
+
+        return zoneId;
+    }
 }
