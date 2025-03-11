@@ -575,13 +575,13 @@ public class NpcSpawner : Spawner<Npc>
     /// </summary>
     public override Npc Spawn(uint objId)
     {
-        if (IsSpawningScheduleEnabled())
-            return null;
+        //if (IsSpawningScheduleEnabled())
+        //    return null;
 
         DoSpawn();
 
-        if (IsSpawnScheduled)
-            IsDespawningScheduleEnabled(SpawnerId);
+        //if (IsSpawnScheduled)
+        //    IsDespawningScheduleEnabled(SpawnerId);
 
         return SpawnedNpcs[SpawnerId][0];
     }
@@ -619,21 +619,11 @@ public class NpcSpawner : Spawner<Npc>
         {
             lock (_spawnLock)
             {
-                UnregisterAndDeleteNpc(npc);
                 RemoveNpcFromSpawnedList(npc);
-                //DecreaseCount(npc);
+                UnregisterAndDeleteNpc(npc);
+
                 npc.IsDespawnScheduled = false;
                 IsDespawnScheduled = false;
-                // Removes the NPC from the SpawnedNpcs list
-                if (npc.Spawner != null)
-                {
-                    RemoveNpc(npc.Spawner.SpawnerId, npc);
-                }
-                else
-                {
-                    Logger.Warn($"NPC {npc.TemplateId} has no associated Spawner.");
-                }
-
             }
         }
         catch (Exception ex)
@@ -644,13 +634,17 @@ public class NpcSpawner : Spawner<Npc>
 
     private static void UnregisterAndDeleteNpc(Npc npc)
     {
-        var objId = npc.ObjId;
-        var respawn = npc.Respawn;
         npc.UnregisterNpcEvents();
         npc.Delete();
 
-        if (respawn == DateTime.MinValue)
-            ObjectIdManager.Instance.ReleaseId(objId);
+        //if (npc.Respawn > DateTime.UtcNow)
+        //{
+        //    npc.Hide();
+        //}
+        //else
+        //{
+        //    npc.Delete();
+        //}
     }
 
     private void RemoveNpcFromSpawnedList(Npc npc)
@@ -662,26 +656,32 @@ public class NpcSpawner : Spawner<Npc>
         }
 
         var id = npc.Spawner.SpawnerId;
-        if (SpawnedNpcs.TryGetValue(id, out var npcList))
+        lock (_spawnLock)
         {
-            var removed = npcList.Remove(npc);
-            if (!removed)
+            if (SpawnedNpcs.TryGetValue(id, out var npcList))
             {
-                Logger.Warn($"NPC {npc.TemplateId} not found in SpawnedNpcs for SpawnerId={id}.");
-            }
-
-            if (npcList.Count == 0)
-            {
-                var removedEntry = SpawnedNpcs.TryRemove(id, out _);
-                if (!removedEntry)
+                lock (npcList)
                 {
-                    Logger.Warn($"Failed to remove empty SpawnerId={id} from SpawnedNpcs.");
+                    var removed = npcList.Remove(npc);
+                    if (!removed)
+                    {
+                        Logger.Warn($"NPC {npc.TemplateId} not found in SpawnedNpcs for SpawnerId={id}.");
+                    }
+
+                    if (npcList.Count == 0)
+                    {
+                        var removedEntry = SpawnedNpcs.TryRemove(id, out _);
+                        if (!removedEntry)
+                        {
+                            Logger.Warn($"Failed to remove empty SpawnerId={id} from SpawnedNpcs.");
+                        }
+                    }
                 }
             }
-        }
-        else
-        {
-            Logger.Warn($"SpawnerId={id} not found in SpawnedNpcs.");
+            else
+            {
+                Logger.Warn($"SpawnerId={id} not found in SpawnedNpcs.");
+            }
         }
     }
 
@@ -691,22 +691,33 @@ public class NpcSpawner : Spawner<Npc>
         {
             lock (_spawnLock)
             {
-                lock (_spawnLock)
+                lock (npcList)
                 {
                     IsDespawnScheduled = false;
                     npc.IsDespawnScheduled = false;
 
                     npcList.Remove(npc);
+                    Logger.Trace($"Removed NPC {npc.ObjId} from list for SpawnerId={spawnerId}.");
 
                     // If the NPC list is empty, removes the entry from the dictionary
                     if (npcList.Count == 0)
                     {
-                        SpawnedNpcs.TryRemove(spawnerId, out _);
+                        var removedEntry = SpawnedNpcs.TryRemove(spawnerId, out _);
+                        if (removedEntry)
+                        {
+                            Logger.Trace($"Removed empty list for SpawnerId={spawnerId} from SpawnedNpcs.");
+                        }
+                        else
+                        {
+                            Logger.Warn($"Failed to remove empty SpawnerId={spawnerId} from SpawnedNpcs.");
+                        }
                     }
-
-                    DecrementCount();
                 }
             }
+        }
+        else
+        {
+            Logger.Warn($"SpawnerId={spawnerId} not found in SpawnedNpcs.");
         }
     }
 
@@ -762,7 +773,7 @@ public class NpcSpawner : Spawner<Npc>
                 if (npc.LootingContainer != null && npc.LootingContainer.Items.Count > 0)
                 {
                     npc.Despawn += TimeSpan.FromSeconds(LootingContainer.LootDespawnExtensionTime);
-                    Logger.Info($"Extended despawn time for NPC {UnitId}:{SpawnerId}:{npc.ObjId} due to items in looting container.");
+                    Logger.Info($"Extended despawn time in {LootingContainer.LootDespawnExtensionTime} seconds for NPC {UnitId}:{SpawnerId}:{npc.ObjId} due to items in looting container.");
                 }
 
                 // Adds the NPC to the despawn list
@@ -840,7 +851,7 @@ public class NpcSpawner : Spawner<Npc>
                 //if (!npc.IsInBattle)
                 //{
                 DecreaseCount(npc);
-                Logger.Trace($"Despawned NPC {npc.ObjId}.");
+                Logger.Debug($"Despawned NPC {npc.ObjId}.");
                 //}
                 //else
                 //{

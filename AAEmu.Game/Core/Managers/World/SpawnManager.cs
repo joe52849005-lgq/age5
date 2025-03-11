@@ -244,8 +244,8 @@ public class SpawnManager : Singleton<SpawnManager>
     /// </summary>
     private bool IsDuplicateNpcSpawner(Models.Game.World.World world, NpcSpawner npcSpawner)
     {
-        foreach (List<NpcSpawner> spawners in _npcSpawners[(byte)world.Id].Values)
-        foreach (NpcSpawner spawner in spawners)
+        foreach (var spawners in _npcSpawners[(byte)world.Id].Values)
+        foreach (var spawner in spawners)
         {
             if (spawner.UnitId == npcSpawner.UnitId &&
                 Math.Abs(spawner.Position.X - npcSpawner.Position.X) < 0.1f &&
@@ -293,6 +293,12 @@ public class SpawnManager : Singleton<SpawnManager>
     /// </summary>
     public void AddNpcSpawner(NpcSpawner npcSpawner)
     {
+        if (npcSpawner == null)
+        {
+            Logger.Warn("Attempted to add a null NPC spawner.");
+            return;
+        }
+
         if (npcSpawner.NpcSpawnerIds is [0])
             npcSpawner.NpcSpawnerIds = [];
 
@@ -305,8 +311,6 @@ public class SpawnManager : Singleton<SpawnManager>
             {
                 Logger.Trace($"SpawnerIds for Npc={npcSpawner.UnitId} doesn't exist");
                 Logger.Trace($"Generate Spawner for Npc={npcSpawner.UnitId}...");
-                //var fakeSpawner = GetNpcSpawner(npcSpawner.UnitId, npcSpawner.Position);
-                //var id = ObjectIdManager.Instance.GetNextId();
                 var id = _fakeSpawnerId;
                 npcSpawner.NpcSpawnerIds.Add(id);
                 npcSpawner.Id = id;
@@ -334,7 +338,6 @@ public class SpawnManager : Singleton<SpawnManager>
             }
             else
             {
-                // TODO добавил список спавнеров // added a list of spawners
                 foreach (var id in npcSpawnerIds)
                 {
                     var spawner = NpcSpawner.Clone(npcSpawner);
@@ -357,7 +360,6 @@ public class SpawnManager : Singleton<SpawnManager>
         }
         else
         {
-            // Load NPC Spawns for Events
             var spawners = new List<NpcSpawner>();
             foreach (var id in npcSpawner.NpcSpawnerIds)
             {
@@ -372,6 +374,8 @@ public class SpawnManager : Singleton<SpawnManager>
             _npcEventSpawners[(byte)npcSpawner.Position.WorldId].TryAdd(_nextId, spawners);
             _nextId++;
         }
+
+        Logger.Trace($"Added NPC spawner {npcSpawner.SpawnerId} for unit {npcSpawner.UnitId}.");
     }
 
     /// <summary>
@@ -391,7 +395,6 @@ public class SpawnManager : Singleton<SpawnManager>
                 }
                 else
                 {
-                    //if (worldId != 0)
                     spawner.Update();
                     count++;
                     if (count % 5000 == 0)
@@ -403,7 +406,6 @@ public class SpawnManager : Singleton<SpawnManager>
         }
         Logger.Info($"{count} NPC spawners spawned in world {worldId}");
 
-        //Управляет всеми спавнерами в игре, обновляя их состояние и вызывая методы спавна.
         if (worldId == 0)
         {
             TickManager.Instance.OnTick.Subscribe(Update, TimeSpan.FromSeconds(1));
@@ -417,7 +419,10 @@ public class SpawnManager : Singleton<SpawnManager>
     {
         var world = WorldManager.Instance.GetWorlds().FirstOrDefault(x => x.Id == worldId);
         if (world == null)
+        {
+            Logger.Warn($"World with ID {worldId} not found.");
             return -1;
+        }
 
         var res = 0;
         foreach (var npc in WorldManager.Instance.GetAllNpcs().ToList())
@@ -448,6 +453,7 @@ public class SpawnManager : Singleton<SpawnManager>
             res++;
         }
 
+        Logger.Info($"Despawned {res} objects in world {worldId}.");
         return res;
     }
 
@@ -466,13 +472,25 @@ public class SpawnManager : Singleton<SpawnManager>
                     if (obj.Respawn >= DateTime.UtcNow)
                         continue;
                     if (obj is Npc npc)
+                    {
+                        Logger.Debug($"Respawning NPC {npc.ObjId}");
                         npc.Spawner.Respawn(npc);
-                    if (obj is Doodad doodad)
+                    }
+                    else if (obj is Doodad doodad)
+                    {
+                        Logger.Trace($"Respawning Doodad {doodad.ObjId}");
                         doodad.Spawner.Respawn(doodad);
-                    if (obj is Transfer transfer)
+                    }
+                    else if (obj is Transfer transfer)
+                    {
+                        Logger.Trace($"Respawning Transfer {transfer.ObjId}");
                         transfer.Spawner.Respawn(transfer);
-                    if (obj is Gimmick gimmick)
+                    }
+                    else if (obj is Gimmick gimmick)
+                    {
+                        Logger.Trace($"Respawning Gimmick {gimmick.ObjId}");
                         gimmick.Spawner.Respawn(gimmick);
+                    }
                     RemoveRespawn(obj);
                 }
             }
@@ -485,23 +503,45 @@ public class SpawnManager : Singleton<SpawnManager>
                     if (obj.Despawn >= DateTime.UtcNow)
                         continue;
                     if (obj is Npc { Spawner: not null } npc)
+                    {
+                        Logger.Debug($"Despawning NPC {npc.ObjId}");
                         npc.Spawner.Despawn(npc);
+                    }
                     else if (obj is Doodad { Spawner: not null } doodad)
+                    {
+                        Logger.Trace($"Despawning Doodad {doodad.ObjId}");
                         doodad.Spawner.Despawn(doodad);
+                    }
                     else if (obj is Transfer { Spawner: not null } transfer)
+                    {
+                        Logger.Trace($"Despawning Transfer {transfer.ObjId}");
                         transfer.Spawner.Despawn(transfer);
+                    }
                     else if (obj is Gimmick { Spawner: not null } gimmick)
+                    {
+                        Logger.Trace($"Despawning Gimmick {gimmick.ObjId}");
                         gimmick.Spawner.Despawn(gimmick);
+                    }
                     else if (obj is Slave slave)
+                    {
+                        Logger.Trace($"Deleting Slave {slave.ObjId}");
                         slave.Delete();
+                    }
                     else if (obj is Doodad doodad2)
+                    {
+                        Logger.Trace($"Deleting Doodad {doodad2.ObjId}");
                         doodad2.Delete();
+                    }
                     else
+                    {
+                        Logger.Trace($"Deleting GameObject {obj.ObjId}");
                         obj.Delete();
+                    }
 
                     ObjectIdManager.Instance.ReleaseId(obj.ObjId);
                     RemoveDespawn(obj);
                 }
+                Logger.Debug($"Despawning...");
             }
 
             Thread.Sleep(1000);
@@ -537,6 +577,7 @@ public class SpawnManager : Singleton<SpawnManager>
                 res.Add(obj);
             }
         }
+
         return res;
     }
 
@@ -545,7 +586,14 @@ public class SpawnManager : Singleton<SpawnManager>
     /// </summary>
     public void AddRespawn(GameObject obj)
     {
+        if (obj == null)
+        {
+            Logger.Warn("Attempted to add a null object to respawn list.");
+            return;
+        }
+
         _respawns.Add(obj);
+        Logger.Trace($"Added object {obj.ObjId} to respawn list.");
     }
 
     /// <summary>
@@ -553,7 +601,40 @@ public class SpawnManager : Singleton<SpawnManager>
     /// </summary>
     public void RemoveRespawn(GameObject obj)
     {
-        _respawns.TryTake(out _);
+        if (obj == null)
+        {
+            Logger.Warn("Attempted to remove a null object from respawn list.");
+            return;
+        }
+
+        var tempList = new List<GameObject>();
+        var removed = false;
+
+        while (_respawns.TryTake(out var item))
+        {
+            if (!removed && item == obj)
+            {
+                removed = true;
+            }
+            else
+            {
+                tempList.Add(item);
+            }
+        }
+
+        foreach (var item in tempList)
+        {
+            _respawns.Add(item);
+        }
+
+        if (!removed)
+        {
+            Logger.Warn($"Failed to remove object {obj.ObjId} from respawn list.");
+        }
+        else
+        {
+            Logger.Trace($"Removed object {obj.ObjId} from respawn list.");
+        }
     }
 
     /// <summary>
@@ -561,7 +642,14 @@ public class SpawnManager : Singleton<SpawnManager>
     /// </summary>
     public void AddDespawn(GameObject obj)
     {
+        if (obj == null)
+        {
+            Logger.Warn("Attempted to add a null object to despawn list.");
+            return;
+        }
+
         _despawns.Add(obj);
+        Logger.Trace($"Added object {obj.ObjId} to despawn list.");
     }
 
     /// <summary>
@@ -569,7 +657,40 @@ public class SpawnManager : Singleton<SpawnManager>
     /// </summary>
     public void RemoveDespawn(GameObject obj)
     {
-        _despawns.TryTake(out _);
+        if (obj == null)
+        {
+            Logger.Warn("Attempted to remove a null object from despawn list.");
+            return;
+        }
+
+        var tempList = new List<GameObject>();
+        var removed = false;
+
+        while (_despawns.TryTake(out var item))
+        {
+            if (!removed && item == obj)
+            {
+                removed = true;
+            }
+            else
+            {
+                tempList.Add(item);
+            }
+        }
+
+        foreach (var item in tempList)
+        {
+            _despawns.Add(item);
+        }
+
+        if (!removed)
+        {
+            Logger.Warn($"Failed to remove object {obj.ObjId} from despawn list.");
+        }
+        else
+        {
+            Logger.Trace($"Removed object {obj.ObjId} from despawn list.");
+        }
     }
 
     /// <summary>
@@ -1171,7 +1292,40 @@ public class SpawnManager : Singleton<SpawnManager>
     /// </summary>
     public void RemovePlayerDoodad(Doodad doodad)
     {
-        _playerDoodads.TryTake(out _);
+        if (doodad == null)
+        {
+            Logger.Warn("Attempted to remove a null doodad from player doodads list.");
+            return;
+        }
+
+        var tempList = new List<Doodad>();
+        var removed = false;
+
+        while (_playerDoodads.TryTake(out var item))
+        {
+            if (!removed && item == doodad)
+            {
+                removed = true;
+            }
+            else
+            {
+                tempList.Add(item);
+            }
+        }
+
+        foreach (var item in tempList)
+        {
+            _playerDoodads.Add(item);
+        }
+
+        if (!removed)
+        {
+            Logger.Warn($"Failed to remove doodad {doodad.ObjId} from player doodads list.");
+        }
+        else
+        {
+            Logger.Trace($"Removed doodad {doodad.ObjId} from player doodads list.");
+        }
     }
 
     /// <summary>
@@ -1287,6 +1441,13 @@ public class SpawnManager : Singleton<SpawnManager>
     /// </summary>
     public void AddPlayerDoodad(Doodad doodad)
     {
+        if (doodad == null)
+        {
+            Logger.Warn("Attempted to add a null doodad to player doodads list.");
+            return;
+        }
+
         _playerDoodads.Add(doodad);
+        Logger.Trace($"Added doodad {doodad.ObjId} to player doodads list.");
     }
 }
