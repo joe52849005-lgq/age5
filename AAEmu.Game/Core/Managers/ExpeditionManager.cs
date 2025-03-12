@@ -375,7 +375,7 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
         //SendMyExpeditionDescInfo(owner);
 
         // закомментируйте, это для проверки работы "Набор игроков"
-        AddRecruitment(owner, 63, 3, "Welcome!");
+        //AddRecruitment(owner, 63, 3, "Welcome!");
 
         Save(expedition);
     }
