@@ -394,7 +394,7 @@ public class FamilyManager : Singleton<FamilyManager>
     /// <returns></returns>
     public Family GetFamily(uint id)
     {
-        return _families[id];
+        return  _families?.GetValueOrDefault(id);
     }
 
     /// <summary>

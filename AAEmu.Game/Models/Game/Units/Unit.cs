@@ -1378,7 +1378,12 @@ public class Unit : BaseUnit, IUnit
         if (this is not Character owner)
             return;
 
+        if (owner.Family == 0)
+            return;
+
         var family = FamilyManager.Instance.GetFamily(owner.Id);
+        if (family == null)
+            return;
 
         Buffs.RemoveBuff((uint)BuffConstants.FledglingFamily);
         Buffs.RemoveBuff((uint)BuffConstants.EstablishedFamily);
