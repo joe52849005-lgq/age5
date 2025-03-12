@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.Id;
 using AAEmu.Game.Core.Packets.G2C;
+
 using MySql.Data.MySqlClient;
 
 namespace AAEmu.Game.Models.Game.Char;
@@ -62,7 +64,7 @@ public class CharacterFriends
         if (FriendsIdList.Count <= 0) return;
 
         var allFriends = FriendMananger.GetFriendInfo(new List<uint>(FriendsIdList.Keys));
-        var allFriendsArray = new Friend[allFriends.Count];
+        var allFriendsArray = new Friend.Friend[allFriends.Count];
         allFriends.CopyTo(allFriendsArray, 0);
         Owner.SendPacket(new SCFriendListsPacket(allFriendsArray.Length, allFriendsArray));
     }

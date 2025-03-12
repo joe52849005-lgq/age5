@@ -1,15 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 
 using AAEmu.Commons.Utils;
 using AAEmu.Commons.Utils.DB;
 using AAEmu.Game.Core.Managers.Id;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Packets.G2C;
-using AAEmu.Game.Models.Game;
 using AAEmu.Game.Models.Game.Char;
+using AAEmu.Game.Models.Game.Family;
 using AAEmu.Game.Models.Game.Items.Actions;
+
+using Mysqlx.Crud;
+using Mysqlx.Expr;
+
 using NLog;
+
+using static Mysqlx.Notice.Warning.Types;
 
 namespace AAEmu.Game.Core.Managers;
 
@@ -180,6 +187,8 @@ public class FamilyManager : Singleton<FamilyManager>
         family.AddMember(member);
         _familyMembers.Add(member.Id, member);
         character.Family = family.Id;
+        
+        character.ApplyFamilyEffects();
 
         ChatManager.Instance.GetFamilyChat(family.Id)?.JoinChannel(character);
     }
@@ -324,6 +333,7 @@ public class FamilyManager : Singleton<FamilyManager>
     {
         // TODO измени логику для смены имени семьи!
     }
+
     public void SetContent(Character owner, string content1, string content2)
     {
         // TODO измени логику для смены контента семьи!
@@ -411,5 +421,14 @@ public class FamilyManager : Singleton<FamilyManager>
                 return family.Id;
 
         return 0;
+    }
+
+    public void IncreaseFamilyMembers(Character owner)
+    {
+        if (owner.Family == 0) return;
+        var family = _families[owner.Family];
+        family.IncMemberCount++;
+        family.SendPacket(new SCFamilyInfoSetPacket(family.Id, family.Level, family.Exp, family.Name, family.Content1, family.Content2, owner.Id, family.IncMemberCount, DateTime.UtcNow));
+        family.SendPacket(new SCFamilyDescPacket(family));
     }
 }

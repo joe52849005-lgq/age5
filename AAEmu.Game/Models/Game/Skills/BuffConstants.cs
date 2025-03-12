@@ -31,6 +31,19 @@ public enum BuffConstants : uint
     InBeautySalon = 6117,
     SearchSchoolOfFish = 5736,
     Overburdened = 831, // SustainBuff - Carrying heavy objects reduces movement speed and prevents teleporting or gliding.
-    MasterOwnership = 4867  // Vehicle ownership buff, prevents non-owners from attaching to the vehicle.
+    MasterOwnership = 4867,  // Vehicle ownership buff, prevents non-owners from attaching to the vehicle.
    // Overburdened = 7221
+   // Family Buffs
+   FledglingFamily = 20311,
+   EstablishedFamily = 20539,
+   ThrivingFamily = 20540,
+    // Expedition Buffs
+    TahyangsEnergy = 15777,
+    AranzebsEnergy = 15778,
+    OllosEnergy = 15779,
+    NaimasEnergy = 15780,
+    InochsEnergy = 15781,
+    LuciusEnergy = 15782,
+    KyprosasEnergy = 15783,
+    EannasEnergy = 15784
 }

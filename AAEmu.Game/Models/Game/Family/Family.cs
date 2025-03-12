@@ -9,19 +9,19 @@ using AAEmu.Game.Models.Game.Char;
 
 using MySql.Data.MySqlClient;
 
-namespace AAEmu.Game.Models.Game;
+namespace AAEmu.Game.Models.Game.Family;
 
 public class Family : PacketMarshaler
 {
     private List<uint> _removedMembers;
 
-    public uint Id { get; init; }
-    public string Name { get; init; }
-    public int Level { get; init; }
-    public int Exp { get; init; }
-    public string Content1 { get; init; }
-    public string Content2 { get; init; }
-    public int IncMemberCount { get; init; }
+    public uint Id { get; set; }
+    public string Name { get; set; }
+    public int Level { get; set; }
+    public int Exp { get; set; }
+    public string Content1 { get; set; }
+    public string Content2 { get; set; }
+    public int IncMemberCount { get; set; }
     public DateTime ResetTime { get; set; }
     public DateTime ChangeNameTime { get; set; }
     

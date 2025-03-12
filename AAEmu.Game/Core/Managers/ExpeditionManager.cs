@@ -15,12 +15,10 @@ using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Expeditions;
 using AAEmu.Game.Models.Game.Faction;
 using AAEmu.Game.Models.Game.Items.Actions;
-using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.Team;
-using AAEmu.Game.Models.Game.Units;
-using AAEmu.Game.Models.Game.World.Transform;
-using MySql.Data.MySqlClient;
 using AAEmu.Game.Models.StaticValues;
+
+using MySql.Data.MySqlClient;
 
 namespace AAEmu.Game.Core.Managers;
 
@@ -376,7 +374,6 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
 
         // закомментируйте, это для проверки работы "Набор игроков"
         //AddRecruitment(owner, 63, 3, "Welcome!");
-
         Save(expedition);
     }
 
@@ -664,6 +661,8 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
         member.Abilities = [(byte)character.Ability1, (byte)character.Ability2, (byte)character.Ability3];
         member.ExpeditionId = expedition.Id;
         member.CharacterId = character.Id;
+
+        character.ApplyExpeditionEffects();
 
         return member;
     }

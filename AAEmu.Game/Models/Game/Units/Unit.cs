@@ -1019,6 +1019,9 @@ public class Unit : BaseUnit, IUnit
         ApplyWeaponWieldBuff();
         ApplyArmorGradeBuff(itemAdded, itemRemoved);
         ApplyEquipItemSetBonuses();
+
+        ApplyFamilyEffects();
+        ApplyExpeditionEffects();
     }
 
     private void ApplyWeaponWieldBuff()
@@ -1368,6 +1371,54 @@ public class Unit : BaseUnit, IUnit
                 }
             }
         }
+    }
+
+    public void ApplyFamilyEffects()
+    {
+        if (this is not Character owner)
+            return;
+
+        var family = FamilyManager.Instance.GetFamily(owner.Id);
+
+        Buffs.RemoveBuff((uint)BuffConstants.FledglingFamily);
+        Buffs.RemoveBuff((uint)BuffConstants.EstablishedFamily);
+        Buffs.RemoveBuff((uint)BuffConstants.ThrivingFamily);
+
+        BuffTemplate buffTemplate = null;
+
+        var buffId = FamilyGameData.GetBuffIdByLevelId(family.Level);
+        if (buffId != null)
+            buffTemplate = SkillManager.Instance.GetBuffTemplate((uint)buffId);
+
+        if (buffTemplate == null)
+            return;
+
+        var effect = new Buff(this, this, new SkillCasterUnit(ObjId), buffTemplate, null, DateTime.UtcNow);
+        Buffs.AddBuff(effect);
+    }
+
+    public void ApplyExpeditionEffects()
+    {
+        if (this is not Character owner)
+            return;
+
+        for (var id = (uint)BuffConstants.TahyangsEnergy; id <= (uint)BuffConstants.EannasEnergy; id++)
+            Buffs.RemoveBuff(id);
+
+        BuffTemplate buffTemplate = null;
+
+        if (owner.Expedition == null)
+            return;
+
+        var buffId = ExpeditionGameData.GetBuffIdByLevelId(owner.Expedition.Level);
+        if (buffId != null)
+            buffTemplate = SkillManager.Instance.GetBuffTemplate((uint)buffId);
+
+        if (buffTemplate == null)
+            return;
+
+        var effect = new Buff(this, this, new SkillCasterUnit(ObjId), buffTemplate, null, DateTime.UtcNow);
+        Buffs.AddBuff(effect);
     }
 
     public override void OnZoneChange(uint lastZoneKey, uint newZoneKey)

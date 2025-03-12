@@ -1,11 +1,12 @@
 ﻿using System;
+
 using AAEmu.Commons.Network;
 using AAEmu.Commons.Utils;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.World.Transform;
 
-namespace AAEmu.Game.Models.Game;
+namespace AAEmu.Game.Models.Game.Friend;
 
 public class Friend : PacketMarshaler
 {
