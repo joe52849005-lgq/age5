@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using AAEmu.Commons.Network;
+﻿using AAEmu.Commons.Network;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Network.Game;
 using AAEmu.Game.Models.Game.Char;
-
+using AAEmu.Game.Models.Game.Family;
 using MySql.Data.MySqlClient;
-
-namespace AAEmu.Game.Models.Game.Family;
+using System.Collections.Generic;
+using System;
+using System.Linq;
 
 public class Family : PacketMarshaler
 {
@@ -24,7 +21,7 @@ public class Family : PacketMarshaler
     public int IncMemberCount { get; set; }
     public DateTime ResetTime { get; set; }
     public DateTime ChangeNameTime { get; set; }
-    
+
     public List<FamilyMember> Members { get; }
 
     public Family()
@@ -88,26 +85,67 @@ public class Family : PacketMarshaler
 
     public void Load(MySqlConnection connection)
     {
-        using var command = connection.CreateCommand();
-        command.CommandText = "SELECT * FROM family_members WHERE family_id=@family_id";
-        command.Parameters.AddWithValue("family_id", Id);
-        command.Prepare();
-        using var reader = command.ExecuteReader();
-        while (reader.Read())
+        using (var command = connection.CreateCommand())
         {
-            var member = new FamilyMember();
-            member.Id = reader.GetUInt32("character_id");
-            member.Name = reader.GetString("name");
-            member.Role = reader.GetByte("role");
-            member.Title = reader.GetString("title");
-            // TODO взять данные персонажа
-            member.Character = WorldManager.Instance.GetCharacterById(member.Id) ?? WorldManager.Instance.GetOfflineCharacterInfo(member.Id);
-            AddMember(member);
+            command.CommandText = "SELECT * FROM families WHERE id=@id";
+            command.Parameters.AddWithValue("id", Id);
+            command.Prepare();
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                Id = reader.GetUInt32("id");
+                Name = reader.GetString("name");
+                Level = reader.GetInt32("level");
+                Exp = reader.GetInt32("exp");
+                Content1 = reader.GetString("content1");
+                Content2 = reader.GetString("content2");
+                IncMemberCount = reader.GetInt32("inc_member_count");
+                ResetTime = reader.GetDateTime("reset_time");
+                ChangeNameTime = reader.GetDateTime("change_name_time");
+            }
+        }
+
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText = "SELECT * FROM family_members WHERE family_id=@family_id";
+            command.Parameters.AddWithValue("family_id", Id);
+            command.Prepare();
+            using var readerMembers = command.ExecuteReader();
+            while (readerMembers.Read())
+            {
+                var member = new FamilyMember();
+                member.Id = readerMembers.GetUInt32("character_id");
+                member.Name = readerMembers.GetString("name");
+                member.Role = readerMembers.GetByte("role");
+                member.Title = readerMembers.GetString("title");
+                member.Character = WorldManager.Instance.GetCharacterById(member.Id) ??
+                                   WorldManager.Instance.GetOfflineCharacterInfo(member.Id);
+                AddMember(member);
+            }
         }
     }
 
     public void Save(MySqlConnection connection, MySqlTransaction transaction)
     {
+        using (var command = connection.CreateCommand())
+        {
+            command.Connection = connection;
+            command.Transaction = transaction;
+
+            command.CommandText = "REPLACE INTO families(`id`, `name`, `level`, `exp`, `content1`, `content2`, `inc_member_count`, `reset_time`, `change_name_time`) " +
+                                  "VALUES (@id, @name, @level, @exp, @content1, @content2, @inc_member_count, @reset_time, @change_name_time)";
+            command.Parameters.AddWithValue("@id", Id);
+            command.Parameters.AddWithValue("@name", Name);
+            command.Parameters.AddWithValue("@level", Level);
+            command.Parameters.AddWithValue("@exp", Exp);
+            command.Parameters.AddWithValue("@content1", Content1);
+            command.Parameters.AddWithValue("@content2", Content2);
+            command.Parameters.AddWithValue("@inc_member_count", IncMemberCount);
+            command.Parameters.AddWithValue("@reset_time", ResetTime);
+            command.Parameters.AddWithValue("@change_name_time", ChangeNameTime);
+            command.ExecuteNonQuery();
+        }
+
         if (_removedMembers.Count > 0)
         {
             var removedMembers = string.Join(",", _removedMembers);
@@ -156,29 +194,5 @@ public class Family : PacketMarshaler
                 command.Parameters.Clear();
             }
         }
-    }
-}
-
-public class FamilyMember : PacketMarshaler
-{
-    public Character Character { get; set; }
-    public uint Id { get; set; }
-    public string Name { get; set; }
-    public byte Role { get; set; }
-    public bool Online => Character != null;
-    public string Title { get; set; }
-    public DateTime RoleUpdateTime { get; set; }
-
-    public override PacketStream Write(PacketStream stream)
-    {
-        stream.Write(Id);                  // member
-        stream.Write(Name);                // memberName
-        stream.Write(Character.Level);     // level
-        stream.Write(Character.HeirLevel); // heirLevel
-        stream.Write(Role);                // role
-        stream.Write(Character.IsOnline);  // online
-        stream.Write(Title);               // title
-        stream.Write(RoleUpdateTime);      // roleUpdateTime
-        return stream;
     }
 }

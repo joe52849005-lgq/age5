@@ -337,6 +337,13 @@ public class FamilyManager : Singleton<FamilyManager>
     public void SetContent(Character owner, string content1, string content2)
     {
         // TODO измени логику для смены контента семьи!
+        if (owner.Family == 0) return;
+        var family = _families[owner.Family];
+
+        family.Content1 = content1;
+        family.Content2 = content2;
+
+        SaveFamily(family);
     }
 
     /// <summary>
@@ -430,5 +437,6 @@ public class FamilyManager : Singleton<FamilyManager>
         family.IncMemberCount++;
         family.SendPacket(new SCFamilyInfoSetPacket(family.Id, family.Level, family.Exp, family.Name, family.Content1, family.Content2, owner.Id, family.IncMemberCount, DateTime.UtcNow));
         family.SendPacket(new SCFamilyDescPacket(family));
+        SaveFamily(family);
     }
 }

@@ -404,6 +404,23 @@ CREATE TABLE `expeditions`  (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = 'Guilds' ROW_FORMAT = DYNAMIC;
 
+-- --------------------------------------------
+-- Table structure for family
+-- --------------------------------------------
+
+CREATE TABLE `families` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL,
+    `level` INT NOT NULL,
+    `exp` INT NOT NULL,
+    `content1` TEXT,
+    `content2` TEXT,
+    `inc_member_count` INT NOT NULL,
+    `reset_time` DATETIME NOT NULL,
+    `change_name_time` DATETIME NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ----------------------------
 -- Table structure for family_members
 -- ----------------------------
