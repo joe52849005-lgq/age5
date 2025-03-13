@@ -7,9 +7,11 @@ using AAEmu.Commons.Utils.DB;
 using AAEmu.Game.Core.Managers.Id;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Packets.G2C;
+using AAEmu.Game.GameData;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Family;
 using AAEmu.Game.Models.Game.Items.Actions;
+using AAEmu.Game.Models.Game.Skills;
 
 using Mysqlx.Crud;
 using Mysqlx.Expr;
@@ -24,15 +26,17 @@ public class FamilyManager : Singleton<FamilyManager>
 {
     private static Logger Logger { get; } = LogManager.GetCurrentClassLogger();
 
-    private const uint FamilyCertificate = 41419; //ID=41419 Family Certificate
     private Dictionary<uint, Family> _families;
     private Dictionary<uint, FamilyMember> _familyMembers;
+    private bool _isLoaded = false; // Track if Load has been called
 
     /// <summary>
     /// Load family data
     /// </summary>
     public void Load()
     {
+        if (_isLoaded) return; // Prevent multiple loads
+
         _families = new Dictionary<uint, Family>();
         _familyMembers = new Dictionary<uint, FamilyMember>();
 
@@ -67,6 +71,7 @@ public class FamilyManager : Singleton<FamilyManager>
         }
 
         Logger.Info($"Loaded {_families.Count} families");
+        _isLoaded = true; // Mark as loaded
     }
 
     /// <summary>
@@ -108,7 +113,7 @@ public class FamilyManager : Singleton<FamilyManager>
         var invited = WorldManager.Instance.GetCharacter(invitedCharacterName);
         if (invited is { Family: 0 })
         {
-            inviter.Inventory.Bag.ConsumeItem(ItemTaskType.FamilyJoin, FamilyCertificate, 1, null);
+            inviter.Inventory.Bag.ConsumeItem(ItemTaskType.FamilyJoin, (uint)ItemConstants.FamilyCertificate, 1, null);
             invited.SendPacket(new SCFamilyInvitationPacket(inviter.Id, inviter.Name, 0, title));
         }
     }
@@ -187,10 +192,8 @@ public class FamilyManager : Singleton<FamilyManager>
         family.AddMember(member);
         _familyMembers.Add(member.Id, member);
         character.Family = family.Id;
-        
-        character.ApplyFamilyEffects();
-
         ChatManager.Instance.GetFamilyChat(family.Id)?.JoinChannel(character);
+        character.ApplyFamilyEffects();
     }
 
     /// <summary>
@@ -394,7 +397,12 @@ public class FamilyManager : Singleton<FamilyManager>
     /// <returns></returns>
     public Family GetFamily(uint id)
     {
-        return  _families?.GetValueOrDefault(id);
+        if (!_isLoaded)
+        {
+            Load(); // Ensure Load is called before accessing _families
+        }
+
+        return _families?.GetValueOrDefault(id);
     }
 
     /// <summary>
@@ -406,7 +414,8 @@ public class FamilyManager : Singleton<FamilyManager>
     /// <returns></returns>
     private static FamilyMember GetMemberForCharacter(Character character, byte owner, string title)
     {
-        return new FamilyMember {
+        return new FamilyMember
+        {
             Character = character,
             Id = character.Id,
             Name = character.Name,
@@ -423,9 +432,9 @@ public class FamilyManager : Singleton<FamilyManager>
     public uint GetFamilyOfCharacter(uint characterId)
     {
         foreach (var family in _families.Values)
-        foreach (var member in family.Members)
-            if (member.Id == characterId)
-                return family.Id;
+            foreach (var member in family.Members)
+                if (member.Id == characterId)
+                    return family.Id;
 
         return 0;
     }
@@ -435,8 +444,13 @@ public class FamilyManager : Singleton<FamilyManager>
         if (owner.Family == 0) return;
         var family = _families[owner.Family];
         family.IncMemberCount++;
+        var itemCount = FamilyGameData.GetItemCountById(family.IncMemberCount);
+        if (itemCount == null)
+            return;
+        owner.Inventory.Bag.ConsumeItem(ItemTaskType.FamilyJoin, (uint)ItemConstants.FamilyGrowthTicket, (int)itemCount, null);
         family.SendPacket(new SCFamilyInfoSetPacket(family.Id, family.Level, family.Exp, family.Name, family.Content1, family.Content2, owner.Id, family.IncMemberCount, DateTime.UtcNow));
         family.SendPacket(new SCFamilyDescPacket(family));
+
         SaveFamily(family);
     }
 }

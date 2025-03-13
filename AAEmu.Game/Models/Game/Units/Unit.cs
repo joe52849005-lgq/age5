@@ -1378,20 +1378,26 @@ public class Unit : BaseUnit, IUnit
         if (this is not Character owner)
             return;
 
-        if (owner.Family == 0)
-            return;
-
-        var family = FamilyManager.Instance.GetFamily(owner.Id);
-        if (family == null)
-            return;
-
         Buffs.RemoveBuff((uint)BuffConstants.FledglingFamily);
         Buffs.RemoveBuff((uint)BuffConstants.EstablishedFamily);
         Buffs.RemoveBuff((uint)BuffConstants.ThrivingFamily);
 
+        if (owner.Family == 0)
+            return;
+
+        var level = 1;
+        var family = FamilyManager.Instance.GetFamily(owner.Id);
+        if (family == null)
+        {
+            if (owner.Family <= 0)
+                return;
+        }
+        else
+            level = family.Level;
+
         BuffTemplate buffTemplate = null;
 
-        var buffId = FamilyGameData.GetBuffIdByLevelId(family.Level);
+        var buffId = FamilyGameData.GetBuffIdByLevelId(level);
         if (buffId != null)
             buffTemplate = SkillManager.Instance.GetBuffTemplate((uint)buffId);
 
@@ -1407,23 +1413,7 @@ public class Unit : BaseUnit, IUnit
         if (this is not Character owner)
             return;
 
-        for (var id = (uint)BuffConstants.TahyangsEnergy; id <= (uint)BuffConstants.EannasEnergy; id++)
-            Buffs.RemoveBuff(id);
-
-        BuffTemplate buffTemplate = null;
-
-        if (owner.Expedition == null)
-            return;
-
-        var buffId = ExpeditionGameData.GetBuffIdByLevelId(owner.Expedition.Level);
-        if (buffId != null)
-            buffTemplate = SkillManager.Instance.GetBuffTemplate((uint)buffId);
-
-        if (buffTemplate == null)
-            return;
-
-        var effect = new Buff(this, this, new SkillCasterUnit(ObjId), buffTemplate, null, DateTime.UtcNow);
-        Buffs.AddBuff(effect);
+        ExpeditionManager.SetExpeditionBuff(owner);
     }
 
     public override void OnZoneChange(uint lastZoneKey, uint newZoneKey)

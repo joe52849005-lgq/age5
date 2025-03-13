@@ -24,12 +24,11 @@ public class Buff
 {
     protected static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    private object _lock = new();
-    private int _count;
+    private readonly object _lock = new();
+    private int _tickCount;
 
     public uint Index { get; set; }
     public Skill Skill { get; set; }
-    // public EffectTemplate Template { get; set; }
     public BuffTemplate Template { get; set; }
     public Unit Caster { get; set; }
     public SkillCaster SkillCaster { get; set; }
@@ -42,11 +41,11 @@ public class Buff
     public DateTime EndTime { get; set; }
     public int Charge { get; set; }
     public bool Passive { get; set; }
-    public ushort AbLevel { get; set; } // int in 1.2, ushort in 3+
+    public ushort AbLevel { get; set; } // int в 1.2, ushort в 3+
     public BuffEvents Events { get; }
     public BuffTriggersHandler Triggers { get; }
     public Dictionary<uint, FactionsEnum> saveFactions { get; set; }
-    public int Stack { get; set; } = 1; // добавил для учета стака баффов в пакете SCBuffCreatedPacket
+    public int Stack { get; set; } = 1; // для учета стака баффов в пакете SCBuffCreatedPacket
 
     public Buff(IBaseUnit owner, IBaseUnit caster, SkillCaster skillCaster, BuffTemplate template, Skill skill, DateTime time)
     {
@@ -63,30 +62,48 @@ public class Buff
         saveFactions = new();
     }
 
-    public void UpdateEffect()
+    /// <summary>
+    /// Инициализирует время начала, окончания и устанавливает Duration при необходимости.
+    /// Этот метод используется как в UpdateEffect, так и в ScheduleEffect.
+    /// </summary>
+    private void InitializeTiming()
     {
-        Template.Start(Caster, Owner, this);
         if (Duration == 0)
             Duration = Template.GetDuration(AbLevel);
+
         if (StartTime == DateTime.MinValue)
         {
             StartTime = DateTime.UtcNow;
             EndTime = StartTime.AddMilliseconds(Duration);
         }
+    }
+
+    /// <summary>
+    /// Общая инициалиация эффекта: установка стартовых параметров и регистрация задачи на разрушение (dispel).
+    /// </summary>
+    private void InitializeEffect()
+    {
+        // Запуск стартового действия баффа.
+        Template.Start(Caster, Owner, this);
+        InitializeTiming();
 
         Tick = Template.GetTick();
-
         if (Tick > 0)
         {
-            var time = GetTimeLeft();
-            if (time > 0)
-                _count = (int)(time / Tick + 0.5f + 1);
-            else
-                _count = -1;
+            var timeLeft = GetTimeLeft();
+            // Если ещё есть оставшееся время, рассчитываем количество тактов.
+            _tickCount = timeLeft > 0 ? (int)(timeLeft / Tick + 0.5f + 1) : -1;
             EffectTaskManager.AddDispelTask(this, Tick);
         }
         else
+        {
             EffectTaskManager.AddDispelTask(this, GetTimeLeft());
+        }
+    }
+
+    public void UpdateEffect()
+    {
+        InitializeEffect();
     }
 
     public void ScheduleEffect(bool replace)
@@ -94,65 +111,37 @@ public class Buff
         switch (State)
         {
             case EffectState.Created:
+                State = EffectState.Acting;
+                InitializeEffect();
+
+                if (Template.FactionId > 0 && Owner is Unit owner)
                 {
-                    State = EffectState.Acting;
-
-                    Template.Start(Caster, Owner, this);
-
-                    if (Duration == 0)
-                        Duration = Template.GetDuration(AbLevel);
-                    if (StartTime == DateTime.MinValue)
-                    {
-                        StartTime = DateTime.UtcNow;
-                        EndTime = StartTime.AddMilliseconds(Duration);
-                    }
-
-                    Tick = Template.GetTick();
-
-                    if (Tick > 0)
-                    {
-                        var time = GetTimeLeft();
-                        if (time > 0)
-                            _count = (int)(time / Tick + 0.5f + 1);
-                        else
-                            _count = -1;
-                        EffectTaskManager.AddDispelTask(this, Tick);
-                    }
-                    else
-                        EffectTaskManager.AddDispelTask(this, GetTimeLeft());
-
-                    if (Template.FactionId > 0 && Owner is Unit owner)
-                    {
-                        Logger.Info($"Buff: buff={Template.BuffId}:{Index}, owner={owner.TemplateId}:{owner.ObjId}");
-                        owner.SetFaction(Template.FactionId);
-                    }
-                    return;
+                    Logger.Info($"Buff: buff={Template.BuffId}:{Index}, owner={owner.TemplateId}:{owner.ObjId}");
+                    owner.SetFaction(Template.FactionId);
                 }
+                return;
+
             case EffectState.Acting:
+                if (_tickCount == -1)
                 {
-                    if (_count == -1)
+                    if (Template.OnActionTime)
                     {
-                        if (Template.OnActionTime)
-                        {
-                            Template.TimeToTimeApply(Caster, Owner, this);
-                            return;
-                        }
+                        Template.TimeToTimeApply(Caster, Owner, this);
+                        return;
                     }
-                    else if (_count > 0)
-                    {
-                        _count--;
-                        if (Template.OnActionTime && _count > 0)
-                        {
-                            Template.TimeToTimeApply(Caster, Owner, this);
-                            return;
-                        }
-                    }
-
-                    //Buff seems to come to natural expiration here
-                    //Events.OnTimeout(this, new OnTimeoutArgs());
-                    State = EffectState.Finishing;
-                    break;
                 }
+                else if (_tickCount > 0)
+                {
+                    _tickCount--;
+                    if (Template.OnActionTime && _tickCount > 0)
+                    {
+                        Template.TimeToTimeApply(Caster, Owner, this);
+                        return;
+                    }
+                }
+                // Если счетчик достиг нуля, переходим к завершению баффа.
+                State = EffectState.Finishing;
+                break;
         }
 
         if (State == EffectState.Finishing)
@@ -167,39 +156,34 @@ public class Buff
     {
         lock (_lock)
         {
-            // Capture the remaining time before we update the StartTime.
+            // Сохраняем оставшееся время до обновления StartTime
             var remaining = GetTimeLeft();
-            // Update buff properties from the new buff.
+            // Обновляем параметры баффа
             Charge = newBuff.Charge;
             AbLevel = newBuff.AbLevel;
             Caster = newBuff.Caster;
             SkillCaster = newBuff.SkillCaster;
-            // Set StartTime to now.
             var now = DateTime.UtcNow;
             StartTime = now;
-            // Update Duration based on the stack rule:
+
+            // Обновляем Duration в зависимости от правила стекинга
             if (Template.StackRule == BuffStackRule.Extend)
             {
-                // Extend: new Duration = remaining time (from old timer) + newBuff.Duration.
                 Duration = newBuff.Duration + (int)remaining;
             }
             else
             {
-                // Refresh: new Duration = newBuff.Duration.
                 Duration = newBuff.Duration;
             }
 
-            // Recalculate EndTime based on the new StartTime and Duration.
             EndTime = StartTime.AddMilliseconds(Duration);
-            // Remove any tasks associated with this buff using a predicate.
+
             TaskManager.Instance.RemoveTasks(task =>
             {
                 if (task is DispelTask dt && dt.Effect.Target is Buff buff)
                 {
-                    // Remove tasks if they are for this buff.
                     return buff == this;
                 }
-
                 return false;
             });
             SetInUse(true, true);
@@ -210,13 +194,16 @@ public class Buff
     {
         if (State == EffectState.Finished)
             return;
+
         if (State != EffectState.Created)
         {
             State = EffectState.Finishing;
             ScheduleEffect(replace);
         }
         else
+        {
             State = EffectState.Finishing;
+        }
     }
 
     private void StopEffectTask(bool replace)
@@ -279,10 +266,9 @@ public class Buff
     }
 
     /// <summary>
-    /// Consumes as much charge as possible. Remainder is returned
+    /// Поглощает заданное количество заряда. Остаток возвращается.
+    /// При нулевом заряде происходит завершение баффа.
     /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
     public int ConsumeCharge(int value)
     {
         var newCharge = Math.Max(0, Charge - value);

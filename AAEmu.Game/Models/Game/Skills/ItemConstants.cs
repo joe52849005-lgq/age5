@@ -11,5 +11,7 @@ public enum ItemConstants : uint
     SalonCertificate = 30811,
     TaxCertificate = 31891,
     BoundTaxCertificate = 31892,
+    FamilyCertificate = 41419,
+    FamilyGrowthTicket = 42262,
     MigrationScale = 8001059
 }

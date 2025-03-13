@@ -61,6 +61,7 @@ public class Expedition : SystemFaction
         ChatManager.Instance.GetGuildChat(this).LeaveChannel(character);
         Members.Remove(member);
         _removedMembers.Add(member.CharacterId);
+        ExpeditionManager.SetExpeditionBuff(character);
     }
 
     public void OnCharacterLogin(Character character)
@@ -73,6 +74,7 @@ public class Expedition : SystemFaction
 
         SendPacket(new SCExpeditionMemberStatusChangedPacket(member, 0));
         ChatManager.Instance.GetGuildChat(this).JoinChannel(character);
+        ExpeditionManager.SetExpeditionBuff(character);
     }
 
     public void OnCharacterLogout(Character character)
@@ -267,5 +269,6 @@ public class Expedition : SystemFaction
             return;
         member.Refresh(character);
         SendPacket(new SCExpeditionMemberStatusChangedPacket(member, 0));
+        ExpeditionManager.SetExpeditionBuff(character);
     }
 }

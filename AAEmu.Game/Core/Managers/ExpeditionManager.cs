@@ -10,11 +10,14 @@ using AAEmu.Game.Core.Managers.Id;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Network.Connections;
 using AAEmu.Game.Core.Packets.G2C;
+using AAEmu.Game.GameData;
 using AAEmu.Game.Models;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Expeditions;
 using AAEmu.Game.Models.Game.Faction;
 using AAEmu.Game.Models.Game.Items.Actions;
+using AAEmu.Game.Models.Game.Skills;
+using AAEmu.Game.Models.Game.Skills.Templates;
 using AAEmu.Game.Models.Game.Team;
 using AAEmu.Game.Models.StaticValues;
 
@@ -60,153 +63,151 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
 
     public void Load()
     {
-        _removedMembers = new List<uint>();
-        _recruitments = new List<ExpeditionRecruitment>();
-        _pretenders = new List<Applicant>();
+        _removedMembers = [];
+        _recruitments = [];
+        _pretenders = [];
         _expeditions = new();
         _nameRegex = new Regex(AppConfiguration.Instance.Expedition.NameRegex, RegexOptions.Compiled);
 
-        using (var connection = MySQL.CreateConnection())
+        using var connection = MySQL.CreateConnection();
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText = "SELECT * FROM expeditions";
+            command.Prepare();
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var expedition = new Expedition();
+                    expedition.Id = (FactionsEnum)reader.GetUInt32("id");
+                    expedition.MotherId = (FactionsEnum)reader.GetUInt32("mother");
+                    expedition.Name = reader.GetString("name");
+                    expedition.OwnerId = reader.GetUInt32("owner");
+                    expedition.OwnerName = reader.GetString("owner_name");
+                    expedition.UnitOwnerType = 0;
+                    expedition.PoliticalSystem = 1;
+                    expedition.Created = reader.GetDateTime("created_at");
+                    expedition.AggroLink = false;
+                    expedition.DiplomacyTarget = false;
+                    expedition.Level = reader.GetUInt32("level");
+                    expedition.Exp = reader.GetUInt32("exp");
+                    expedition.ProtectTime = reader.GetDateTime("protect_time");
+                    expedition.WarDeposit = reader.GetUInt32("war_deposit");
+                    expedition.DailyExp = reader.GetUInt32("daily_exp");
+                    expedition.LastExpUpdateTime = reader.GetDateTime("last_exp_update_time");
+                    expedition.IsLevelUpdate = reader.GetBoolean("is_level_update");
+                    expedition.Interest = reader.GetInt16("interest");
+                    expedition.MotdTitle = reader.GetString("motd_title");
+                    expedition.MotdContent = reader.GetString("motd_content");
+                    expedition.Win = reader.GetUInt32("win");
+                    expedition.Lose = reader.GetUInt32("lose");
+                    expedition.Draw = reader.GetUInt32("draw");
+
+                    expedition.Members = [];
+                    expedition.Policies = [];
+                    //expedition.Recruitments = new List<ExpeditionRecruitment>();
+
+                    _expeditions.Add(expedition.Id, expedition);
+                }
+            }
+        }
+
+        foreach (var expedition in _expeditions.Values)
         {
             using (var command = connection.CreateCommand())
             {
-                command.CommandText = "SELECT * FROM expeditions";
+                command.CommandText = "SELECT * FROM expedition_members WHERE expedition_id = @expedition_id";
+                command.Parameters.AddWithValue("@expedition_id", expedition.Id);
                 command.Prepare();
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        var expedition = new Expedition();
-                        expedition.Id = (FactionsEnum)reader.GetUInt32("id");
-                        expedition.MotherId = (FactionsEnum)reader.GetUInt32("mother");
-                        expedition.Name = reader.GetString("name");
-                        expedition.OwnerId = reader.GetUInt32("owner");
-                        expedition.OwnerName = reader.GetString("owner_name");
-                        expedition.UnitOwnerType = 0;
-                        expedition.PoliticalSystem = 1;
-                        expedition.Created = reader.GetDateTime("created_at");
-                        expedition.AggroLink = false;
-                        expedition.DiplomacyTarget = false;
-                        expedition.Level = reader.GetUInt32("level");
-                        expedition.Exp = reader.GetUInt32("exp");
-                        expedition.ProtectTime = reader.GetDateTime("protect_time");
-                        expedition.WarDeposit = reader.GetUInt32("war_deposit");
-                        expedition.DailyExp = reader.GetUInt32("daily_exp");
-                        expedition.LastExpUpdateTime = reader.GetDateTime("last_exp_update_time");
-                        expedition.IsLevelUpdate = reader.GetBoolean("is_level_update");
-                        expedition.Interest = reader.GetInt16("interest");
-                        expedition.MotdTitle = reader.GetString("motd_title");
-                        expedition.MotdContent = reader.GetString("motd_content");
-                        expedition.Win = reader.GetUInt32("win");
-                        expedition.Lose = reader.GetUInt32("lose");
-                        expedition.Draw = reader.GetUInt32("draw");
-
-                        expedition.Members = new List<ExpeditionMember>();
-                        expedition.Policies = new List<ExpeditionRolePolicy>();
-                        //expedition.Recruitments = new List<ExpeditionRecruitment>();
-
-                        _expeditions.Add(expedition.Id, expedition);
+                        var member = new ExpeditionMember();
+                        member.CharacterId = reader.GetUInt32("character_id");
+                        member.ExpeditionId = (FactionsEnum)reader.GetUInt32("expedition_id");
+                        member.Role = reader.GetByte("role");
+                        member.Memo = reader.GetString("memo");
+                        member.LastWorldLeaveTime = reader.GetDateTime("last_leave_time");
+                        member.Name = reader.GetString("name");
+                        member.Level = reader.GetByte("level");
+                        member.Abilities = [reader.GetByte("ability1"), reader.GetByte("ability2"), reader.GetByte("ability3")];
+                        member.IsOnline = false;
+                        member.InParty = false;
+                        expedition.Members.Add(member);
                     }
                 }
             }
 
-            foreach (var expedition in _expeditions.Values)
+            using (var command = connection.CreateCommand())
             {
-                using (var command = connection.CreateCommand())
+                command.CommandText = "SELECT * FROM expedition_role_policies WHERE expedition_id = @expedition_id";
+                command.Parameters.AddWithValue("@expedition_id", expedition.Id);
+                command.Prepare();
+                using (var reader = command.ExecuteReader())
                 {
-                    command.CommandText = "SELECT * FROM expedition_members WHERE expedition_id = @expedition_id";
-                    command.Parameters.AddWithValue("@expedition_id", expedition.Id);
-                    command.Prepare();
-                    using (var reader = command.ExecuteReader())
+                    while (reader.Read())
                     {
-                        while (reader.Read())
-                        {
-                            var member = new ExpeditionMember();
-                            member.CharacterId = reader.GetUInt32("character_id");
-                            member.ExpeditionId = (FactionsEnum)reader.GetUInt32("expedition_id");
-                            member.Role = reader.GetByte("role");
-                            member.Memo = reader.GetString("memo");
-                            member.LastWorldLeaveTime = reader.GetDateTime("last_leave_time");
-                            member.Name = reader.GetString("name");
-                            member.Level = reader.GetByte("level");
-                            member.Abilities = [reader.GetByte("ability1"), reader.GetByte("ability2"), reader.GetByte("ability3")];
-                            member.IsOnline = false;
-                            member.InParty = false;
-                            expedition.Members.Add(member);
-                        }
+                        var policy = new ExpeditionRolePolicy();
+                        policy.ExpeditionId = (FactionsEnum)reader.GetUInt32("expedition_id");
+                        policy.Role = reader.GetByte("role");
+                        policy.Name = reader.GetString("name");
+                        policy.DominionDeclare = reader.GetBoolean("dominion_declare");
+                        policy.Invite = reader.GetBoolean("invite");
+                        policy.Expel = reader.GetBoolean("expel");
+                        policy.Promote = reader.GetBoolean("promote");
+                        policy.Dismiss = reader.GetBoolean("dismiss");
+                        policy.Chat = reader.GetBoolean("chat");
+                        policy.ManagerChat = reader.GetBoolean("manager_chat");
+                        policy.SiegeMaster = reader.GetBoolean("siege_master");
+                        policy.JoinSiege = reader.GetBoolean("join_siege");
+                        expedition.Policies.Add(policy);
                     }
                 }
+            }
 
-                using (var command = connection.CreateCommand())
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM expedition_recruitments WHERE expedition_id = @expedition_id";
+                command.Parameters.AddWithValue("@expedition_id", expedition.Id);
+                command.Prepare();
+                using (var reader = command.ExecuteReader())
                 {
-                    command.CommandText = "SELECT * FROM expedition_role_policies WHERE expedition_id = @expedition_id";
-                    command.Parameters.AddWithValue("@expedition_id", expedition.Id);
-                    command.Prepare();
-                    using (var reader = command.ExecuteReader())
+                    while (reader.Read())
                     {
-                        while (reader.Read())
-                        {
-                            var policy = new ExpeditionRolePolicy();
-                            policy.ExpeditionId = (FactionsEnum)reader.GetUInt32("expedition_id");
-                            policy.Role = reader.GetByte("role");
-                            policy.Name = reader.GetString("name");
-                            policy.DominionDeclare = reader.GetBoolean("dominion_declare");
-                            policy.Invite = reader.GetBoolean("invite");
-                            policy.Expel = reader.GetBoolean("expel");
-                            policy.Promote = reader.GetBoolean("promote");
-                            policy.Dismiss = reader.GetBoolean("dismiss");
-                            policy.Chat = reader.GetBoolean("chat");
-                            policy.ManagerChat = reader.GetBoolean("manager_chat");
-                            policy.SiegeMaster = reader.GetBoolean("siege_master");
-                            policy.JoinSiege = reader.GetBoolean("join_siege");
-                            expedition.Policies.Add(policy);
-                        }
+                        var recruitment = new ExpeditionRecruitment();
+                        recruitment.ExpeditionId = (FactionsEnum)reader.GetUInt32("expedition_id");
+                        recruitment.Name = reader.GetString("name");
+                        recruitment.Level = reader.GetUInt32("level");
+                        recruitment.OwnerName = reader.GetString("owner_name");
+                        recruitment.Introduce = reader.GetString("introduce");
+                        recruitment.RegTime = reader.GetDateTime("reg_time");
+                        recruitment.EndTime = reader.GetDateTime("end_time");
+                        recruitment.Interest = reader.GetUInt16("interest");
+                        recruitment.MemberCount = reader.GetInt32("member_count");
+                        recruitment.Apply = reader.GetBoolean("apply");
+                        _recruitments.Add(recruitment);
                     }
                 }
+            }
 
-                using (var command = connection.CreateCommand())
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM expedition_applicants WHERE expedition_id = @expedition_id";
+                command.Parameters.AddWithValue("@expedition_id", expedition.Id);
+                command.Prepare();
+                using (var reader = command.ExecuteReader())
                 {
-                    command.CommandText = "SELECT * FROM expedition_recruitments WHERE expedition_id = @expedition_id";
-                    command.Parameters.AddWithValue("@expedition_id", expedition.Id);
-                    command.Prepare();
-                    using (var reader = command.ExecuteReader())
+                    while (reader.Read())
                     {
-                        while (reader.Read())
-                        {
-                            var recruitment = new ExpeditionRecruitment();
-                            recruitment.ExpeditionId = (FactionsEnum)reader.GetUInt32("expedition_id");
-                            recruitment.Name = reader.GetString("name");
-                            recruitment.Level = reader.GetUInt32("level");
-                            recruitment.OwnerName = reader.GetString("owner_name");
-                            recruitment.Introduce = reader.GetString("introduce");
-                            recruitment.RegTime = reader.GetDateTime("reg_time");
-                            recruitment.EndTime = reader.GetDateTime("end_time");
-                            recruitment.Interest = reader.GetUInt16("interest");
-                            recruitment.MemberCount = reader.GetInt32("member_count");
-                            recruitment.Apply = reader.GetBoolean("apply");
-                            _recruitments.Add(recruitment);
-                        }
-                    }
-                }
-
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = "SELECT * FROM expedition_applicants WHERE expedition_id = @expedition_id";
-                    command.Parameters.AddWithValue("@expedition_id", expedition.Id);
-                    command.Prepare();
-                    using (var reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            var pretender = new Applicant();
-                            pretender.ExpeditionId = (FactionsEnum)reader.GetUInt32("expedition_id");
-                            pretender.CharacterId = reader.GetUInt32("character_id");
-                            pretender.CharacterName = reader.GetString("character_name");
-                            pretender.CharacterLevel = reader.GetByte("character_level");
-                            pretender.Memo = reader.GetString("memo");
-                            pretender.RegTime = reader.GetDateTime("reg_time");
-                            _pretenders.Add(pretender);
-                        }
+                        var pretender = new Applicant();
+                        pretender.ExpeditionId = (FactionsEnum)reader.GetUInt32("expedition_id");
+                        pretender.CharacterId = reader.GetUInt32("character_id");
+                        pretender.CharacterName = reader.GetString("character_name");
+                        pretender.CharacterLevel = reader.GetByte("character_level");
+                        pretender.Memo = reader.GetString("memo");
+                        pretender.RegTime = reader.GetDateTime("reg_time");
+                        _pretenders.Add(pretender);
                     }
                 }
             }
@@ -330,6 +331,7 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
 
         owner.Expedition = expedition;
         owner.Expedition.ProtectTime = DateTime.UtcNow + TimeSpan.FromDays(30); // TODO вставить правильное количество дней
+        SetExpeditionBuff(owner);
 
         var membersList = new List<(uint memberObjId, uint memberId, string name)>(validMembers.Count);
         foreach (var tm in validMembers)
@@ -484,6 +486,7 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
         {
             kickedChar.Expedition = null;
             kickedChar.BroadcastPacket(changedPacket, true);
+            SetExpeditionBuff(character);
         }
         expedition.SendPacket(changedPacket);
         Save(expedition);
@@ -661,10 +664,27 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
         member.Abilities = [(byte)character.Ability1, (byte)character.Ability2, (byte)character.Ability3];
         member.ExpeditionId = expedition.Id;
         member.CharacterId = character.Id;
-
-        character.ApplyExpeditionEffects();
-
         return member;
+    }
+
+    public static void SetExpeditionBuff(Character character)
+    {
+        // Set expedition buff
+        for (var id = (uint)BuffConstants.TahyangsEnergy; id <= (uint)BuffConstants.EannasEnergy; id++)
+            character.Buffs.RemoveBuff(id);
+
+        BuffTemplate buffTemplate = null;
+        if (character.Expedition == null)
+            return;
+
+        var buffId = ExpeditionGameData.GetBuffIdByLevelId(character.Expedition.Level);
+        if (buffId != null)
+            buffTemplate = SkillManager.Instance.GetBuffTemplate((uint)buffId);
+        if (buffTemplate == null)
+            return;
+
+        var effect = new Buff(character, character, new SkillCasterUnit(character.ObjId), buffTemplate, null, DateTime.UtcNow);
+        character.Buffs.AddBuff(effect);
     }
 
     public static ExpeditionMember GetMemberFromCharacter(uint characterId)
@@ -826,7 +846,7 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
         var expedition = GetExpedition(owner.Expedition.Id);
 
         if (_recruitments == null || _recruitments.Count == 0)
-            _recruitments = new List<ExpeditionRecruitment>();
+            _recruitments = [];
 
         var newRecruitment = new ExpeditionRecruitment
         {
@@ -862,7 +882,7 @@ public class ExpeditionManager : Singleton<ExpeditionManager>
         if (_recruitments == null || _recruitments.Count == 0)
             return;
 
-        _recruitments = new List<ExpeditionRecruitment>();
+        _recruitments = [];
         connection.ActiveChar.SendPacket(new SCExpeditionRecruitmentDeletePacket());
     }
 

@@ -11,7 +11,6 @@ using AAEmu.Game.Models.Game.Skills;
 using AAEmu.Game.Models.Game.Skills.Buffs;
 using AAEmu.Game.Models.Game.Skills.Static;
 using AAEmu.Game.Models.Game.Skills.Templates;
-using AAEmu.Game.Models.Game.Units.Static;
 using AAEmu.Game.Models.StaticValues;
 
 namespace AAEmu.Game.Models.Game.Units;
@@ -20,7 +19,6 @@ public class Buffs : IBuffs
 {
     private readonly object _lock = new();
     private uint _nextIndex;
-
     private WeakReference _owner;
     private readonly List<Buff> _effects;
     private readonly Dictionary<uint, BuffToleranceCounter> _toleranceCounters;
@@ -40,26 +38,27 @@ public class Buffs : IBuffs
         _toleranceCounters = new Dictionary<uint, BuffToleranceCounter>();
     }
 
-    public bool CheckBuffImmune(uint buffId)
+    private IEnumerable<Buff> GetEffectsCopy()
     {
-        // Create a copy of the list of effects to avoid changing the list while iterating
-        IEnumerable<Buff> effects;
         lock (_lock)
         {
-            effects = _effects.ToArray();
+            return _effects.ToArray();
         }
+    }
 
-        foreach (var effect in effects)
+    public bool CheckBuffImmune(uint buffId)
+    {
+        lock (_lock)
         {
-            if (effect == null)
-                continue;
+            foreach (var effect in _effects)
+            {
+                if (effect?.Template.ImmuneBuffTagId == 0)
+                    continue;
 
-            if (effect.Template.ImmuneBuffTagId == 0)
-                continue;
-
-            var buffs = SkillManager.Instance.GetBuffsByTagId(effect.Template.ImmuneBuffTagId);
-            if (buffs != null && buffs.Contains(buffId))
-                return true;
+                var buffs = SkillManager.Instance.GetBuffsByTagId(effect.Template.ImmuneBuffTagId);
+                if (buffs != null && buffs.Contains(buffId))
+                    return true;
+            }
         }
 
         return false;
@@ -67,36 +66,30 @@ public class Buffs : IBuffs
 
     public bool CheckDamageImmune(DamageType damageType)
     {
-        // Create a copy of the list of effects to avoid changing the list while iterating
-        IEnumerable<Buff> effects;
         lock (_lock)
         {
-            effects = _effects.ToArray();
-        }
-
-        foreach (var effect in effects.ToList())
-        {
-            var template = effect?.Template;
-
-            if (template == null)
-                continue;
-
-            switch (damageType)
+            foreach (var effect in _effects)
             {
-                case DamageType.Melee:
-                    if (template.MeleeImmune) return true;
+                var template = effect?.Template;
+
+                if (template == null)
                     continue;
-                case DamageType.Magic:
-                    if (template.SpellImmune) return true;
-                    continue;
-                case DamageType.Ranged:
-                    if (template.RangedImmune) return true;
-                    continue;
-                case DamageType.Siege:
-                    if (template.SiegeImmune) return true;
-                    continue;
-                default:
-                    continue;
+
+                switch (damageType)
+                {
+                    case DamageType.Melee:
+                        if (template.MeleeImmune) return true;
+                        break;
+                    case DamageType.Magic:
+                        if (template.SpellImmune) return true;
+                        break;
+                    case DamageType.Ranged:
+                        if (template.RangedImmune) return true;
+                        break;
+                    case DamageType.Siege:
+                        if (template.SiegeImmune) return true;
+                        break;
+                }
             }
         }
 
@@ -105,63 +98,34 @@ public class Buffs : IBuffs
 
     public List<Buff> GetEffectsByType(Type effectType)
     {
-        // Create a copy of the list of effects to avoid changing the list while iterating
-        IEnumerable<Buff> effects;
         lock (_lock)
         {
-            effects = _effects.ToArray();
+            return _effects.Where(effect => effect.Template.GetType() == effectType).ToList();
         }
-
-        var temp = new List<Buff>();
-        foreach (var effect in effects.ToList())
-            if (effect.Template.GetType() == effectType)
-                temp.Add(effect);
-        return temp;
     }
 
     public Buff GetEffectByIndex(uint index)
     {
-        // Create a copy of the list of effects to avoid changing the list while iterating
-        IEnumerable<Buff> effects;
         lock (_lock)
         {
-            effects = _effects.ToArray();
+            return _effects.FirstOrDefault(effect => effect.Index == index);
         }
-
-        foreach (var effect in effects.ToList())
-            if (effect.Index == index)
-                return effect;
-        return null;
     }
 
     public Buff GetEffectByTemplate(BuffTemplate template)
     {
-        // Create a copy of the list of effects to avoid changing the list while iterating
-        IEnumerable<Buff> effects;
         lock (_lock)
         {
-            effects = _effects.ToArray();
+            return _effects.FirstOrDefault(effect => effect.Template == template);
         }
-
-        foreach (var effect in effects.ToList())
-            if (effect.Template == template)
-                return effect;
-        return null;
     }
 
     public bool CheckBuff(uint id)
     {
-        // Create a copy of the list of effects to avoid changing the list while iterating
-        IEnumerable<Buff> effects;
         lock (_lock)
         {
-            effects = _effects.ToArray();
+            return _effects.Any(effect => effect?.Template.BuffId > 0 && effect.Template.BuffId == id);
         }
-
-        foreach (var effect in effects.ToList())
-            if (effect != null && effect.Template.BuffId > 0 && effect.Template.BuffId == id)
-                return true;
-        return false;
     }
 
     public bool CheckBuffTag(uint tagId)
@@ -170,44 +134,26 @@ public class Buffs : IBuffs
         if (buffs == null)
             return false;
 
-        // Create a copy of the list of effects to avoid changing the list while iterating
-        IEnumerable<Buff> effects;
         lock (_lock)
         {
-            effects = _effects.ToArray();
+            return _effects.Any(effect => effect != null && buffs.Contains(effect.Template.BuffId));
         }
-
-        foreach (var effect in effects.ToList())
-            if (effect != null && buffs.Contains(effect.Template.BuffId))
-                return true;
-        return false;
     }
 
     public Buff GetEffectFromBuffId(uint id)
     {
-        // Create a copy of the list of effects to avoid changing the list while iterating
-        IEnumerable<Buff> effects;
         lock (_lock)
         {
-            effects = _effects.ToArray();
+            return _effects.FirstOrDefault(effect => effect?.Template.BuffId > 0 && effect.Template.BuffId == id);
         }
-
-        foreach (var effect in effects.ToList())
-            if (effect != null && effect.Template.BuffId > 0 && effect.Template.BuffId == id)
-                return effect;
-        return null;
     }
 
     public IEnumerable<Buff> GetBuffsRequiring(uint buffId)
     {
-        // Create a copy of the list of effects to avoid changing the list while iterating
-        IEnumerable<Buff> effects;
         lock (_lock)
         {
-            effects = _effects.ToArray();
+            return _effects.Where(b => b.Template.RequireBuffId == buffId).ToList();
         }
-
-        return effects.Where(b => b.Template.RequireBuffId == buffId);
     }
 
     public bool CheckBuffs(List<uint> ids)
@@ -217,64 +163,44 @@ public class Buffs : IBuffs
 
         var buffIdsSet = new HashSet<uint>(ids);
 
-        // Create a copy of the list of effects to avoid changing the list while iterating
-        IEnumerable<Buff> effects;
         lock (_lock)
         {
-            effects = _effects.ToArray();
+            return _effects.Any(effect => effect?.Template?.BuffId > 0 && buffIdsSet.Contains(effect.Template.BuffId));
         }
-
-        foreach (var effect in effects)
-            if (effect?.Template?.BuffId > 0 && buffIdsSet.Contains(effect.Template.BuffId))
-                return true;
-
-        return false;
     }
+
     public int GetBuffCountById(uint buffId)
     {
-        // Create a copy of the list of effects to avoid changing the list while iterating
-        IEnumerable<Buff> effects;
         lock (_lock)
         {
-            effects = _effects.ToArray();
+            return _effects.Count(effect => effect.Template.BuffId == buffId);
         }
-
-        var count = 0;
-        foreach (var effect in effects.ToList())
-            if (effect.Template.BuffId == buffId)
-                count++;
-        return count;
     }
 
     public void GetAllBuffs(List<Buff> goodBuffs, List<Buff> badBuffs, List<Buff> hiddenBuffs, bool includeAllPassives)
     {
-        // Create a copy of the list of effects to avoid changing the list while iterating
-        IEnumerable<Buff> effects;
         lock (_lock)
         {
-            effects = _effects.ToArray();
-        }
-
-        foreach (var buff in effects.ToList())
-        {
-            switch (buff.Template.Kind)
+            foreach (var buff in _effects)
             {
-                case BuffKind.Good:
-                    if (buff.Passive && !includeAllPassives)
-                        continue;
-                    goodBuffs.Add(buff);
-                    break;
-                case BuffKind.Bad:
-                    if (buff.Passive && !includeAllPassives)
-                        continue;
-                    badBuffs.Add(buff);
-                    break;
-                case BuffKind.Hidden:
-                    // Always include passives of Hidden Buffs, required by for example WorldBoss and Queen Bee captures
-                    hiddenBuffs.Add(buff);
-                    break;
-                default:
-                    throw new NotSupportedException(nameof(buff.Template.Kind));
+                switch (buff.Template.Kind)
+                {
+                    case BuffKind.Good:
+                        if (buff.Passive && !includeAllPassives)
+                            continue;
+                        goodBuffs.Add(buff);
+                        break;
+                    case BuffKind.Bad:
+                        if (buff.Passive && !includeAllPassives)
+                            continue;
+                        badBuffs.Add(buff);
+                        break;
+                    case BuffKind.Hidden:
+                        hiddenBuffs.Add(buff);
+                        break;
+                    default:
+                        throw new NotSupportedException(nameof(buff.Template.Kind));
+                }
             }
         }
     }
@@ -382,7 +308,7 @@ public class Buffs : IBuffs
                     break;
                 case BuffStackRule.ChargeRefresh:
                     foreach (var e in new List<Buff>(_effects))
-                        if (e != null && e.InUse && e.Template.BuffId == buff.Template.BuffId)
+                        if (e != null)
                             if (buff.Charge < e.Charge)
                                 return;
                             else
@@ -401,9 +327,13 @@ public class Buffs : IBuffs
                 default:
                     if (buff.Template.MaxStack > 0 && GetBuffCountById(buff.Template.BuffId) >= buff.Template.MaxStack)
                         foreach (var e in new List<Buff>(_effects))
-                            if (e != null && e.InUse && e.Template.BuffId == buff.Template.BuffId)
-                                if (e.GetTimeLeft() < buff.GetTimeLeft())
-                                    last = e;
+                            if (e != null)
+                            {
+                                if (e.InUse && e.Template.BuffId == buff.Template.BuffId)
+                                    if (e.GetTimeLeft() < buff.GetTimeLeft())
+                                        last = e;
+                            }
+
                     break;
             }
 
@@ -424,14 +354,17 @@ public class Buffs : IBuffs
                     owner.BuffModifiersCache.AddModifiers(buff.Template.BuffId);
                     owner.CombatBuffs.AddCombatBuffs(buff.Template.BuffId);
 
-                    if (owner is Character character && character.IsRiding && (bufft.Stun || bufft.Sleep || bufft.Root))
+                    if (owner is Character character)
                     {
-                        var mates = MateManager.Instance.GetActiveMates(character.ObjId);
-                        if (mates != null)
+                        if (character.IsRiding && (bufft.Stun || bufft.Sleep || bufft.Root))
                         {
-                            foreach (var mate in mates.Where(mate => mate is { MateType: MateType.Ride }))
-                                MateManager.Instance.UnMountMate(character.Connection, mate.TlId,
-                                    AttachPointKind.Driver, AttachUnitReason.None);
+                            var mates = MateManager.Instance.GetActiveMates(character.ObjId);
+                            if (mates != null)
+                            {
+                                foreach (var mate in mates.Where(mate => mate is { MateType: AAEmu.Game.Models.Game.Units.Static.MateType.Ride }))
+                                    MateManager.Instance.UnMountMate(character.Connection, mate.TlId,
+                                        AttachPointKind.Driver, AttachUnitReason.None);
+                            }
                         }
                     }
 
@@ -760,8 +693,12 @@ public class Buffs : IBuffs
         }
 
         foreach (var e in effects.ToList())
-            if (e != null && e.Template.RemoveOnDeath)
-                e.Exit();
+        {
+            if (e != null)
+            {
+                if (e.Template.RemoveOnDeath) e.Exit();
+            }
+        }
     }
 
     public void SetOwner(BaseUnit owner)

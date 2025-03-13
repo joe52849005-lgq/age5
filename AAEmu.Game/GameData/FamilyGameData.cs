@@ -24,6 +24,29 @@ public class FamilyGameData : Singleton<FamilyGameData>, IGameDataLoader
         return null;
     }
 
+    public static int? GetItemCountById(int id)
+    {
+        var iid = id switch
+        {
+            1 => 1,
+            2 => 2,
+            3 => 3,
+            4 => 4,
+            5 => 9000001,
+            6 => 9000002,
+            7 => 9000003,
+            8 => 9000004,
+            9 => 9000005,
+            10 => 9000006,
+            _ => id
+        };
+        if (FamilyMemberLimits.TryGetValue(iid, out var limit))
+        {
+            return limit.ItemCount;
+        }
+        return null;
+    }
+
     public void Load(SqliteConnection connection, SqliteConnection connection2)
     {
         LoadFamilyLevels(connection, connection2);

@@ -63,6 +63,7 @@ public class Family : PacketMarshaler
     {
         Members.Remove(member);
         _removedMembers.Add(member.Id);
+        member.Character.ApplyFamilyEffects();
     }
 
     public void RemoveMember(Character character)
