@@ -56,53 +56,62 @@ public class SpawnManager : Singleton<SpawnManager>
 
     public void Update(TimeSpan delta)
     {
-        byte worldId = 0;
+        foreach (var (worldId, worldSpawners) in _npcSpawners)
+        {
+            //Logger.Info($"Spawning NPCs for world {worldId}...");
+            InitializeCurrentSpawners(worldId);
 
-        // Если список спавнеров пуст, инициализируем его
+            var stopwatch = Stopwatch.StartNew();
+            var c = 0;
+            var startIndex = _currentSpawnerIndex;
+
+            while (_currentSpawnerIndex < _currentSpawners.Count)
+            {
+                var spawner = _currentSpawners[_currentSpawnerIndex];
+
+                if (spawner.Template == null)
+                    Logger.Warn($"Templates not found for Npc templateId {spawner.SpawnerId}:{spawner.UnitId} in world {worldId}");
+                else
+                    UpdateSpawner(spawner);
+
+                c++;
+                _currentSpawnerIndex++;
+
+                if (stopwatch.Elapsed <= TimeSpan.FromMilliseconds(50))
+                    continue;
+
+                Logger.Debug($"Updated {c}/{_currentSpawners.Count} spawners idx={startIndex}->{_currentSpawnerIndex}. Update loop interrupted due to time limit. Elapsed time: {stopwatch.ElapsedMilliseconds} ms.");
+                break;
+            }
+
+            ResetSpawnerIndexIfNeeded();
+        }
+    }
+
+    private void InitializeCurrentSpawners(byte worldId)
+    {
         if (_currentSpawners.Count == 0)
         {
             _currentSpawners = _npcSpawners[worldId].Values.SelectMany(x => x).ToList();
         }
+    }
 
-        var stopwatch = Stopwatch.StartNew();
-        var c = 0;
-        var startIndex = _currentSpawnerIndex;
-
-        // Продолжаем выполнение цикла, пока не истечет время
-        for (; _currentSpawnerIndex < _currentSpawners.Count; _currentSpawnerIndex++)
+    private static void UpdateSpawner(NpcSpawner spawner)
+    {
+        var innerStopwatch = Stopwatch.StartNew();
+        try
         {
-            var spawner = _currentSpawners[_currentSpawnerIndex];
-
-            if (spawner.Template == null)
-            {
-                Logger.Warn($"Templates not found for Npc templateId {spawner.SpawnerId}:{spawner.UnitId} in world {worldId}");
-            }
-            else
-            {
-                var innerStopwatch = Stopwatch.StartNew();
-                try
-                {
-                    spawner.Update();
-                }
-                finally
-                {
-                    innerStopwatch.Stop();
-                    //Logger.Trace($"Update for spawner {spawner.SpawnerId}:{spawner.UnitId} took {innerStopwatch.ElapsedMilliseconds} ms.");
-                }
-            }
-
-            c++;
-            // Если время выполнения превысило допустимый порог, прерываем цикл
-            if (stopwatch.Elapsed > TimeSpan.FromMilliseconds(50)) // Порог 100 мс
-            {
-                Logger.Debug($"Updated {c}/{_currentSpawners.Count} spawners idx={startIndex}->{_currentSpawnerIndex}. Update loop interrupted due to time limit. Elapsed time: {stopwatch.ElapsedMilliseconds} ms.");
-                break;
-            }
+            spawner.Update();
         }
+        finally
+        {
+            innerStopwatch.Stop();
+            //Logger.Debug($"Update for spawner {spawner.SpawnerId}:{spawner.UnitId} took {innerStopwatch.ElapsedMilliseconds} ms.");
+        }
+    }
 
-        // Logger.Info($"idx={startIndex} -> {_currentSpawnerIndex} / {_currentSpawners.Count}. Update loop finished: {stopwatch.ElapsedMilliseconds} ms.");
-        
-        // Если цикл завершен, сбрасываем индекс и список
+    private void ResetSpawnerIndexIfNeeded()
+    {
         if (_currentSpawnerIndex >= _currentSpawners.Count)
         {
             _currentSpawnerIndex = 0;
@@ -245,17 +254,17 @@ public class SpawnManager : Singleton<SpawnManager>
     private bool IsDuplicateNpcSpawner(Models.Game.World.World world, NpcSpawner npcSpawner)
     {
         foreach (var spawners in _npcSpawners[(byte)world.Id].Values)
-        foreach (var spawner in spawners)
-        {
-            if (spawner.UnitId == npcSpawner.UnitId &&
-                Math.Abs(spawner.Position.X - npcSpawner.Position.X) < 0.1f &&
-                Math.Abs(spawner.Position.Y - npcSpawner.Position.Y) < 0.1f)
+            foreach (var spawner in spawners)
             {
-                Logger.Warn($"Duplicate NPC spawner found in (UnitId: {spawner.UnitId}, Position: {spawner.Position})\n" +
-                            $"                                                              (UnitId: {npcSpawner.UnitId}, Position: {npcSpawner.Position})");
-                return true;
+                if (spawner.UnitId == npcSpawner.UnitId &&
+                    Math.Abs(spawner.Position.X - npcSpawner.Position.X) < 0.1f &&
+                    Math.Abs(spawner.Position.Y - npcSpawner.Position.Y) < 0.1f)
+                {
+                    Logger.Warn($"Duplicate NPC spawner found in (UnitId: {spawner.UnitId}, Position: {spawner.Position})\n" +
+                                $"                                                              (UnitId: {npcSpawner.UnitId}, Position: {npcSpawner.Position})");
+                    return true;
+                }
             }
-        }
 
         return false;
     }
