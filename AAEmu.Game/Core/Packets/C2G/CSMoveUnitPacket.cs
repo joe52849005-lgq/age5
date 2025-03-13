@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
@@ -30,15 +31,15 @@ public class CSMoveUnitPacket : GamePacket
     private Stopwatch _stopwatch = new Stopwatch();
     private const int DelayInMilliseconds = 1000; // 1 секунда
     private const double DistanceThreshold = 500.0 * 500.0; // 500 метров
-    private readonly List<Vector3> _targetPositions =
-    [
+    private readonly Dictionary<Character, bool> _proximityCache = new();
+    private readonly HashSet<Vector3> _targetPositions = new()
+    {
         new Vector3(16672.8f, 9303.9f, 175f), // Полуостров Рассвета на восточном материке
         new Vector3(13131f, 10105.2f, 175.2f), // Две Короны на западном материке
         new Vector3(18962.6f, 26838f, 176.3f), // Сверкающее побережье на изначальном материке
         new Vector3(19971f, 26927.2f, 175.8f), // Сверкающее побережье на изначальном материке
         new Vector3(15227.6f, 22731f, 185.8f)
-    ];
-
+    };
     public CSMoveUnitPacket() : base(CSOffsets.CSMoveUnitPacket, 5)
     {
     }
@@ -299,24 +300,51 @@ public class CSMoveUnitPacket : GamePacket
             unit.Buffs.TriggerRemoveOn(BuffRemoveOn.Move);
     }
 
-    public void CheckProximityAndApplyBuff(Character character)
+    private void CheckProximityAndApplyBuff(Character character)
     {
-        // Check if enough time has passed since the last call
-        if (!_stopwatch.IsRunning || _stopwatch.ElapsedMilliseconds >= DelayInMilliseconds)
+        if (IsTimeToCheck())
         {
-            // Check if the character is within 500 meters of any of the target points
-            if (_targetPositions.Any(targetPosition => MathUtil.DistanceSqVectors(character.Transform.World.Position, targetPosition) <= DistanceThreshold))
-            {
-                character.Buffs.AddBuff((uint)SkillConstants.Moored, character);
-            }
-            else
-            {
-                character.Buffs.RemoveBuff((uint)SkillConstants.Moored);
-            }
+            var characterPosition = character.Transform.World.Position;
+            var isWithinDistance = _targetPositions.Any(targetPosition => 
+                (characterPosition - targetPosition).LengthSquared() <= DistanceThreshold);
+
+            // Update the cache
+            _proximityCache[character] = isWithinDistance;
+
+            ApplyBuff(character, isWithinDistance);
 
             // Reset the timer and start it again
             _stopwatch.Restart();
         }
+        else if (_proximityCache.TryGetValue(character, out var cachedResult))
+        {
+            // Use cached result
+            ApplyBuff(character, cachedResult);
+        }
+    }
+
+    private static void ApplyBuff(Character character, bool isWithinDistance)
+    {
+        var hasBuff = character.Buffs.CheckBuff((uint)SkillConstants.Moored);
+        if (isWithinDistance && !hasBuff)
+        {
+            character.Buffs.AddBuff((uint)SkillConstants.Moored, character);
+        }
+        else if (!isWithinDistance && hasBuff)
+        {
+            character.Buffs.RemoveBuff((uint)SkillConstants.Moored);
+        }
+    }
+
+    private bool IsTimeToCheck()
+    {
+        if (!_stopwatch.IsRunning)
+        {
+            _stopwatch.Start();
+            return true;
+        }
+
+        return _stopwatch.ElapsedMilliseconds >= DelayInMilliseconds;
     }
 
     public override string Verbose()
