@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using AAEmu.Commons.Network;
+using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Network.Game;
 using AAEmu.Game.Models.Game.Char;
@@ -238,7 +239,7 @@ public class Team : PacketMarshaler
         }
 
         // Pick a random
-        var rngPos = Random.Shared.Next(tempPlayerList.Count);
+        var rngPos = Rand.Next(tempPlayerList.Count);
         tempPlayerList[rngPos].HasGoneRoundRobin = true;
         return tempPlayerList[rngPos].Character;
     }

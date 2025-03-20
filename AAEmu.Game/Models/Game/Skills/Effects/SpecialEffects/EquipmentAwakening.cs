@@ -1,5 +1,5 @@
 ﻿using System;
-
+using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.GameData;
@@ -142,8 +142,8 @@ public class EquipmentAwakening : SpecialEffectAction
 
         // Generate a random number between 0 and 100
         var random = new Random();
-        var roll = random.NextDouble() * 100;
-        var breakRoll = random.NextDouble() * 100;
+        var roll = Rand.NextDouble() * 100;
+        var breakRoll = Rand.NextDouble() * 100;
 
         // Determine success or failure
         if (roll <= totalChance)

@@ -258,7 +258,7 @@ public class LootPack
                     foreach (var loot in loots)
                     {
                         // Roll amount
-                        var countToAddNow = Random.Shared.Next(loot.MinAmount, loot.MaxAmount + 1);
+                        var countToAddNow = Rand.Next(loot.MinAmount, loot.MaxAmount + 1);
                         // Check for gold multiplier
                         if (loot.ItemId == (uint)ItemConstants.Coins)
                             countToAddNow = (int)Math.Round(countToAddNow * lootGoldRate);
@@ -275,9 +275,9 @@ public class LootPack
                 if (doNotPreFilter == false)
                 {
                     // If it's from a group higher than 1, pick one at random
-                    var rngItem = Random.Shared.Next(loots.Count);
+                    var rngItem = Rand.Next(loots.Count);
                     // Roll amount
-                    var countToAdd = Random.Shared.Next(loots[rngItem].MinAmount, loots[rngItem].MaxAmount + 1);
+                    var countToAdd = Rand.Next(loots[rngItem].MinAmount, loots[rngItem].MaxAmount + 1);
                     // Check for gold multiplier
                     if (loots[rngItem].ItemId == (uint)ItemConstants.Coins)
                         countToAdd = (int)Math.Round(countToAdd * lootGoldRate);
@@ -296,7 +296,7 @@ public class LootPack
                     foreach (var loot in loots)
                     {
                         // Roll amount
-                        var countToAddNow = Random.Shared.Next(loot.MinAmount, loot.MaxAmount + 1);
+                        var countToAddNow = Rand.Next(loot.MinAmount, loot.MaxAmount + 1);
                         // Check for gold multiplier
                         if (loot.ItemId == (uint)ItemConstants.Coins)
                             countToAddNow = (int)Math.Round(countToAddNow * lootGoldRate);

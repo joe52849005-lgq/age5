@@ -1,5 +1,5 @@
 ﻿using System;
-
+using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Packets.G2C;
 using AAEmu.Game.GameData;
 using AAEmu.Game.Models.Game.Char;
@@ -112,8 +112,8 @@ public class ItemRefurbishment : SpecialEffectAction
         var successChance = esr.SuccessRatio / 10000.0;
         var worseningChance = esr.DownRatio / 10000.0;
 
-        var random = new Random();
-        var roll = random.NextDouble();
+        //var random = new Random();
+        var roll = Rand.NextDouble();
 
         if (currentLevel < 10)
         {

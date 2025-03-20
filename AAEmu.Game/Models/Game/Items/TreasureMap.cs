@@ -2,6 +2,7 @@
 using System.Numerics;
 
 using AAEmu.Commons.Network;
+using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers.UnitManagers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Models.Game.Items.Templates;
@@ -43,7 +44,7 @@ public class TreasureMap : Item
             Grade = (byte)ItemGrade.Mythic;
             return;
         }
-        var rngPos = Random.Shared.Next(possibleChests.Count);
+        var rngPos = Rand.Next(possibleChests.Count);
         var chest = possibleChests[rngPos];
         // Setup coordinates
         MapPositionX = chest.Position.X;

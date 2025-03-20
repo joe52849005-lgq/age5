@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
-
+using AAEmu.Commons.Utils;
 using AAEmu.Commons.Utils.DB;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.Id;
@@ -704,8 +704,8 @@ public class Slave : Unit
                         newDoodad.IsPersistent = true;
                         newDoodad.Transform = doodad.Transform.CloneDetached();
                         // Add a bit of randomness to the dropped doodad
-                        newDoodad.Transform.Local.Translate((Random.Shared.NextSingle() * 2f) - 1f,
-                            (Random.Shared.NextSingle() * 2f) - 1f, 0);
+                        newDoodad.Transform.Local.Translate((Rand.NextSingle() * 2f) - 1f,
+                            (Rand.NextSingle() * 2f) - 1f, 0);
                         newDoodad.AttachPoint = AttachPointKind.None;
                         newDoodad.ItemId = droppedItem.Id;
                         newDoodad.ItemTemplateId = droppedItem.TemplateId;
@@ -797,9 +797,9 @@ public class Slave : Unit
             {
                 var doodad = DoodadManager.Instance.Create(0, dropDoodad.DoodadId, null, true);
                 var pos = Transform.World.Position;
-                var rng = new Vector3((Random.Shared.NextSingle() * 2f) - 1f, (Random.Shared.NextSingle() * 2f) - 1f, 0);
+                var rng = new Vector3((Rand.NextSingle() * 2f) - 1f, (Rand.NextSingle() * 2f) - 1f, 0);
                 rng = Vector3.Normalize(rng);
-                rng *= Random.Shared.NextSingle() * dropDoodad.Radius;
+                rng *= Rand.NextSingle() * dropDoodad.Radius;
                 pos += rng;
                 doodad.Transform.Local.SetPosition(pos);
                 if (dropDoodad.OnWater == false)
@@ -810,7 +810,7 @@ public class Slave : Unit
                 {
                     doodad.Transform.Local.SetHeight(WorldManager.Instance.GetWorld(doodad.Transform.WorldId).Water.GetWaterSurface(pos));
                 }
-                doodad.Transform.Local.Rotate(0, 0, (float)(Random.Shared.NextDouble() * Math.PI * 2f));
+                doodad.Transform.Local.Rotate(0, 0, (float)(Rand.NextDouble() * Math.PI * 2f));
                 doodad.InitDoodad();
                 doodad.Spawn();
             }

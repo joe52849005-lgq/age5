@@ -2237,7 +2237,7 @@ public class SlaveManager : Singleton<SlaveManager>
             for (var iAdd = 0; iAdd < pointsToAdd && unUsedHealPoints.Count > 0; iAdd++)
             {
                 // pick a random spot
-                var wreckPointLocation = unUsedHealPoints[Random.Shared.Next(unUsedHealPoints.Count)];
+                var wreckPointLocation = unUsedHealPoints[Rand.Next(unUsedHealPoints.Count)];
                 unUsedHealPoints.Remove(wreckPointLocation);
                 var healBinding = slave.Template.HealingPointDoodads.FirstOrDefault(p => p.AttachPointId == wreckPointLocation);
                 if (healBinding == null)

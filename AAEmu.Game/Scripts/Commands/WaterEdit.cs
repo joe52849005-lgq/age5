@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Numerics;
 using AAEmu.Commons.IO;
+using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers.Id;
 using AAEmu.Game.Core.Managers.UnitManagers;
 using AAEmu.Game.Core.Packets.G2C;
@@ -559,7 +560,7 @@ public class WaterEdit : ICommand
 
             var newName = args[1];
             var newBody = new WaterBodyArea(newName);
-            newBody.Id = (uint)Random.Shared.Next(8000000, 9000000);
+            newBody.Id = (uint)Rand.Next(8000000, 9000000);
             var centerPos = character.Transform.World.Position with { Z = character.Transform.World.Position.Z - 5f };
             newBody.Points.Add(new Vector3(centerPos.X - 15f, centerPos.Y - 15f, centerPos.Z));
             newBody.Points.Add(new Vector3(centerPos.X - 15f, centerPos.Y + 15f, centerPos.Z));

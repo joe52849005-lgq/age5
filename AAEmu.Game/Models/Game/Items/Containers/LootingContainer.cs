@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.Id;
 using AAEmu.Game.Core.Managers.World;
@@ -222,7 +222,7 @@ public class LootingContainer(IBaseUnit owner)
                 // If it's group is larger than 1, pick one at random
                 if (group > 1)
                 {
-                    var rngPos = Random.Shared.Next(selectByGroup.Count);
+                    var rngPos = Rand.Next(selectByGroup.Count);
                     var item = ItemManager.Instance.Create(selectByGroup[rngPos].itemId, selectByGroup[rngPos].count, selectByGroup[rngPos].grade, false);
                     resultsToAdd.Add(item);
                 }
@@ -521,7 +521,7 @@ public class LootingContainer(IBaseUnit owner)
         if (itemEntry == null)
             return;
 
-        var rollResult = rollRequest ? (sbyte)Random.Shared.Next(1, 100) : (sbyte)-1;
+        var rollResult = rollRequest ? (sbyte)Rand.Next(1, 100) : (sbyte)-1;
         itemEntry.PlayerRolls[player] = rollResult;
 
         // Notify the others of this roll result
@@ -570,7 +570,7 @@ public class LootingContainer(IBaseUnit owner)
         }
 
         // Select random winner (if multiple people roll the same)
-        var pickIndex = Random.Shared.Next(highestEntries.Count);
+        var pickIndex = Rand.Next(highestEntries.Count);
         var highestEntry = highestEntries[pickIndex];
 
         // Mark winner

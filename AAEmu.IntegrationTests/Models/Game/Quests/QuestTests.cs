@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 
 using AAEmu.Commons.IO;
+using AAEmu.Commons.Utils;
 using AAEmu.Commons.Utils.DB;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.AAEmu.Game.Core.Managers;
@@ -119,7 +120,7 @@ public class QuestTests
         Random rnd = new Random();
 
         // Randomizing first 500 due to performance impact... 
-        foreach (var questId in questIds.OrderBy(x => rnd.Next()).Take(500))
+        foreach (var questId in questIds.OrderBy(x => Rand.Next()).Take(500))
         {
             count++;
             var quest = SetupQuest(questId, QuestManager.Instance, out var mockCharacter, out var mockQuestTemplate, out _, out _, out _, out _, out _);
@@ -466,7 +467,7 @@ public class QuestTests
 
     private static void SetupCharacter(Mock<ICharacter> mockCharacter, byte inventorySlots = 10, uint equippedBackPackItem = 0, Mock<IBuffs> mockCharacterBuffs = null)
     {
-        int randomCharacterId = Random.Shared.Next(1, int.MaxValue);
+        int randomCharacterId = Rand.Next(1, int.MaxValue);
         string randomCharacterName = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
         mockCharacter.SetupAllProperties();
         if (mockCharacterBuffs is not null)

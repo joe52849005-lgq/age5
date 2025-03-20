@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using AAEmu.Commons.Network;
+using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Network.Game;
 using AAEmu.Game.Models.Game.Char;
 using AAEmu.Game.Models.Game.Skills;
@@ -218,8 +219,8 @@ public class SCSkillFiredPacket : GamePacket
                 }
 
                 // Перемешивание ключей
-                var rng = new Random();
-                allKeys = allKeys.OrderBy(x => rng.Next());
+                //var rng = new Random();
+                allKeys = allKeys.OrderBy(x => Rand.Next());
                 FireAnimQueue = new Queue<int>(allKeys);
             }
             // Dequeue the next animation ID

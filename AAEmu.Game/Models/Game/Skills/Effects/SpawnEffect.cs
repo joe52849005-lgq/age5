@@ -1,5 +1,5 @@
 ﻿using System;
-
+using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.World;
 using AAEmu.Game.Core.Packets;
@@ -37,18 +37,18 @@ public class SpawnEffect : EffectTemplate
     {
         Logger.Info($"SpawnEffect: OwnerTypeId={OwnerTypeId}, SubType={SubType}, UseSummonerFaction={UseSummonerFaction}, LifeTime={LifeTime}");
 
-        var random = new Random();
-        var PosAngle = (float)(PosAngleMin + (PosAngleMax - PosAngleMin) * random.NextDouble());
+        //var random = new Random();
+        var PosAngle = (float)(PosAngleMin + (PosAngleMax - PosAngleMin) * Rand.NextDouble());
         float PosDistance;
         if (PosDistanceMin != 0 && PosDistanceMax != 0)
         {
-            PosDistance = (float)(PosDistanceMin + (PosDistanceMax - PosDistanceMin) * random.NextDouble());
+            PosDistance = (float)(PosDistanceMin + (PosDistanceMax - PosDistanceMin) * Rand.NextDouble());
         }
         else
         {
             PosDistanceMin = 2;
             PosDistanceMax = 3;
-            PosDistance = (float)(PosDistanceMin + (PosDistanceMax - PosDistanceMin) * random.NextDouble());
+            PosDistance = (float)(PosDistanceMin + (PosDistanceMax - PosDistanceMin) * Rand.NextDouble());
         }
 
         // dir id 1 = relative to target/spawner.

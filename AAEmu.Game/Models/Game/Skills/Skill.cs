@@ -1179,7 +1179,7 @@ public class Skill
         foreach (var item in effectsToApply)
             weightedTotal += item.effect.Weight;
         if (weightedTotal > 0)
-            selectedWeight = Random.Shared.Next(weightedTotal);
+            selectedWeight = Rand.Next(weightedTotal);
         var currentWeight = 0;
         // (caster as Character)?.SendDebugMessage($"Effect Random {selectedWeight+1}/{weightedTotal}");
 

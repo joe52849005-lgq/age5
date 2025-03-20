@@ -98,12 +98,12 @@ namespace AAEmu.Game.GameData
             if (property?.BonusExpChance > 0)
             {
                 var probability = Math.Max(0, Math.Min(100, property.BonusExpChance - 100));
-                var chance = _random.Next(0, 101);
+                var chance = Rand.Next(0, 101);
                 if (chance <= probability)
                 {
                     var min = Math.Min(property.BonusExpMin, property.BonusExpMax);
                     var max = Math.Max(property.BonusExpMin, property.BonusExpMax);
-                    return _random.Next(min, max + 1);
+                    return Rand.Next(min, max + 1);
                 }
             }
             return 0;
@@ -176,7 +176,7 @@ namespace AAEmu.Game.GameData
                 var numToPick = Math.Min(pickNum, allAttributes.Count);
                 for (var i = 0; i < numToPick; i++)
                 {
-                    var randomIndex = random.Next(allAttributes.Count);
+                    var randomIndex = Rand.Next(allAttributes.Count);
                     var selectedAttribute = allAttributes[randomIndex];
                     var value = GetUnitModifierRandomValue(selectedAttribute.Id, grade);
                     selectedAttributes.Add((selectedAttribute.Id, selectedAttribute.UnitAttributeId, value));
@@ -221,7 +221,7 @@ namespace AAEmu.Game.GameData
                 if (allAttributes.Count == 0)
                     continue;
 
-                var randomIndex = random.Next(allAttributes.Count);
+                var randomIndex = Rand.Next(allAttributes.Count);
                 var selectedAttribute = allAttributes[randomIndex];
                 var value = GetUnitModifierRandomValue(selectedAttribute.Id, grade);
                 return (selectedAttribute.Id, selectedAttribute.UnitAttributeId, value);
@@ -265,7 +265,7 @@ namespace AAEmu.Game.GameData
                 (min, max) = (max, min);
 
             // Generate a random number between min and max (inclusive)
-            var value = Random.Shared.Next(min, max + 1);
+            var value = Rand.Next(min, max + 1);
             return value;
 
         }
