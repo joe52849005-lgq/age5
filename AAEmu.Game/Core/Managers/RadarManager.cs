@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using AAEmu.Commons.Utils;
 using AAEmu.Game.Core.Managers.UnitManagers;
 using AAEmu.Game.Core.Packets.G2C;
@@ -17,14 +18,14 @@ public class RadarManager : Singleton<RadarManager>
 {
     private int RadarUpdateDelay { get; } = 1000;
     private static object Lock { get; } = new();
-    private Dictionary<uint, TelescopeRegistrationEntry> Registrations { get; set; }
+    private Dictionary<uint, TelescopeRegistrationEntry> Registrations { get; set; } = new Dictionary<uint, TelescopeRegistrationEntry>();
     private static int TransfersPerPacket { get; } = 10;
     private static int FishPerPacket { get; } = 10;
     private static int ShipsPerPacket { get; } = 10;
 
     public void Initialize()
     {
-        Registrations = new Dictionary<uint, TelescopeRegistrationEntry>();
+        //Registrations = new Dictionary<uint, TelescopeRegistrationEntry>();
         TickManager.Instance.OnTick.Subscribe(RadarTick, TimeSpan.FromMilliseconds(RadarUpdateDelay), true);
     }
 
@@ -103,7 +104,7 @@ public class RadarManager : Singleton<RadarManager>
         }
     }
 
-    public void RadarTick(TimeSpan delta)
+    private void RadarTick(TimeSpan delta)
     {
         lock (Lock)
         {
@@ -111,13 +112,12 @@ public class RadarManager : Singleton<RadarManager>
                 return;
 
             var allTransfers = TransferManager.Instance.GetTransfers();
-            var allFish = FishSchoolManager.Instance.GetAllFishSchools();
+            //var allFish = FishSchoolManager.Instance.GetAllFishSchools();
             // TODO: Add Shipyards
-            var allShips = SlaveManager.Instance.GetActiveSlavesByKinds(new SlaveKind[]
-            {
+            var allShips = SlaveManager.Instance.GetActiveSlavesByKinds([
                 SlaveKind.Boat, SlaveKind.Fishboat, SlaveKind.Speedboat, SlaveKind.MerchantShip,
                 SlaveKind.BigSailingShip, SlaveKind.SmallSailingShip
-            }).ToList();
+            ]).ToList();
 
             foreach (var (_, entry) in Registrations)
             {
@@ -136,7 +136,7 @@ public class RadarManager : Singleton<RadarManager>
                         if (transfer.TemplateId == 46)
                             continue;
 
-                        if ((transfer.Transform.WorldId != entry.Player.Transform.WorldId) || (transfer.Transform.InstanceId != entry.Player.Transform.InstanceId))
+                        if (transfer.Transform.WorldId != entry.Player.Transform.WorldId || transfer.Transform.InstanceId != entry.Player.Transform.InstanceId)
                             continue;
 
                         if (MathUtil.CalculateDistance(entry.Player, transfer, true) <= Math.Max(entry.ShowPublicTransportRange, gmRangeCheck))
@@ -160,10 +160,11 @@ public class RadarManager : Singleton<RadarManager>
                 // Check for Fish Schools
                 if (entry.ShowFishSchoolRange > 0)
                 {
+                    var allFish = FishSchoolManager.Instance.GetAllFishSchools(entry.Player.Transform.WorldId);
                     var inRangeFish = new List<Doodad>();
                     foreach (var fish in allFish)
                     {
-                        if ((fish.Transform.WorldId != entry.Player.Transform.WorldId) || (fish.Transform.InstanceId != entry.Player.Transform.InstanceId))
+                        if (fish.Transform.WorldId != entry.Player.Transform.WorldId || fish.Transform.InstanceId != entry.Player.Transform.InstanceId)
                             continue;
 
                         if (MathUtil.CalculateDistance(entry.Player, fish, true) <= Math.Max(entry.ShowFishSchoolRange, gmRangeCheck))
@@ -190,7 +191,7 @@ public class RadarManager : Singleton<RadarManager>
                     var inRangeShips = new List<Slave>();
                     foreach (var ship in allShips)
                     {
-                        if ((ship.Transform.WorldId != entry.Player.Transform.WorldId) || (ship.Transform.InstanceId != entry.Player.Transform.InstanceId))
+                        if (ship.Transform.WorldId != entry.Player.Transform.WorldId || ship.Transform.InstanceId != entry.Player.Transform.InstanceId)
                             continue;
 
                         if (MathUtil.CalculateDistance(entry.Player, ship, true) <= Math.Max(entry.ShowShipTelescopeRange, gmRangeCheck))

@@ -227,6 +227,7 @@ public class Doodad : BaseUnit
     public VehicleSeat Seat { get; set; }
     private List<uint> ListGroupId { get; set; }
     public List<AreaTrigger> AttachAreaTriggers { get; set; } = [];
+    public bool IsRespawnScheduled  { get; set; } = false;
 
     public Doodad()
     {
@@ -238,6 +239,7 @@ public class Doodad : BaseUnit
         CurrentFuncs = [];
         CurrentPhaseFuncs = [];
         CurrentToDTriggers = new Dictionary<float, int>();
+        IsRespawnScheduled = false;
     }
 
     public void SetScale(float scale)

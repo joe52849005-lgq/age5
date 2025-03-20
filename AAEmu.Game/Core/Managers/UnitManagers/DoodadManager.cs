@@ -1327,17 +1327,25 @@ public class DoodadManager : Singleton<DoodadManager>
                 {
                     while (reader.Read())
                     {
-                        var func = new DoodadFuncFinal
+                        var func = new DoodadFuncFinal();
+                        func.Id = reader.GetUInt32("id");
+                        func.After = reader.GetInt32("after", 0);
+                        func.Respawn = reader.GetBoolean("respawn", true);
+                        func.MinTime = reader.GetInt32("min_time", 0);
+                        func.MaxTime = reader.GetInt32("max_time", 0);
+                        func.ShowTip = reader.GetBoolean("show_tip", true);
+                        func.ShowEndTime = reader.GetBoolean("show_end_time", true);
+                        func.Tip = reader.GetString("tip");
+
+                        // HardFix for fish school respawn
+                        if (func.Id is 3235 or 3225)
                         {
-                            Id = reader.GetUInt32("id"),
-                            After = reader.GetInt32("after", 0),
-                            Respawn = reader.GetBoolean("respawn", true),
-                            MinTime = reader.GetInt32("min_time", 0),
-                            MaxTime = reader.GetInt32("max_time", 0),
-                            ShowTip = reader.GetBoolean("show_tip", true),
-                            ShowEndTime = reader.GetBoolean("show_end_time", true),
-                            Tip = reader.GetString("tip")
-                        };
+                            func.Respawn = true;
+                            // For test
+                            //func.MinTime = 180000;
+                            //func.MaxTime = 180000;
+                        }
+
                         _phaseFuncTemplates["DoodadFuncFinal"].Add(func.Id, func);
                     }
                 }
@@ -2603,6 +2611,10 @@ public class DoodadManager : Singleton<DoodadManager>
                             Tip = reader.GetString("tip")
                         };
                         // TODO: Remove testing stuff
+                        //if (func.Id is 7467 or  7468 or  7469 or  7471)
+                        //{
+                        //    func.Delay = 180000;
+                        //}
                         // if (func.Delay > 0)
                         //     func.Delay = Math.Max(1, func.Delay / 1000);
 

@@ -194,7 +194,6 @@ public sealed class GameService : IHostedService, IDisposable
         SlaveManager.Initialize();
         CashShopManager.Instance.Initialize();
         GameDataManager.Instance.PostLoadGameData();
-        FishSchoolManager.Instance.Initialize();
         RadarManager.Instance.Initialize();
         ManaRegenManager.Instance.Initialize();
         PublicFarmManager.Instance.Initialize();
@@ -222,6 +221,7 @@ public sealed class GameService : IHostedService, IDisposable
 
         // Start running Physics when everything is loaded
         WorldManager.Instance.StartPhysics();
+        FishSchoolManager.Instance.Initialize();
 
         CharacterManager.CheckForDeletedCharacters();
         CharacterManager.Instance.StartOnlineTracking();
